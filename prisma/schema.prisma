@@ -35,13 +35,42 @@ enum ExperienceType {
   OTHER
 }
 
+enum UserRole {
+  PATIENT
+  DOCTOR
+  ADMIN
+}
+
 // ======================
 // MODELS
 // ======================
 
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String   // Will be hashed
+  firstName String
+  lastName  String
+  phone     String?
+  role      UserRole @default(PATIENT)
+  isActive  Boolean  @default(true)
+  emailVerified Boolean @default(false)
+  
+  // Relations
+  patient   Patient?
+  doctor    Doctor?
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  deletedAt DateTime?
+
+  @@map("users")
+}
+
 model Patient {
   id        String   @id @default(cuid())
-  userId    String?  @unique
+  userId    String   @unique
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   name      String
   surname   String
   email     String   @unique
@@ -62,6 +91,7 @@ model Patient {
 model Doctor {
   id         String  @id @default(cuid())
   userId     String  @unique
+  user       User    @relation(fields: [userId], references: [id], onDelete: Cascade)
   name       String
   surname    String
   email      String? @unique
