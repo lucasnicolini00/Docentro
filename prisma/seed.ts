@@ -1,4 +1,5 @@
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient } from "../app/generated/prisma";
+import bcrypt from "bcryptjs";
 
 const prisma = new PrismaClient();
 
@@ -16,6 +17,7 @@ async function main() {
   await prisma.speciality.deleteMany();
   await prisma.doctor.deleteMany();
   await prisma.patient.deleteMany();
+  await prisma.user.deleteMany();
 
   console.log("🧹 Cleaned existing data");
 
@@ -54,6 +56,76 @@ async function main() {
   ]);
 
   console.log("✅ Created specialities");
+
+  // Create users for doctors and patients
+  const hashedPassword = await bcrypt.hash("password123", 12);
+
+  const users = await Promise.all([
+    // Doctor users
+    prisma.user.create({
+      data: {
+        email: "carlos.rodriguez@example.com",
+        password: hashedPassword,
+        firstName: "Carlos",
+        lastName: "Rodriguez",
+        phone: "+54 11 1234-5678",
+        role: "DOCTOR",
+      },
+    }),
+    prisma.user.create({
+      data: {
+        email: "ana.martinez@example.com",
+        password: hashedPassword,
+        firstName: "Ana",
+        lastName: "Martinez",
+        phone: "+54 11 2345-6789",
+        role: "DOCTOR",
+      },
+    }),
+    prisma.user.create({
+      data: {
+        email: "luis.garcia@example.com",
+        password: hashedPassword,
+        firstName: "Luis",
+        lastName: "Garcia",
+        phone: "+54 11 3456-7890",
+        role: "DOCTOR",
+      },
+    }),
+    prisma.user.create({
+      data: {
+        email: "maria.lopez@example.com",
+        password: hashedPassword,
+        firstName: "Maria",
+        lastName: "Lopez",
+        phone: "+54 11 4567-8901",
+        role: "DOCTOR",
+      },
+    }),
+    // Patient users
+    prisma.user.create({
+      data: {
+        email: "juan.perez@example.com",
+        password: hashedPassword,
+        firstName: "Juan",
+        lastName: "Perez",
+        phone: "+54 11 5678-9012",
+        role: "PATIENT",
+      },
+    }),
+    prisma.user.create({
+      data: {
+        email: "laura.fernandez@example.com",
+        password: hashedPassword,
+        firstName: "Laura",
+        lastName: "Fernandez",
+        phone: "+54 11 6789-0123",
+        role: "PATIENT",
+      },
+    }),
+  ]);
+
+  console.log("✅ Created users");
 
   // Create clinics
   const clinics = await Promise.all([
@@ -101,7 +173,7 @@ async function main() {
   const doctors = await Promise.all([
     prisma.doctor.create({
       data: {
-        userId: "user_doc_1",
+        userId: users[0].id, // Carlos Rodriguez
         name: "Dr. Carlos",
         surname: "Rodriguez",
         email: "carlos.rodriguez@example.com",
@@ -111,7 +183,7 @@ async function main() {
     }),
     prisma.doctor.create({
       data: {
-        userId: "user_doc_2",
+        userId: users[1].id, // Ana Martinez
         name: "Dra. Ana",
         surname: "Martinez",
         email: "ana.martinez@example.com",
@@ -121,11 +193,21 @@ async function main() {
     }),
     prisma.doctor.create({
       data: {
-        userId: "user_doc_3",
+        userId: users[2].id, // Luis Garcia
         name: "Dr. Luis",
-        surname: "Gonzalez",
-        email: "luis.gonzalez@example.com",
+        surname: "Garcia",
+        email: "luis.garcia@example.com",
         phone: "+54 11 3456-7890",
+        picaddress: null,
+      },
+    }),
+    prisma.doctor.create({
+      data: {
+        userId: users[3].id, // Maria Lopez
+        name: "Dra. Maria",
+        surname: "Lopez",
+        email: "maria.lopez@example.com",
+        phone: "+54 11 4567-8901",
         picaddress: null,
       },
     }),
@@ -137,24 +219,24 @@ async function main() {
   const patients = await Promise.all([
     prisma.patient.create({
       data: {
-        userId: "user_pat_1",
-        name: "María",
-        surname: "López",
-        email: "maria.lopez@example.com",
-        phone: "+54 11 4567-8901",
+        userId: users[4].id, // Juan Perez
+        name: "Juan",
+        surname: "Perez",
+        email: "juan.perez@example.com",
+        phone: "+54 11 5678-9012",
         birthdate: new Date("1985-03-15"),
-        gender: "Femenino",
+        gender: "Masculino",
       },
     }),
     prisma.patient.create({
       data: {
-        userId: "user_pat_2",
-        name: "Juan",
-        surname: "Pérez",
-        email: "juan.perez@example.com",
-        phone: "+54 11 5678-9012",
+        userId: users[5].id, // Laura Fernandez
+        name: "Laura",
+        surname: "Fernandez",
+        email: "laura.fernandez@example.com",
+        phone: "+54 11 6789-0123",
         birthdate: new Date("1990-07-22"),
-        gender: "Masculino",
+        gender: "Femenino",
       },
     }),
   ]);

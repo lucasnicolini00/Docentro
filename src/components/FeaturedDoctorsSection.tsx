@@ -1,7 +1,30 @@
 import { getFeaturedDoctors } from "@/lib/data";
+import type {
+  Doctor,
+  DoctorSpeciality,
+  Speciality,
+  Opinion,
+  DoctorClinic,
+  Clinic,
+  Pricing,
+} from "@prisma/client";
+
+type DoctorWithRelations = Doctor & {
+  specialities: (DoctorSpeciality & {
+    speciality: Speciality;
+  })[];
+  opinions: Opinion[];
+  clinics: (DoctorClinic & {
+    clinic: Clinic;
+  })[];
+  pricings: (Pricing & {
+    clinic: Clinic;
+  })[];
+};
+
 export default async function FeaturedDoctorsSection() {
   // Fetch real data from database
-  const doctors = await getFeaturedDoctors();
+  const doctors: DoctorWithRelations[] = await getFeaturedDoctors();
 
   return (
     <section

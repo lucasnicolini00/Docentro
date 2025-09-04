@@ -2,6 +2,28 @@ import { getAllDoctors, searchDoctors } from "@/lib/data";
 import DoctorCard from "@/components/DoctorCard";
 import Navbar from "@/components/navbar";
 import SearchFilters from "@/components/SearchFilters";
+import type {
+  Doctor,
+  DoctorSpeciality,
+  Speciality,
+  Opinion,
+  DoctorClinic,
+  Clinic,
+  Pricing,
+} from "@prisma/client";
+
+type DoctorWithRelations = Doctor & {
+  specialities: (DoctorSpeciality & {
+    speciality: Speciality;
+  })[];
+  opinions: Opinion[];
+  clinics: (DoctorClinic & {
+    clinic: Clinic;
+  })[];
+  pricings: (Pricing & {
+    clinic: Clinic;
+  })[];
+};
 
 interface SearchProps {
   searchParams?: Promise<Record<string, string | string[] | undefined>>;
@@ -18,7 +40,7 @@ export default async function Search({ searchParams }: SearchProps) {
     typeof params.location === "string" ? params.location : undefined;
 
   // Fetch doctors based on search parameters
-  const doctors =
+  const doctors: DoctorWithRelations[] =
     specialty || location
       ? await searchDoctors(specialty, location)
       : await getAllDoctors();

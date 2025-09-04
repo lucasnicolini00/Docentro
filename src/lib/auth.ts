@@ -1,6 +1,6 @@
-import { prisma } from "@/lib/prisma";
+import prisma from "@/lib/prisma";
 import bcrypt from "bcryptjs";
-import { UserRole } from "@prisma/client";
+import { UserRole, type Prisma } from "@prisma/client";
 
 // Types for authentication
 export interface RegisterData {
@@ -54,44 +54,46 @@ export async function registerUser(data: RegisterData): Promise<AuthResult> {
       data.userType === "doctor" ? UserRole.DOCTOR : UserRole.PATIENT;
 
     // Create user in a transaction
-    const result = await prisma.$transaction(async (tx) => {
-      // Create the user
-      const user = await tx.user.create({
-        data: {
-          email: data.email,
-          password: hashedPassword,
-          firstName: data.firstName,
-          lastName: data.lastName,
-          phone: data.phone,
-          role: role,
-        },
-      });
+    const result = await prisma.$transaction(
+      async (tx: Prisma.TransactionClient) => {
+        // Create the user
+        const user = await tx.user.create({
+          data: {
+            email: data.email,
+            password: hashedPassword,
+            firstName: data.firstName,
+            lastName: data.lastName,
+            phone: data.phone,
+            role: role,
+          },
+        });
 
-      // Create corresponding profile based on user type
-      if (data.userType === "patient") {
-        await tx.patient.create({
-          data: {
-            userId: user.id,
-            name: data.firstName,
-            surname: data.lastName,
-            email: data.email,
-            phone: data.phone,
-          },
-        });
-      } else if (data.userType === "doctor") {
-        await tx.doctor.create({
-          data: {
-            userId: user.id,
-            name: data.firstName,
-            surname: data.lastName,
-            email: data.email,
-            phone: data.phone,
-          },
-        });
+        // Create corresponding profile based on user type
+        if (data.userType === "patient") {
+          await tx.patient.create({
+            data: {
+              userId: user.id,
+              name: data.firstName,
+              surname: data.lastName,
+              email: data.email,
+              phone: data.phone,
+            },
+          });
+        } else if (data.userType === "doctor") {
+          await tx.doctor.create({
+            data: {
+              userId: user.id,
+              name: data.firstName,
+              surname: data.lastName,
+              email: data.email,
+              phone: data.phone,
+            },
+          });
+        }
+
+        return user;
       }
-
-      return user;
-    });
+    );
 
     return {
       success: true,
