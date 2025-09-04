@@ -1,4 +1,4 @@
-import { PrismaClient, Prisma, UserRole } from "@prisma/client";
+import { PrismaClient, Prisma, $Enums } from "@prisma/client";
 import bcrypt from "bcryptjs";
 
 const prisma = new PrismaClient();
@@ -68,7 +68,7 @@ async function main() {
         firstName: "Carlos",
         lastName: "Rodriguez",
         phone: "+54 11 1234-5678",
-        role: UserRole.DOCTOR,
+        role: $Enums.UserRole.DOCTOR,
       },
     }),
     prisma.user.create({
@@ -78,7 +78,7 @@ async function main() {
         firstName: "Ana",
         lastName: "Martinez",
         phone: "+54 11 2345-6789",
-        role: UserRole.DOCTOR,
+        role: $Enums.UserRole.DOCTOR,
       },
     }),
     prisma.user.create({
@@ -88,7 +88,7 @@ async function main() {
         firstName: "Luis",
         lastName: "Garcia",
         phone: "+54 11 3456-7890",
-        role: UserRole.DOCTOR,
+        role: $Enums.UserRole.DOCTOR,
       },
     }),
     prisma.user.create({
@@ -98,7 +98,7 @@ async function main() {
         firstName: "Maria",
         lastName: "Lopez",
         phone: "+54 11 4567-8901",
-        role: UserRole.DOCTOR,
+        role: $Enums.UserRole.DOCTOR,
       },
     }),
     prisma.user.create({
@@ -108,7 +108,7 @@ async function main() {
         firstName: "Juan",
         lastName: "Perez",
         phone: "+54 11 5678-9012",
-        role: UserRole.PATIENT,
+        role: $Enums.UserRole.PATIENT,
       },
     }),
     prisma.user.create({
@@ -118,7 +118,7 @@ async function main() {
         firstName: "Laura",
         lastName: "Fernandez",
         phone: "+54 11 6789-0123",
-        role: UserRole.PATIENT,
+        role: $Enums.UserRole.PATIENT,
       },
     }),
   ]);

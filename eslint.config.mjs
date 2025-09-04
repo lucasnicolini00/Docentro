@@ -16,9 +16,6 @@ const eslintConfig = [
       "no-console": "off",
       "@typescript-eslint/no-explicit-any": "off",
       "no-unused-vars": "off",
-      compilerOptions: {
-        noImplicitAny: false,
-      },
     },
   },
 ];
