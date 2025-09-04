@@ -1,6 +1,8 @@
-import prisma from "@/lib/prisma";
+import { NextAuthOptions } from "next-auth";
+import CredentialsProvider from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
-import { UserRole, type Prisma } from "@prisma/client";
+import prisma from "./prisma";
+import { $Enums, type Prisma } from "@prisma/client";
 
 // Types for authentication
 export interface RegisterData {
@@ -25,10 +27,93 @@ export interface AuthResult {
     email: string;
     firstName: string;
     lastName: string;
-    role: UserRole;
+    role: $Enums.UserRole;
   } | null;
   error?: string;
 }
+
+export const authOptions: NextAuthOptions = {
+  providers: [
+    CredentialsProvider({
+      name: "credentials",
+      credentials: {
+        email: { label: "Email", type: "email" },
+        password: { label: "Password", type: "password" },
+      },
+      async authorize(credentials) {
+        if (!credentials?.email || !credentials?.password) {
+          return null;
+        }
+
+        // Find user in your existing User table
+        const user = await prisma.user.findUnique({
+          where: { email: credentials.email },
+          include: {
+            doctor: true,
+            patient: true,
+          },
+        });
+
+        if (!user) {
+          return null;
+        }
+
+        const passwordMatch = await bcrypt.compare(
+          credentials.password,
+          user.password
+        );
+
+        if (!passwordMatch) {
+          return null;
+        }
+
+        // Return user data that will be available in session
+        return {
+          id: user.id,
+          email: user.email,
+          name: `${user.firstName} ${user.lastName}`,
+          role: user.role,
+          doctorId: user.doctor?.id || null,
+          patientId: user.patient?.id || null,
+        };
+      },
+    }),
+  ],
+
+  session: {
+    strategy: "jwt",
+    maxAge: 7 * 24 * 60 * 60, // 7 days
+  },
+
+  callbacks: {
+    async jwt({ token, user }) {
+      // Add your custom fields to JWT
+      if (user) {
+        token.role = user.role;
+        token.doctorId = user.doctorId;
+        token.patientId = user.patientId;
+      }
+      return token;
+    },
+
+    async session({ session, token }) {
+      // Make role and IDs available in session
+      if (token && session.user) {
+        session.user.id = token.sub!;
+        session.user.role = token.role as $Enums.UserRole;
+        session.user.doctorId = token.doctorId as string | null;
+        session.user.patientId = token.patientId as string | null;
+      }
+      return session;
+    },
+  },
+
+  pages: {
+    signIn: "/login",
+  },
+
+  secret: process.env.NEXTAUTH_SECRET,
+};
 
 // Register a new user
 export async function registerUser(data: RegisterData): Promise<AuthResult> {
@@ -51,7 +136,9 @@ export async function registerUser(data: RegisterData): Promise<AuthResult> {
 
     // Determine user role
     const role =
-      data.userType === "doctor" ? UserRole.DOCTOR : UserRole.PATIENT;
+      data.userType === "doctor"
+        ? $Enums.UserRole.DOCTOR
+        : $Enums.UserRole.PATIENT;
 
     // Create user in a transaction
     const result = await prisma.$transaction(

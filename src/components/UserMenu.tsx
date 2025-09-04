@@ -1,10 +1,19 @@
-import { getCurrentUser, logoutAction } from "@/lib/actions";
+"use client";
+import { useSession, signOut } from "next-auth/react";
 import Link from "next/link";
 
-export default async function UserMenu() {
-  const user = await getCurrentUser();
+export default function UserMenu() {
+  const { data: session, status } = useSession();
 
-  if (!user) {
+  if (status === "loading") {
+    return (
+      <div className="flex items-center space-x-4">
+        <div className="h-8 w-20 bg-gray-200 animate-pulse rounded"></div>
+      </div>
+    );
+  }
+
+  if (!session) {
     return (
       <div className="flex items-center space-x-4">
         <Link
@@ -25,15 +34,38 @@ export default async function UserMenu() {
 
   return (
     <div className="flex items-center space-x-4">
-      <span className="text-gray-700">Hola, {user.email}</span>
-      <form action={logoutAction}>
-        <button
-          type="submit"
-          className="text-gray-700 hover:text-red-600 font-medium cursor-pointer"
+      <div className="flex items-center space-x-2">
+        <span className="text-gray-700">Hola, {session.user.name}</span>
+        <span className="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded-full">
+          {session.user.role === "DOCTOR" ? "Doctor" : "Paciente"}
+        </span>
+      </div>
+
+      {/* Dashboard link based on role */}
+      {session.user.role === "DOCTOR" && (
+        <Link
+          href="/dashboard/doctor"
+          className="text-gray-700 hover:text-blue-600 font-medium"
         >
-          Cerrar Sesión
-        </button>
-      </form>
+          Dashboard
+        </Link>
+      )}
+
+      {session.user.role === "PATIENT" && (
+        <Link
+          href="/dashboard/patient"
+          className="text-gray-700 hover:text-blue-600 font-medium"
+        >
+          Mi Perfil
+        </Link>
+      )}
+
+      <button
+        onClick={() => signOut({ callbackUrl: "/" })}
+        className="text-gray-700 hover:text-red-600 font-medium cursor-pointer"
+      >
+        Cerrar Sesión
+      </button>
     </div>
   );
 }

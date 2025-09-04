@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { registerAction } from "@/lib/actions";
+import { useRouter } from "next/navigation";
 
 export default function RegisterPage() {
   const [formData, setFormData] = useState({
@@ -17,6 +17,7 @@ export default function RegisterPage() {
   });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
+  const router = useRouter();
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
@@ -48,21 +49,29 @@ export default function RegisterPage() {
     }
 
     try {
-      // Create FormData for server action
-      const form = new FormData();
-      form.append("firstName", formData.firstName);
-      form.append("lastName", formData.lastName);
-      form.append("email", formData.email);
-      form.append("password", formData.password);
-      form.append("phone", formData.phone);
-      form.append("userType", formData.userType);
+      const response = await fetch("/api/auth/register", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+          email: formData.email,
+          password: formData.password,
+          phone: formData.phone,
+          userType: formData.userType,
+        }),
+      });
 
-      const result = await registerAction(form);
+      const result = await response.json();
 
-      if (!result.success) {
-        setError(result.message);
+      if (!response.ok) {
+        setError(result.error || "Error al crear la cuenta");
+      } else {
+        // Redirect to login with success message
+        router.push("/login?message=registered");
       }
-      // If successful, the server action will redirect
     } catch {
       setError("Error al crear la cuenta. Intenta nuevamente.");
     } finally {

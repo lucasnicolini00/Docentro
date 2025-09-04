@@ -3,7 +3,8 @@
 import { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { loginAction } from "@/lib/actions";
+import { signIn, getSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
 
 function LoginForm() {
   const [email, setEmail] = useState("");
@@ -12,6 +13,7 @@ function LoginForm() {
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
   const searchParams = useSearchParams();
+  const router = useRouter();
 
   useEffect(() => {
     const message = searchParams.get("message");
@@ -28,17 +30,26 @@ function LoginForm() {
     setError("");
 
     try {
-      // Create FormData for server action
-      const form = new FormData();
-      form.append("email", email);
-      form.append("password", password);
+      const result = await signIn("credentials", {
+        email,
+        password,
+        redirect: false,
+      });
 
-      const result = await loginAction(form);
+      if (result?.error) {
+        setError("Credenciales incorrectas. Verifica tu email y contraseña.");
+      } else if (result?.ok) {
+        // Get the session to check user role
+        const session = await getSession();
 
-      if (!result.success) {
-        setError(result.message);
+        if (session?.user?.role === "DOCTOR") {
+          router.push("/dashboard/doctor");
+        } else if (session?.user?.role === "PATIENT") {
+          router.push("/dashboard/patient");
+        } else {
+          router.push("/dashboard");
+        }
       }
-      // If successful, the server action will redirect
     } catch {
       setError("Error al iniciar sesión. Verifica tus credenciales.");
     } finally {

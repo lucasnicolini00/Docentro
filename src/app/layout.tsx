@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
+import { AuthProvider } from "@/components/AuthProvider";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -48,7 +49,9 @@ export default function RootLayout({
         <link rel="icon" href="/favicon.ico" />
       </head>
       <body className={`${inter.variable} font-sans antialiased text-gray-900`}>
-        <div className="min-h-screen">{children}</div>
+        <AuthProvider>
+          <div className="min-h-screen">{children}</div>
+        </AuthProvider>
       </body>
     </html>
   );
