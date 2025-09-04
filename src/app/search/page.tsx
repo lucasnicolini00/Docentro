@@ -4,15 +4,18 @@ import Navbar from "@/components/navbar";
 import SearchFilters from "@/components/SearchFilters";
 
 interface SearchProps {
-  searchParams: {
-    specialty?: string;
-    location?: string;
-  };
+  searchParams?: Promise<Record<string, string | string[] | undefined>>;
 }
 
 export default async function Search({ searchParams }: SearchProps) {
+  // Await search parameters
+  const params = (await searchParams) || {};
+
   // Get search parameters
-  const { specialty, location } = searchParams;
+  const specialty =
+    typeof params.specialty === "string" ? params.specialty : undefined;
+  const location =
+    typeof params.location === "string" ? params.location : undefined;
 
   // Fetch doctors based on search parameters
   const doctors =
