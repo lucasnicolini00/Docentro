@@ -1,4 +1,4 @@
-import { PrismaClient } from "../app/generated/prisma";
+import { PrismaClient, Prisma, UserRole } from "@prisma/client";
 import bcrypt from "bcryptjs";
 
 const prisma = new PrismaClient();
@@ -6,10 +6,10 @@ const prisma = new PrismaClient();
 async function main() {
   console.log("🌱 Starting seed...");
 
-  // Clean existing data (in reverse order of dependencies)
-  await prisma.opinion.deleteMany();
-  await prisma.appointment.deleteMany();
-  await prisma.pricing.deleteMany();
+  // Clean existing data
+  await prisma.opinion.deleteMany(); // ✅ for model Opinion
+  await prisma.appointment.deleteMany(); // ✅ for model Appointment
+  await prisma.pricing.deleteMany(); // ✅ for model Pricing
   await prisma.doctorClinic.deleteMany();
   await prisma.experience.deleteMany();
   await prisma.doctorSpeciality.deleteMany();
@@ -57,11 +57,10 @@ async function main() {
 
   console.log("✅ Created specialities");
 
-  // Create users for doctors and patients
+  // Create users
   const hashedPassword = await bcrypt.hash("password123", 12);
 
   const users = await Promise.all([
-    // Doctor users
     prisma.user.create({
       data: {
         email: "carlos.rodriguez@example.com",
@@ -69,7 +68,7 @@ async function main() {
         firstName: "Carlos",
         lastName: "Rodriguez",
         phone: "+54 11 1234-5678",
-        role: "DOCTOR",
+        role: UserRole.DOCTOR,
       },
     }),
     prisma.user.create({
@@ -79,7 +78,7 @@ async function main() {
         firstName: "Ana",
         lastName: "Martinez",
         phone: "+54 11 2345-6789",
-        role: "DOCTOR",
+        role: UserRole.DOCTOR,
       },
     }),
     prisma.user.create({
@@ -89,7 +88,7 @@ async function main() {
         firstName: "Luis",
         lastName: "Garcia",
         phone: "+54 11 3456-7890",
-        role: "DOCTOR",
+        role: UserRole.DOCTOR,
       },
     }),
     prisma.user.create({
@@ -99,10 +98,9 @@ async function main() {
         firstName: "Maria",
         lastName: "Lopez",
         phone: "+54 11 4567-8901",
-        role: "DOCTOR",
+        role: UserRole.DOCTOR,
       },
     }),
-    // Patient users
     prisma.user.create({
       data: {
         email: "juan.perez@example.com",
@@ -110,7 +108,7 @@ async function main() {
         firstName: "Juan",
         lastName: "Perez",
         phone: "+54 11 5678-9012",
-        role: "PATIENT",
+        role: UserRole.PATIENT,
       },
     }),
     prisma.user.create({
@@ -120,7 +118,7 @@ async function main() {
         firstName: "Laura",
         lastName: "Fernandez",
         phone: "+54 11 6789-0123",
-        role: "PATIENT",
+        role: UserRole.PATIENT,
       },
     }),
   ]);
@@ -156,12 +154,7 @@ async function main() {
     prisma.clinic.create({
       data: {
         name: "Consultas Online",
-        address: null,
         country: "Argentina",
-        city: null,
-        neighborhood: null,
-        latitude: null,
-        longitude: null,
         isVirtual: true,
       },
     }),
@@ -173,8 +166,8 @@ async function main() {
   const doctors = await Promise.all([
     prisma.doctor.create({
       data: {
-        userId: users[0].id, // Carlos Rodriguez
-        name: "Dr. Carlos",
+        userId: users[0].id,
+        name: "Carlos",
         surname: "Rodriguez",
         email: "carlos.rodriguez@example.com",
         phone: "+54 11 1234-5678",
@@ -183,8 +176,8 @@ async function main() {
     }),
     prisma.doctor.create({
       data: {
-        userId: users[1].id, // Ana Martinez
-        name: "Dra. Ana",
+        userId: users[1].id,
+        name: "Ana",
         surname: "Martinez",
         email: "ana.martinez@example.com",
         phone: "+54 11 2345-6789",
@@ -193,8 +186,8 @@ async function main() {
     }),
     prisma.doctor.create({
       data: {
-        userId: users[2].id, // Luis Garcia
-        name: "Dr. Luis",
+        userId: users[2].id,
+        name: "Luis",
         surname: "Garcia",
         email: "luis.garcia@example.com",
         phone: "+54 11 3456-7890",
@@ -203,8 +196,8 @@ async function main() {
     }),
     prisma.doctor.create({
       data: {
-        userId: users[3].id, // Maria Lopez
-        name: "Dra. Maria",
+        userId: users[3].id,
+        name: "Maria",
         surname: "Lopez",
         email: "maria.lopez@example.com",
         phone: "+54 11 4567-8901",
@@ -219,7 +212,7 @@ async function main() {
   const patients = await Promise.all([
     prisma.patient.create({
       data: {
-        userId: users[4].id, // Juan Perez
+        userId: users[4].id,
         name: "Juan",
         surname: "Perez",
         email: "juan.perez@example.com",
@@ -230,7 +223,7 @@ async function main() {
     }),
     prisma.patient.create({
       data: {
-        userId: users[5].id, // Laura Fernandez
+        userId: users[5].id,
         name: "Laura",
         surname: "Fernandez",
         email: "laura.fernandez@example.com",
@@ -246,22 +239,13 @@ async function main() {
   // Link doctors with specialities
   await Promise.all([
     prisma.doctorSpeciality.create({
-      data: {
-        doctorId: doctors[0].id,
-        specialityId: specialities[0].id, // Cardiología
-      },
+      data: { doctorId: doctors[0].id, specialityId: specialities[0].id },
     }),
     prisma.doctorSpeciality.create({
-      data: {
-        doctorId: doctors[1].id,
-        specialityId: specialities[1].id, // Dermatología
-      },
+      data: { doctorId: doctors[1].id, specialityId: specialities[1].id },
     }),
     prisma.doctorSpeciality.create({
-      data: {
-        doctorId: doctors[2].id,
-        specialityId: specialities[2].id, // Pediatría
-      },
+      data: { doctorId: doctors[2].id, specialityId: specialities[2].id },
     }),
   ]);
 
@@ -270,22 +254,13 @@ async function main() {
   // Link doctors with clinics
   await Promise.all([
     prisma.doctorClinic.create({
-      data: {
-        doctorId: doctors[0].id,
-        clinicId: clinics[0].id,
-      },
+      data: { doctorId: doctors[0].id, clinicId: clinics[0].id },
     }),
     prisma.doctorClinic.create({
-      data: {
-        doctorId: doctors[1].id,
-        clinicId: clinics[1].id,
-      },
+      data: { doctorId: doctors[1].id, clinicId: clinics[1].id },
     }),
     prisma.doctorClinic.create({
-      data: {
-        doctorId: doctors[2].id,
-        clinicId: clinics[2].id,
-      },
+      data: { doctorId: doctors[2].id, clinicId: clinics[2].id },
     }),
   ]);
 
@@ -326,7 +301,7 @@ async function main() {
         doctorId: doctors[0].id,
         clinicId: clinics[0].id,
         title: "Consulta Cardiológica",
-        price: 15000,
+        price: new Prisma.Decimal("15000"),
         currency: "ARS",
         durationMinutes: 45,
         description: "Consulta completa con electrocardiograma",
@@ -338,7 +313,7 @@ async function main() {
         doctorId: doctors[1].id,
         clinicId: clinics[1].id,
         title: "Consulta Dermatológica",
-        price: 12000,
+        price: new Prisma.Decimal("12000"),
         currency: "ARS",
         durationMinutes: 30,
         description: "Evaluación completa de la piel",
@@ -349,27 +324,25 @@ async function main() {
 
   console.log("✅ Created pricing");
 
-  // Create appointments
+  // Create appointment
   const futureDate = new Date();
   futureDate.setDate(futureDate.getDate() + 7);
 
-  await Promise.all([
-    prisma.appointment.create({
-      data: {
-        doctorId: doctors[0].id,
-        patientId: patients[0].id,
-        clinicId: clinics[0].id,
-        pricingId: pricings[0].id,
-        datetime: futureDate,
-        durationMinutes: 45,
-        type: "IN_PERSON",
-        status: "CONFIRMED",
-        notes: "Consulta de control",
-      },
-    }),
-  ]);
+  await prisma.appointment.create({
+    data: {
+      doctorId: doctors[0].id,
+      patientId: patients[0].id,
+      clinicId: clinics[0].id,
+      pricingId: pricings[0].id,
+      datetime: futureDate,
+      durationMinutes: 45,
+      type: "IN_PERSON",
+      status: "CONFIRMED",
+      notes: "Consulta de control",
+    },
+  });
 
-  console.log("✅ Created appointments");
+  console.log("✅ Created appointment");
 
   // Create opinions
   await Promise.all([
