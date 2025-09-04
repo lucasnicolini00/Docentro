@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import LoadingButton from "./LoadingButton";
 
 interface SearchFiltersProps {
   initialSpecialty?: string;
@@ -14,6 +15,7 @@ export default function SearchFilters({
 }: SearchFiltersProps) {
   const [specialty, setSpecialty] = useState(initialSpecialty);
   const [location, setLocation] = useState(initialLocation);
+  const [isSearching, setIsSearching] = useState(false);
   const router = useRouter();
 
   // Update state when URL parameters change
@@ -22,8 +24,9 @@ export default function SearchFilters({
     setLocation(initialLocation);
   }, [initialSpecialty, initialLocation]);
 
-  const handleSearch = (e: React.FormEvent) => {
+  const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsSearching(true);
 
     // Build URL with parameters
     const params = new URLSearchParams();
@@ -38,7 +41,11 @@ export default function SearchFilters({
     const searchUrl = `/search${
       params.toString() ? `?${params.toString()}` : ""
     }`;
+
+    // Small delay to show loading state
+    await new Promise((resolve) => setTimeout(resolve, 500));
     router.push(searchUrl);
+    setIsSearching(false);
   };
 
   const clearFilters = () => {
@@ -72,12 +79,15 @@ export default function SearchFilters({
         <span className="absolute right-3 top-2.5 text-gray-400">📍</span>
       </div>
       <div className="flex gap-2">
-        <button
+        <LoadingButton
           type="submit"
-          className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg transition-colors font-medium cursor-pointer"
+          isLoading={isSearching}
+          loadingText="Buscando..."
+          variant="primary"
+          size="md"
         >
           Filtrar
-        </button>
+        </LoadingButton>
         {hasFilters && (
           <button
             type="button"
