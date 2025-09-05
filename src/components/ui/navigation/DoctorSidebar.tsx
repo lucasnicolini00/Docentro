@@ -12,6 +12,7 @@ import {
   Users,
   MessageSquare,
   Home,
+  Building2,
 } from "lucide-react";
 
 const sidebarItems = [
@@ -29,6 +30,11 @@ const sidebarItems = [
     label: "Horarios",
     href: "/dashboard/doctor/schedules",
     icon: Clock,
+  },
+  {
+    label: "Clínicas y Precios",
+    href: "/dashboard/doctor/clinics",
+    icon: Building2,
   },
   {
     label: "Pacientes",

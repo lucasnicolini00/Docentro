@@ -8,6 +8,16 @@ export {
   getCurrentUser,
 } from "./auth";
 
+// Clinic and Pricing actions
+export {
+  getDoctorClinics,
+  createClinic,
+  updateClinic,
+  createPricing,
+  updatePricing,
+  togglePricingStatus,
+} from "./clinics";
+
 // Patient actions
 export {
   updatePatientProfile,

@@ -2,23 +2,23 @@
 
 import Link from "next/link";
 import { Navbar } from "@/components/ui/navigation";
-import { Shield, Home, LogIn, ArrowLeft, Mail, Phone } from "lucide-react";
+import { Home, Search, ArrowLeft, Phone, Mail } from "lucide-react";
 
-export default function UnauthorizedPage() {
+export default function NotFound() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-red-50 to-white">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-white">
       <Navbar />
 
       <div className="flex items-center justify-center px-4 py-16">
         <div className="max-w-lg w-full text-center">
-          {/* Unauthorized Illustration */}
+          {/* 404 Illustration */}
           <div className="mb-8">
             <div className="relative inline-block">
-              <div className="h-24 w-24 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Shield className="w-12 h-12 text-red-500" />
+              <div className="text-8xl font-bold text-blue-200 select-none">
+                404
               </div>
-              <div className="text-6xl font-bold text-red-200 select-none">
-                401
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="text-4xl animate-bounce">🩺</div>
               </div>
             </div>
           </div>
@@ -27,11 +27,10 @@ export default function UnauthorizedPage() {
           <div className="space-y-6">
             <div>
               <h1 className="text-3xl font-bold text-gray-900 mb-2">
-                Acceso No Autorizado
+                Página no encontrada
               </h1>
               <p className="text-lg text-gray-600">
-                No tienes permisos para acceder a esta página. Por favor inicia
-                sesión o contacta al administrador.
+                La página que buscas no existe o ha sido movida.
               </p>
             </div>
 
@@ -43,28 +42,30 @@ export default function UnauthorizedPage() {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <Link
-                  href="/login"
+                  href="/"
                   className="flex items-center space-x-3 p-4 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors group"
                 >
                   <div className="h-10 w-10 bg-blue-500 rounded-lg flex items-center justify-center group-hover:scale-105 transition-transform">
-                    <LogIn className="w-5 h-5 text-white" />
-                  </div>
-                  <div className="text-left">
-                    <p className="font-medium text-gray-900">Iniciar sesión</p>
-                    <p className="text-sm text-gray-600">Accede a tu cuenta</p>
-                  </div>
-                </Link>
-
-                <Link
-                  href="/"
-                  className="flex items-center space-x-3 p-4 bg-green-50 hover:bg-green-100 rounded-lg transition-colors group"
-                >
-                  <div className="h-10 w-10 bg-green-500 rounded-lg flex items-center justify-center group-hover:scale-105 transition-transform">
                     <Home className="w-5 h-5 text-white" />
                   </div>
                   <div className="text-left">
                     <p className="font-medium text-gray-900">Ir al inicio</p>
                     <p className="text-sm text-gray-600">Página principal</p>
+                  </div>
+                </Link>
+
+                <Link
+                  href="/search"
+                  className="flex items-center space-x-3 p-4 bg-green-50 hover:bg-green-100 rounded-lg transition-colors group"
+                >
+                  <div className="h-10 w-10 bg-green-500 rounded-lg flex items-center justify-center group-hover:scale-105 transition-transform">
+                    <Search className="w-5 h-5 text-white" />
+                  </div>
+                  <div className="text-left">
+                    <p className="font-medium text-gray-900">Buscar doctores</p>
+                    <p className="text-sm text-gray-600">
+                      Encuentra especialistas
+                    </p>
                   </div>
                 </Link>
               </div>
@@ -81,41 +82,19 @@ export default function UnauthorizedPage() {
               </button>
 
               <Link
-                href="/register"
+                href="/"
                 className="flex items-center space-x-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
               >
-                <span>Crear cuenta</span>
+                <Home className="w-4 h-4" />
+                <span>Página principal</span>
               </Link>
             </div>
           </div>
 
-          {/* User Types Info */}
-          <div className="mt-12 bg-gray-50 rounded-xl p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">
-              Tipos de acceso
-            </h3>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
-              <div className="bg-white rounded-lg p-4">
-                <div className="text-blue-600 text-lg mb-2">👨‍⚕️</div>
-                <h4 className="font-medium text-gray-900">Doctores</h4>
-                <p className="text-gray-600">
-                  Gestiona tu consulta médica y pacientes
-                </p>
-              </div>
-
-              <div className="bg-white rounded-lg p-4">
-                <div className="text-green-600 text-lg mb-2">🙋‍♂️</div>
-                <h4 className="font-medium text-gray-900">Pacientes</h4>
-                <p className="text-gray-600">Busca doctores y agenda citas</p>
-              </div>
-            </div>
-          </div>
-
           {/* Help Section */}
-          <div className="mt-8 pt-8 border-t border-gray-200">
+          <div className="mt-12 pt-8 border-t border-gray-200">
             <h3 className="text-sm font-medium text-gray-900 mb-4">
-              ¿Necesitas ayuda con el acceso?
+              ¿Necesitas ayuda?
             </h3>
 
             <div className="flex flex-col sm:flex-row items-center justify-center space-y-2 sm:space-y-0 sm:space-x-6 text-sm text-gray-600">
