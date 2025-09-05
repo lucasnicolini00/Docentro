@@ -4,13 +4,28 @@ import { useState } from "react";
 import { useSession } from "next-auth/react";
 import { Navbar } from "@/components/ui/navigation";
 import DoctorSidebar from "./DoctorSidebar";
+import DoctorHeader from "./DoctorHeader";
 import { Menu } from "lucide-react";
 
 interface DoctorLayoutProps {
   children: React.ReactNode;
+  headerTitle?: string;
+  headerSubtitle?: string;
+  showDate?: boolean;
+  showProfile?: boolean;
+  customHeaderContent?: React.ReactNode;
+  hideHeader?: boolean;
 }
 
-export default function DoctorLayout({ children }: DoctorLayoutProps) {
+export default function DoctorLayout({ 
+  children, 
+  headerTitle,
+  headerSubtitle,
+  showDate = true,
+  showProfile = true,
+  customHeaderContent,
+  hideHeader = false
+}: DoctorLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const { data: session } = useSession();
 
@@ -58,7 +73,21 @@ export default function DoctorLayout({ children }: DoctorLayoutProps) {
           </div>
 
           {/* Page content */}
-          <main className="flex-1 p-6 overflow-auto">{children}</main>
+          <main className="flex-1 p-6 overflow-auto">
+            {!hideHeader && (
+              <DoctorHeader
+                session={session}
+                title={headerTitle}
+                subtitle={headerSubtitle}
+                showDate={showDate}
+                showProfile={showProfile}
+                customContent={customHeaderContent}
+              />
+            )}
+            <div className="max-w-7xl mx-auto">
+              {children}
+            </div>
+          </main>
         </div>
       </div>
     </div>

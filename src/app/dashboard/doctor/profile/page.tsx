@@ -1,6 +1,5 @@
 import { requireDoctor } from "@/lib/auth-guards";
 import { getDoctorProfile, getAllSpecialities } from "@/lib/actions/doctors";
-import { Navbar } from "@/components/ui/navigation";
 import { DoctorProfileForm } from "@/components/ui/forms";
 
 export default async function DoctorProfilePage() {
