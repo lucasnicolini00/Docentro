@@ -32,6 +32,15 @@ export {
   getAllDoctors,
 } from "./search";
 
+// Appointment actions
+export {
+  createAppointment,
+  getDoctorAvailability,
+  getDoctorClinicsAndPricing,
+  updateAppointmentStatus,
+  cancelAppointment,
+} from "./appointments";
+
 // Utility functions and types
 export {
   validateAuth,

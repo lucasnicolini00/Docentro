@@ -1,4 +1,5 @@
 import { Decimal } from "@prisma/client/runtime/library";
+import Link from "next/link";
 
 interface Doctor {
   id: string;
@@ -120,12 +121,18 @@ export default function DoctorCard({ doctor }: DoctorCardProps) {
 
         {/* Action Buttons */}
         <div className="space-y-3">
-          <button className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 px-4 rounded-xl transition-colors font-medium cursor-pointer">
+          <Link
+            href={`/doctor/${doctor.id}`}
+            className="block w-full bg-blue-600 hover:bg-blue-700 text-white py-3 px-4 rounded-xl transition-colors font-medium text-center"
+          >
             Ver Perfil Completo
-          </button>
-          <button className="w-full border border-blue-600 text-blue-600 hover:bg-blue-50 py-3 px-4 rounded-xl transition-colors font-medium cursor-pointer">
+          </Link>
+          <Link
+            href={`/doctor/${doctor.id}#booking`}
+            className="block w-full border border-blue-600 text-blue-600 hover:bg-blue-50 py-3 px-4 rounded-xl transition-colors font-medium text-center"
+          >
             Agendar Cita
-          </button>
+          </Link>
         </div>
 
         {/* Contact Options */}

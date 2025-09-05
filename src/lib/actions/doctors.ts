@@ -225,22 +225,31 @@ export async function getDoctorDashboard(): Promise<ActionResult> {
 
     const { doctor: validatedDoctor, session } = validation;
 
-    // Get doctor data with upcoming appointments
+    // Get doctor data with all appointments
     const doctor = await prisma.doctor.findUnique({
       where: { id: validatedDoctor.id },
       include: {
         appointments: {
-          where: {
-            datetime: {
-              gte: new Date(), // Future appointments
+          include: {
+            patient: {
+              select: {
+                id: true,
+                name: true,
+                surname: true,
+                email: true,
+                phone: true,
+              },
+            },
+            clinic: {
+              select: {
+                id: true,
+                name: true,
+                address: true,
+              },
             },
           },
-          include: {
-            patient: true,
-            clinic: true,
-          },
           orderBy: {
-            datetime: "asc",
+            datetime: "desc",
           },
         },
         specialities: {
@@ -255,11 +264,54 @@ export async function getDoctorDashboard(): Promise<ActionResult> {
       return { success: false, error: "Doctor no encontrado" };
     }
 
+    // Separate appointments into categories
+    const now = new Date();
+    const todayStart = new Date(
+      now.getFullYear(),
+      now.getMonth(),
+      now.getDate()
+    );
+    const todayEnd = new Date(todayStart.getTime() + 24 * 60 * 60 * 1000);
+
+    const pendingAppointments = doctor.appointments.filter(
+      (apt) => apt.status === "PENDING" && new Date(apt.datetime) > now
+    );
+
+    const todayAppointments = doctor.appointments.filter(
+      (apt) =>
+        new Date(apt.datetime) >= todayStart &&
+        new Date(apt.datetime) < todayEnd
+    );
+
+    const upcomingAppointments = doctor.appointments.filter(
+      (apt) =>
+        new Date(apt.datetime) > todayEnd &&
+        (apt.status === "CONFIRMED" || apt.status === "PENDING")
+    );
+
+    const pastAppointments = doctor.appointments.filter(
+      (apt) =>
+        new Date(apt.datetime) < now &&
+        (apt.status === "COMPLETED" || apt.status === "CANCELED")
+    );
+
     return {
       success: true,
       data: {
         doctor,
         session,
+        stats: {
+          total: doctor.appointments.length,
+          today: todayAppointments.length,
+          pending: pendingAppointments.length,
+          specialties: doctor.specialities.length,
+        },
+        appointments: {
+          pending: pendingAppointments,
+          today: todayAppointments,
+          upcoming: upcomingAppointments,
+          past: pastAppointments,
+        },
       },
     };
   } catch (error) {

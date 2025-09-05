@@ -119,7 +119,16 @@ export async function getPatientDashboard(): Promise<ActionResult> {
       include: {
         appointments: {
           include: {
-            doctor: true,
+            doctor: {
+              include: {
+                user: {
+                  select: {
+                    firstName: true,
+                    lastName: true,
+                  },
+                },
+              },
+            },
             clinic: true,
           },
           orderBy: {

@@ -1,6 +1,7 @@
 import { requireDoctor } from "@/lib/auth-guards";
 import { getDoctorDashboard } from "@/lib/actions/doctors";
 import { Navbar } from "@/components/ui/navigation";
+import { DoctorAppointmentList } from "@/components/features";
 
 export default async function DoctorDashboard() {
   // Ensure user is authenticated as a doctor
@@ -25,7 +26,7 @@ export default async function DoctorDashboard() {
     );
   }
 
-  const { doctor, session } = result.data;
+  const { doctor, session, stats, appointments } = result.data;
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -83,11 +84,24 @@ export default async function DoctorDashboard() {
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-600">Citas Hoy</p>
                 <p className="text-2xl font-bold text-gray-900">
-                  {doctor?.appointments.filter(
-                    (apt) =>
-                      new Date(apt.datetime).toDateString() ===
-                      new Date().toDateString()
-                  ).length || 0}
+                  {stats.today}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Pending Appointments */}
+          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-shadow">
+            <div className="flex items-center">
+              <div className="flex-shrink-0">
+                <div className="h-12 w-12 bg-yellow-500 rounded-lg flex items-center justify-center">
+                  <span className="text-white text-xl">⏳</span>
+                </div>
+              </div>
+              <div className="ml-4">
+                <p className="text-sm font-medium text-gray-600">Pendientes</p>
+                <p className="text-2xl font-bold text-gray-900">
+                  {stats.pending}
                 </p>
               </div>
             </div>
@@ -104,7 +118,7 @@ export default async function DoctorDashboard() {
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-600">Total Citas</p>
                 <p className="text-2xl font-bold text-gray-900">
-                  {doctor?.appointments.length || 0}
+                  {stats.total}
                 </p>
               </div>
             </div>
@@ -123,28 +137,8 @@ export default async function DoctorDashboard() {
                   Especialidades
                 </p>
                 <p className="text-2xl font-bold text-gray-900">
-                  {doctor?.specialities.length || 0}
+                  {stats.specialties}
                 </p>
-              </div>
-            </div>
-          </div>
-
-          {/* Profile Completion */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-shadow">
-            <div className="flex items-center">
-              <div className="flex-shrink-0">
-                <div className="h-12 w-12 bg-orange-500 rounded-lg flex items-center justify-center">
-                  <span className="text-white text-xl">👤</span>
-                </div>
-              </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Perfil</p>
-                <a
-                  href="/dashboard/doctor/profile"
-                  className="text-sm font-medium text-blue-600 hover:text-blue-700"
-                >
-                  Editar →
-                </a>
               </div>
             </div>
           </div>
@@ -152,76 +146,24 @@ export default async function DoctorDashboard() {
 
         {/* Two Column Layout */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Left Column - Upcoming Appointments */}
+          {/* Left Column - Appointments */}
           <div className="space-y-6">
-            {doctor?.appointments && doctor.appointments.length > 0 ? (
-              <div className="bg-white rounded-xl shadow-sm border border-gray-100">
-                <div className="px-6 py-4 border-b border-gray-100">
-                  <h2 className="text-lg font-semibold text-gray-900">
-                    Próximas Citas
-                  </h2>
-                </div>
-                <div className="p-6">
-                  <div className="space-y-4">
-                    {doctor.appointments.slice(0, 5).map((appointment) => (
-                      <div
-                        key={appointment.id}
-                        className="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
-                      >
-                        <div className="flex items-center space-x-3">
-                          <div className="h-10 w-10 bg-blue-100 rounded-full flex items-center justify-center">
-                            <span className="text-blue-600 font-medium">
-                              {appointment.patient.name.charAt(0)}
-                            </span>
-                          </div>
-                          <div>
-                            <p className="font-medium text-gray-900">
-                              {appointment.patient.name}{" "}
-                              {appointment.patient.surname}
-                            </p>
-                            <p className="text-sm text-gray-500">
-                              {appointment.datetime.toLocaleDateString()} -{" "}
-                              {appointment.datetime.toLocaleTimeString()}
-                            </p>
-                            <p className="text-xs text-gray-400">
-                              {appointment.clinic.name}
-                            </p>
-                          </div>
-                        </div>
-                        <span className="px-3 py-1 text-xs font-medium bg-green-100 text-green-800 rounded-full">
-                          Confirmada
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                  {doctor.appointments.length > 5 && (
-                    <div className="mt-4 text-center">
-                      <a
-                        href="#"
-                        className="text-blue-600 hover:text-blue-700 text-sm font-medium"
-                      >
-                        Ver todas las citas →
-                      </a>
-                    </div>
-                  )}
-                </div>
-              </div>
-            ) : (
-              <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-8 text-center">
-                <div className="h-16 w-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <span className="text-2xl">📅</span>
-                </div>
-                <h3 className="text-lg font-medium text-gray-900 mb-2">
-                  No hay citas programadas
-                </h3>
-                <p className="text-gray-500">
-                  Las nuevas citas aparecerán aquí
-                </p>
-              </div>
+            {/* Pending Appointments that need attention */}
+            <DoctorAppointmentList
+              appointments={appointments.pending}
+              title="Citas Pendientes"
+            />
+
+            {/* Today's Appointments */}
+            {appointments.today.length > 0 && (
+              <DoctorAppointmentList
+                appointments={appointments.today}
+                title="Citas de Hoy"
+              />
             )}
           </div>
 
-          {/* Right Column - Profile & Specialties */}
+          {/* Right Column - Profile & Upcoming */}
           <div className="space-y-6">
             {/* Profile Summary */}
             <div className="bg-white rounded-xl shadow-sm border border-gray-100">
@@ -256,7 +198,7 @@ export default async function DoctorDashboard() {
                       Especialidades
                     </span>
                     <span className="text-sm font-medium text-gray-900">
-                      {doctor?.specialities.length || 0}
+                      {stats.specialties}
                     </span>
                   </div>
                 </div>
@@ -270,6 +212,14 @@ export default async function DoctorDashboard() {
                 </div>
               </div>
             </div>
+
+            {/* Upcoming Appointments */}
+            {appointments.upcoming.length > 0 && (
+              <DoctorAppointmentList
+                appointments={appointments.upcoming}
+                title="Próximas Citas"
+              />
+            )}
 
             {/* Specialties */}
             {doctor?.specialities && doctor.specialities.length > 0 && (

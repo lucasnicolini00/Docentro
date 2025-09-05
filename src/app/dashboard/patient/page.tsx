@@ -1,6 +1,7 @@
 import { requirePatient } from "@/lib/auth-guards";
 import { getPatientDashboard } from "@/lib/actions/patients";
 import { Navbar } from "@/components/ui/navigation";
+import { AppointmentList } from "@/components/features";
 
 export default async function PatientDashboard() {
   // Ensure user is authenticated as a patient
@@ -267,125 +268,19 @@ export default async function PatientDashboard() {
           {/* Right Column - Appointments */}
           <div className="space-y-6">
             {/* Upcoming Appointments */}
-            {upcomingAppointments.length > 0 ? (
-              <div className="bg-white rounded-xl shadow-sm border border-gray-100">
-                <div className="px-6 py-4 border-b border-gray-100">
-                  <h2 className="text-lg font-semibold text-gray-900">
-                    Próximas Citas
-                  </h2>
-                </div>
-                <div className="p-6">
-                  <div className="space-y-4">
-                    {upcomingAppointments.slice(0, 3).map((appointment) => (
-                      <div
-                        key={appointment.id}
-                        className="flex items-center justify-between p-4 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors"
-                      >
-                        <div className="flex items-center space-x-3">
-                          <div className="h-10 w-10 bg-blue-100 rounded-full flex items-center justify-center">
-                            <span className="text-blue-600 font-medium">
-                              👨‍⚕️
-                            </span>
-                          </div>
-                          <div>
-                            <p className="font-medium text-gray-900">
-                              Dr. {appointment.doctor.name}{" "}
-                              {appointment.doctor.surname}
-                            </p>
-                            <p className="text-sm text-gray-500">
-                              {appointment.datetime.toLocaleDateString()} -{" "}
-                              {appointment.datetime.toLocaleTimeString()}
-                            </p>
-                            <p className="text-xs text-gray-400">
-                              {appointment.clinic.name}
-                            </p>
-                          </div>
-                        </div>
-                        <span className="px-3 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded-full">
-                          Próxima
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                  {upcomingAppointments.length > 3 && (
-                    <div className="mt-4 text-center">
-                      <a
-                        href="#"
-                        className="text-blue-600 hover:text-blue-700 text-sm font-medium"
-                      >
-                        Ver todas las citas →
-                      </a>
-                    </div>
-                  )}
-                </div>
-              </div>
-            ) : (
-              <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-8 text-center">
-                <div className="h-16 w-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <span className="text-2xl">📅</span>
-                </div>
-                <h3 className="text-lg font-medium text-gray-900 mb-2">
-                  No hay citas programadas
-                </h3>
-                <p className="text-gray-500 mb-4">
-                  ¿Necesitas agendar una consulta?
-                </p>
-                <a
-                  href="/search"
-                  className="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors"
-                >
-                  Buscar Doctores
-                </a>
-              </div>
-            )}
+            <AppointmentList
+              appointments={upcomingAppointments}
+              title="Próximas Citas"
+              showActions={true}
+            />
 
-            {/* Recent Medical History */}
+            {/* Past Appointments */}
             {pastAppointments.length > 0 && (
-              <div className="bg-white rounded-xl shadow-sm border border-gray-100">
-                <div className="px-6 py-4 border-b border-gray-100">
-                  <h2 className="text-lg font-semibold text-gray-900">
-                    Historial Reciente
-                  </h2>
-                </div>
-                <div className="p-6">
-                  <div className="space-y-3">
-                    {pastAppointments.slice(0, 3).map((appointment) => (
-                      <div
-                        key={appointment.id}
-                        className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
-                      >
-                        <div className="flex items-center space-x-3">
-                          <div className="h-8 w-8 bg-gray-200 rounded-full flex items-center justify-center">
-                            <span className="text-gray-600 text-sm">✓</span>
-                          </div>
-                          <div>
-                            <p className="text-sm font-medium text-gray-900">
-                              Dr. {appointment.doctor.name}{" "}
-                              {appointment.doctor.surname}
-                            </p>
-                            <p className="text-xs text-gray-500">
-                              {appointment.datetime.toLocaleDateString()}
-                            </p>
-                          </div>
-                        </div>
-                        <span className="text-xs text-gray-400">
-                          Completada
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                  {pastAppointments.length > 3 && (
-                    <div className="mt-4 text-center">
-                      <a
-                        href="#"
-                        className="text-gray-600 hover:text-gray-700 text-sm font-medium"
-                      >
-                        Ver historial completo →
-                      </a>
-                    </div>
-                  )}
-                </div>
-              </div>
+              <AppointmentList
+                appointments={pastAppointments}
+                title="Historial de Citas"
+                showActions={false}
+              />
             )}
           </div>
         </div>
