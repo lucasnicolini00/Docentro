@@ -1,11 +1,11 @@
 import { Navbar } from "@/components/ui/navigation";
-import { 
-  HeroSection, 
-  SpecialtiesSection, 
-  FeaturedDoctorsSection, 
-  HowItWorksSection, 
-  TestimonialsSection, 
-  Footer 
+import {
+  HeroSection,
+  SpecialtiesSection,
+  FeaturedDoctorsSection,
+  HowItWorksSection,
+  TestimonialsSection,
+  Footer,
 } from "@/components/sections";
 
 export default async function Home() {

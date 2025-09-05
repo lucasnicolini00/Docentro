@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import LoadingButton from "../buttons/LoadingButton";
 import Link from "next/link";
+import { updatePatientProfile } from "@/lib/actions";
 
 interface Patient {
   id: string;
@@ -29,11 +30,11 @@ export default function PatientProfileForm({
   patient,
 }: PatientProfileFormProps) {
   const router = useRouter();
-  const [isLoading, setIsLoading] = useState(false);
+  const [isPending, startTransition] = useTransition();
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
 
-  // Form state
+  // Form state for controlled inputs
   const [formData, setFormData] = useState({
     firstName: patient.user.firstName,
     lastName: patient.user.lastName,
@@ -59,43 +60,32 @@ export default function PatientProfileForm({
     }));
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
+  const handleSubmit = async (formDataSubmit: FormData) => {
     setError("");
     setSuccessMessage("");
 
-    try {
-      const response = await fetch("/api/patient/profile", {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(formData),
-      });
+    startTransition(async () => {
+      try {
+        const result = await updatePatientProfile(formDataSubmit);
 
-      const result = await response.json();
+        if (!result.success) {
+          setError(result.error || "Error al actualizar el perfil");
+          return;
+        }
 
-      if (!response.ok) {
-        throw new Error(result.error || "Error al actualizar el perfil");
+        setSuccessMessage("Perfil actualizado exitosamente");
+        // Show success message for 2 seconds before redirecting
+        setTimeout(() => {
+          router.push("/dashboard/patient");
+        }, 2000);
+      } catch {
+        setError("Error al actualizar el perfil");
       }
-
-      setSuccessMessage("Perfil actualizado exitosamente");
-      // Show success message for 2 seconds before redirecting
-      setTimeout(() => {
-        router.push("/dashboard/patient");
-      }, 2000);
-    } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Error al actualizar el perfil"
-      );
-    } finally {
-      setIsLoading(false);
-    }
+    });
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-8">
+    <form action={handleSubmit} className="space-y-8">
       {/* Messages */}
       {error && (
         <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
@@ -276,7 +266,7 @@ export default function PatientProfileForm({
         </Link>
         <LoadingButton
           type="submit"
-          isLoading={isLoading}
+          isLoading={isPending}
           loadingText="Guardando..."
           variant="success"
           size="lg"

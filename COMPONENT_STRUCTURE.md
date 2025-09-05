@@ -54,6 +54,7 @@ src/components/
 ## Import Examples
 
 ### Before (Flat Structure)
+
 ```typescript
 import LoadingButton from "@/components/LoadingButton";
 import DoctorCard from "@/components/DoctorCard";
@@ -62,6 +63,7 @@ import { AuthProvider } from "@/components/AuthProvider";
 ```
 
 ### After (Organized Structure)
+
 ```typescript
 import { LoadingButton } from "@/components/ui/buttons";
 import { DoctorCard } from "@/components/features/doctor";
@@ -70,13 +72,9 @@ import { AuthProvider } from "@/components/providers";
 ```
 
 ### Or using the main barrel export:
+
 ```typescript
-import { 
-  LoadingButton, 
-  DoctorCard, 
-  Navbar, 
-  AuthProvider 
-} from "@/components";
+import { LoadingButton, DoctorCard, Navbar, AuthProvider } from "@/components";
 ```
 
 ## Benefits
@@ -99,6 +97,7 @@ import {
 ## Next Steps
 
 As your project grows, consider:
+
 - Adding `types/` folder for component-specific types
 - Creating `hooks/` subfolder for component-specific hooks
 - Adding `constants/` for component-related constants

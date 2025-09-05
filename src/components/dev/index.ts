@@ -1,1 +1,1 @@
-export { default as LoadingTester } from './LoadingTester';
+export { default as LoadingTester } from "./LoadingTester";

@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import LoadingButton from "../buttons/LoadingButton";
 import Link from "next/link";
+import { updateDoctorProfile } from "@/lib/actions";
 
 interface Doctor {
   id: string;
@@ -51,7 +52,7 @@ export default function DoctorProfileForm({
   allSpecialities,
 }: DoctorProfileFormProps) {
   const router = useRouter();
-  const [isLoading, setIsLoading] = useState(false);
+  const [isPending, startTransition] = useTransition();
   const [isAddingExperience, setIsAddingExperience] = useState(false);
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
@@ -134,48 +135,38 @@ export default function DoctorProfileForm({
     );
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
+  const handleSubmit = async (formDataSubmit: FormData) => {
     setError("");
     setSuccessMessage("");
 
-    try {
-      const response = await fetch("/api/doctor/profile", {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          ...formData,
-          specialities: selectedSpecialities,
-          experiences: experiences.filter(
-            (exp) => exp.institution && exp.title
-          ),
-        }),
-      });
+    // Add specialities and experiences to FormData
+    formDataSubmit.append("specialities", selectedSpecialities.join(","));
+    formDataSubmit.append(
+      "experiences",
+      JSON.stringify(experiences.filter((exp) => exp.institution && exp.title))
+    );
 
-      const result = await response.json();
+    startTransition(async () => {
+      try {
+        const result = await updateDoctorProfile(formDataSubmit);
 
-      if (!response.ok) {
-        throw new Error(result.error || "Error al actualizar el perfil");
+        if (!result.success) {
+          setError(result.error || "Error al actualizar el perfil");
+          return;
+        }
+
+        setSuccessMessage("Perfil actualizado exitosamente");
+        setTimeout(() => {
+          router.push("/dashboard/doctor");
+        }, 2000);
+      } catch {
+        setError("Error al actualizar el perfil");
       }
-
-      setSuccessMessage("Perfil actualizado exitosamente");
-      setTimeout(() => {
-        router.push("/dashboard/doctor");
-      }, 2000);
-    } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Error al actualizar el perfil"
-      );
-    } finally {
-      setIsLoading(false);
-    }
+    });
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-8">
+    <form action={handleSubmit} className="space-y-8">
       {/* Messages */}
       {error && (
         <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
@@ -507,7 +498,7 @@ export default function DoctorProfileForm({
         </Link>
         <LoadingButton
           type="submit"
-          isLoading={isLoading}
+          isLoading={isPending}
           loadingText="Guardando..."
           variant="primary"
           size="lg"
