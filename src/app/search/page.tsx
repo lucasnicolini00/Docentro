@@ -1,4 +1,4 @@
-import { getAllDoctors, searchDoctors } from "@/lib/data";
+import { getAllDoctors, searchDoctors } from "@/lib/actions/search";
 import { DoctorCard } from "@/components/features/doctor";
 import { Navbar } from "@/components/ui/navigation";
 import { SearchFilters } from "@/components/features/search";
@@ -39,11 +39,29 @@ export default async function Search({ searchParams }: SearchProps) {
   const location =
     typeof params.location === "string" ? params.location : undefined;
 
-  // Fetch doctors based on search parameters
-  const doctors: DoctorWithRelations[] =
+  // Fetch doctors based on search parameters using Server Actions
+  const result =
     specialty || location
       ? await searchDoctors(specialty, location)
       : await getAllDoctors();
+
+  if (!result.success) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Navbar />
+        <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+          <div className="text-center">
+            <h1 className="text-2xl font-bold text-gray-900">
+              Error al buscar doctores
+            </h1>
+            <p className="text-gray-600">{result.error}</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const doctors: DoctorWithRelations[] = result.data || [];
 
   return (
     <div className="min-h-screen bg-gray-50">

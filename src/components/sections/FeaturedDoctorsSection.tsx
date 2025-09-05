@@ -1,4 +1,4 @@
-import { getFeaturedDoctors } from "@/lib/data";
+import { getFeaturedDoctors } from "@/lib/actions/search";
 import type {
   Doctor,
   DoctorSpeciality,
@@ -23,8 +23,11 @@ type DoctorWithRelations = Doctor & {
 };
 
 export default async function FeaturedDoctorsSection() {
-  // Fetch real data from database
-  const doctors: DoctorWithRelations[] = await getFeaturedDoctors();
+  // Fetch real data from database using Server Action
+  const result = await getFeaturedDoctors();
+  const doctors: DoctorWithRelations[] = result.success
+    ? result.data || []
+    : [];
 
   return (
     <section

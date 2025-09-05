@@ -1,18 +1,15 @@
 import { requirePatient } from "@/lib/auth-guards";
-import prisma from "@/lib/prisma";
+import { getPatientProfile } from "@/lib/actions/patients";
 import { PatientProfileForm } from "@/components/ui/forms";
 
 export default async function PatientProfilePage() {
-  const patientSession = await requirePatient();
+  // Ensure user is authenticated as a patient
+  await requirePatient();
 
-  const patient = await prisma.patient.findUnique({
-    where: { userId: patientSession.user.id },
-    include: {
-      user: true,
-    },
-  });
+  // Get patient data using Server Action
+  const result = await getPatientProfile();
 
-  if (!patient) {
+  if (!result.success || !result.data) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
@@ -26,6 +23,8 @@ export default async function PatientProfilePage() {
       </div>
     );
   }
+
+  const patient = result.data;
 
   return (
     <div className="min-h-screen bg-gray-50">

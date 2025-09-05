@@ -146,3 +146,127 @@ export async function getDoctorSpecialities() {
     return { success: false, error: "Error al obtener especialidades" };
   }
 }
+
+/**
+ * Server action for getting doctor profile data
+ */
+export async function getDoctorProfile(): Promise<ActionResult> {
+  try {
+    const validation = await validateDoctor();
+
+    if ("error" in validation) {
+      return { success: false, error: validation.error };
+    }
+
+    const { doctor } = validation;
+
+    // Get doctor with all related information
+    const fullDoctor = await prisma.doctor.findUnique({
+      where: { id: doctor.id },
+      include: {
+        user: true,
+        specialities: {
+          include: {
+            speciality: true,
+          },
+        },
+        experiences: true,
+        clinics: {
+          include: {
+            clinic: true,
+          },
+        },
+      },
+    });
+
+    if (!fullDoctor) {
+      return { success: false, error: "Doctor no encontrado" };
+    }
+
+    return {
+      success: true,
+      data: fullDoctor,
+    };
+  } catch (error) {
+    console.error("Error fetching doctor profile:", error);
+    return { success: false, error: "Error al obtener el perfil del doctor" };
+  }
+}
+
+/**
+ * Server action for getting all specialities
+ */
+export async function getAllSpecialities(): Promise<ActionResult> {
+  try {
+    const specialities = await prisma.speciality.findMany({
+      orderBy: { name: "asc" },
+    });
+
+    return {
+      success: true,
+      data: specialities,
+    };
+  } catch (error) {
+    console.error("Error fetching all specialities:", error);
+    return { success: false, error: "Error al obtener especialidades" };
+  }
+}
+
+/**
+ * Server action for getting doctor dashboard data with appointments
+ */
+export async function getDoctorDashboard(): Promise<ActionResult> {
+  try {
+    const validation = await validateDoctor();
+
+    if ("error" in validation) {
+      return { success: false, error: validation.error };
+    }
+
+    const { doctor: validatedDoctor, session } = validation;
+
+    // Get doctor data with upcoming appointments
+    const doctor = await prisma.doctor.findUnique({
+      where: { id: validatedDoctor.id },
+      include: {
+        appointments: {
+          where: {
+            datetime: {
+              gte: new Date(), // Future appointments
+            },
+          },
+          include: {
+            patient: true,
+            clinic: true,
+          },
+          orderBy: {
+            datetime: "asc",
+          },
+        },
+        specialities: {
+          include: {
+            speciality: true,
+          },
+        },
+      },
+    });
+
+    if (!doctor) {
+      return { success: false, error: "Doctor no encontrado" };
+    }
+
+    return {
+      success: true,
+      data: {
+        doctor,
+        session,
+      },
+    };
+  } catch (error) {
+    console.error("Error fetching doctor dashboard:", error);
+    return {
+      success: false,
+      error: "Error al obtener el dashboard del doctor",
+    };
+  }
+}

@@ -1,8 +1,9 @@
-import { getPopularSpecialities } from "@/lib/data";
+import { getPopularSpecialities } from "@/lib/actions/search";
 import type { Speciality } from "@prisma/client";
 
 export default async function SpecialtiesSection() {
-  const specialities: Speciality[] = await getPopularSpecialities();
+  const result = await getPopularSpecialities();
+  const specialities: Speciality[] = result.success ? result.data || [] : [];
 
   const icons = ["🫀", "🧴", "👩🏻‍🦰", "🧠", "🩻", "💊", "🔬", "🩺"];
 

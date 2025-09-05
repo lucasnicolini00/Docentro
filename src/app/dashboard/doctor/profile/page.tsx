@@ -1,38 +1,19 @@
 import { requireDoctor } from "@/lib/auth-guards";
-import prisma from "@/lib/prisma";
+import { getDoctorProfile, getAllSpecialities } from "@/lib/actions/doctors";
 import { Navbar } from "@/components/ui/navigation";
 import { DoctorProfileForm } from "@/components/ui/forms";
 
 export default async function DoctorProfilePage() {
-  const session = await requireDoctor();
+  // Ensure user is authenticated as a doctor
+  await requireDoctor();
 
-  // Get doctor data with all related information
-  const doctor = await prisma.doctor.findUnique({
-    where: { id: session.user.doctorId! },
-    include: {
-      user: true,
-      specialities: {
-        include: {
-          speciality: true,
-        },
-      },
-      experiences: true,
-      clinics: {
-        include: {
-          clinic: true,
-        },
-      },
-    },
-  });
+  // Get doctor data and specialities using Server Actions
+  const [doctorResult, specialitiesResult] = await Promise.all([
+    getDoctorProfile(),
+    getAllSpecialities(),
+  ]);
 
-  // Get all available specialties for the select dropdown
-  const allSpecialities = await prisma.speciality.findMany({
-    orderBy: {
-      name: "asc",
-    },
-  });
-
-  if (!doctor) {
+  if (!doctorResult.success || !doctorResult.data) {
     return (
       <div className="min-h-screen bg-gray-50">
         <Navbar />
@@ -46,6 +27,24 @@ export default async function DoctorProfilePage() {
       </div>
     );
   }
+
+  if (!specialitiesResult.success || !specialitiesResult.data) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Navbar />
+        <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+          <div className="text-center">
+            <h1 className="text-2xl font-bold text-gray-900">
+              Error al cargar especialidades
+            </h1>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const doctor = doctorResult.data;
+  const allSpecialities = specialitiesResult.data;
 
   return (
     <div className="min-h-screen bg-gray-50">

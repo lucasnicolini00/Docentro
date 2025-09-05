@@ -9,10 +9,28 @@ export {
 } from "./auth";
 
 // Patient actions
-export { updatePatientProfile } from "./patients";
+export {
+  updatePatientProfile,
+  getPatientProfile,
+  getPatientDashboard,
+} from "./patients";
 
 // Doctor actions
-export { updateDoctorProfile, getDoctorSpecialities } from "./doctors";
+export {
+  updateDoctorProfile,
+  getDoctorSpecialities,
+  getDoctorProfile,
+  getAllSpecialities,
+  getDoctorDashboard,
+} from "./doctors";
+
+// Search and general data actions
+export {
+  getPopularSpecialities,
+  getFeaturedDoctors,
+  searchDoctors,
+  getAllDoctors,
+} from "./search";
 
 // Utility functions and types
 export {

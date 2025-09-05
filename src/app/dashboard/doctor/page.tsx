@@ -1,35 +1,31 @@
 import { requireDoctor } from "@/lib/auth-guards";
-import prisma from "@/lib/prisma";
+import { getDoctorDashboard } from "@/lib/actions/doctors";
 import { Navbar } from "@/components/ui/navigation";
 
 export default async function DoctorDashboard() {
-  const session = await requireDoctor();
+  // Ensure user is authenticated as a doctor
+  await requireDoctor();
 
-  // Get doctor data using the doctorId from session
-  const doctor = await prisma.doctor.findUnique({
-    where: { id: session.user.doctorId! },
-    include: {
-      appointments: {
-        where: {
-          datetime: {
-            gte: new Date(), // Future appointments
-          },
-        },
-        include: {
-          patient: true,
-          clinic: true,
-        },
-        orderBy: {
-          datetime: "asc",
-        },
-      },
-      specialities: {
-        include: {
-          speciality: true,
-        },
-      },
-    },
-  });
+  // Get doctor dashboard data using Server Action
+  const result = await getDoctorDashboard();
+
+  if (!result.success || !result.data) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Navbar />
+        <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+          <div className="text-center">
+            <h1 className="text-2xl font-bold text-gray-900">
+              Error al cargar el dashboard
+            </h1>
+            <p className="text-gray-600">{result.error}</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const { doctor, session } = result.data;
 
   return (
     <div className="min-h-screen bg-gray-50">

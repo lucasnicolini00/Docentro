@@ -76,3 +76,85 @@ export async function updatePatientProfile(
     return { success: false, error: "Error interno del servidor" };
   }
 }
+
+/**
+ * Server action for getting patient profile data
+ */
+export async function getPatientProfile(): Promise<ActionResult> {
+  try {
+    const validation = await validatePatient();
+
+    if ("error" in validation) {
+      return { success: false, error: validation.error };
+    }
+
+    const { patient } = validation;
+
+    return {
+      success: true,
+      data: patient,
+    };
+  } catch (error) {
+    console.error("Error fetching patient profile:", error);
+    return { success: false, error: "Error al obtener el perfil del paciente" };
+  }
+}
+
+/**
+ * Server action for getting patient dashboard data with appointments
+ */
+export async function getPatientDashboard(): Promise<ActionResult> {
+  try {
+    const validation = await validatePatient();
+
+    if ("error" in validation) {
+      return { success: false, error: validation.error };
+    }
+
+    const { patient: validatedPatient, session } = validation;
+
+    // Get patient data with appointments
+    const patient = await prisma.patient.findUnique({
+      where: { id: validatedPatient.id },
+      include: {
+        appointments: {
+          include: {
+            doctor: true,
+            clinic: true,
+          },
+          orderBy: {
+            datetime: "desc",
+          },
+        },
+      },
+    });
+
+    if (!patient) {
+      return { success: false, error: "Paciente no encontrado" };
+    }
+
+    const now = new Date();
+    const upcomingAppointments = patient.appointments.filter(
+      (appointment) => appointment.datetime > now
+    );
+    const pastAppointments = patient.appointments.filter(
+      (appointment) => appointment.datetime <= now
+    );
+
+    return {
+      success: true,
+      data: {
+        patient,
+        upcomingAppointments,
+        pastAppointments,
+        session,
+      },
+    };
+  } catch (error) {
+    console.error("Error fetching patient dashboard:", error);
+    return {
+      success: false,
+      error: "Error al obtener el dashboard del paciente",
+    };
+  }
+}

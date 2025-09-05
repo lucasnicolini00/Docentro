@@ -1,35 +1,32 @@
 import { requirePatient } from "@/lib/auth-guards";
-import prisma from "@/lib/prisma";
+import { getPatientDashboard } from "@/lib/actions/patients";
 import { Navbar } from "@/components/ui/navigation";
 
 export default async function PatientDashboard() {
-  const session = await requirePatient();
+  // Ensure user is authenticated as a patient
+  await requirePatient();
 
-  // Get patient data using the patientId from session
-  const patient = await prisma.patient.findUnique({
-    where: { id: session.user.patientId! },
-    include: {
-      appointments: {
-        include: {
-          doctor: true,
-          clinic: true,
-        },
-        orderBy: {
-          datetime: "desc",
-        },
-      },
-    },
-  });
+  // Get patient dashboard data using Server Action
+  const result = await getPatientDashboard();
 
-  const upcomingAppointments =
-    patient?.appointments.filter(
-      (appointment) => appointment.datetime > new Date()
-    ) || [];
+  if (!result.success || !result.data) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Navbar />
+        <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+          <div className="text-center">
+            <h1 className="text-2xl font-bold text-gray-900">
+              Error al cargar el dashboard
+            </h1>
+            <p className="text-gray-600">{result.error}</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
-  const pastAppointments =
-    patient?.appointments.filter(
-      (appointment) => appointment.datetime <= new Date()
-    ) || [];
+  const { patient, upcomingAppointments, pastAppointments, session } =
+    result.data;
 
   return (
     <div className="min-h-screen bg-gray-50">
