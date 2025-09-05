@@ -91,13 +91,15 @@ export default function DoctorSidebar({ isOpen, onClose }: DoctorSidebarProps) {
         className={`
           fixed top-0 left-0 h-full w-64 bg-white shadow-xl transform transition-transform duration-300 ease-in-out z-50
           ${isOpen ? "translate-x-0" : "-translate-x-full"}
-          lg:translate-x-0 lg:static lg:z-auto
+          lg:translate-x-0 lg:static lg:z-auto lg:w-64 lg:h-full
         `}
       >
         {/* Header */}
-        <div className="p-6 border-b border-gray-200">
+        <div className="p-4 border-b border-gray-200">
           <div className="flex items-center justify-between">
-            <h2 className="text-xl font-bold text-gray-800">Panel Médico</h2>
+            <h2 className="text-xl lg:text-2xl font-bold text-gray-800">
+              Panel Médico
+            </h2>
             <button
               onClick={onClose}
               className="lg:hidden p-2 rounded-md hover:bg-gray-100"
@@ -120,7 +122,7 @@ export default function DoctorSidebar({ isOpen, onClose }: DoctorSidebarProps) {
         </div>
 
         {/* Navigation */}
-        <nav className="p-4 space-y-2">
+        <nav className="p-2 space-y-1 ">
           {sidebarItems.map((item) => {
             const isActive = pathname === item.href;
             const Icon = item.icon;
@@ -131,7 +133,7 @@ export default function DoctorSidebar({ isOpen, onClose }: DoctorSidebarProps) {
                 href={item.href}
                 onClick={onClose}
                 className={`
-                  flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors duration-200
+                  flex items-center space-x-3 lg:space-x-4 px-4  py-3  rounded-lg transition-colors duration-200
                   ${
                     isActive
                       ? "bg-blue-50 text-blue-700 border-r-4 border-blue-600"
@@ -140,11 +142,13 @@ export default function DoctorSidebar({ isOpen, onClose }: DoctorSidebarProps) {
                 `}
               >
                 <Icon
-                  className={`w-5 h-5 ${
+                  className={`w-5 h-5   ${
                     isActive ? "text-blue-600" : "text-gray-500"
                   }`}
                 />
-                <span className="font-medium">{item.label}</span>
+                <span className="font-medium text-sm lg:text-base">
+                  {item.label}
+                </span>
               </Link>
             );
           })}
@@ -152,9 +156,9 @@ export default function DoctorSidebar({ isOpen, onClose }: DoctorSidebarProps) {
 
         {/* Footer */}
         <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-200">
-          <div className="text-xs text-gray-500 text-center">
-            <p>Docentro Medical</p>
-            <p>v1.0.0</p>
+          <div className="text-xs lg:text-sm text-gray-500 text-center">
+            <p className="font-medium">Docentro Medical</p>
+            <p className="mt-1">v1.0.0</p>
           </div>
         </div>
       </div>

@@ -37,7 +37,7 @@ export default function DoctorLayout({ children }: DoctorLayoutProps) {
     <div className="min-h-screen bg-gray-50">
       <Navbar />
 
-      <div className="flex">
+      <div className="flex h-[calc(100vh-64px)]">
         {/* Sidebar */}
         <DoctorSidebar
           isOpen={sidebarOpen}
@@ -45,7 +45,7 @@ export default function DoctorLayout({ children }: DoctorLayoutProps) {
         />
 
         {/* Main content */}
-        <div className="flex-1 lg:ml-0">
+        <div className="flex-1 lg:ml-0 flex flex-col h-full">
           {/* Mobile menu button */}
           <div className="lg:hidden bg-white border-b border-gray-200 px-4 py-3">
             <button
@@ -58,7 +58,7 @@ export default function DoctorLayout({ children }: DoctorLayoutProps) {
           </div>
 
           {/* Page content */}
-          <main className="p-6">{children}</main>
+          <main className="flex-1 p-6 overflow-auto">{children}</main>
         </div>
       </div>
     </div>
