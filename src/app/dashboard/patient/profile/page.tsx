@@ -1,6 +1,6 @@
 import { requirePatient } from "@/lib/auth-guards";
 import prisma from "@/lib/prisma";
-import PatientProfileForm from "@/components/PatientProfileForm";
+import { PatientProfileForm } from "@/components/ui/forms";
 
 export default async function PatientProfilePage() {
   const patientSession = await requirePatient();

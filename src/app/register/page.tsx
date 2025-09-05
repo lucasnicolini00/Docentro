@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import LoadingButton from "@/components/LoadingButton";
+import LoadingButton from "@/components/ui/buttons/LoadingButton";
 
 export default function RegisterPage() {
   const [formData, setFormData] = useState({

@@ -1,6 +1,6 @@
 import { requirePatient } from "@/lib/auth-guards";
 import prisma from "@/lib/prisma";
-import Navbar from "@/components/navbar";
+import { Navbar } from "@/components/ui/navigation";
 
 export default async function PatientDashboard() {
   const session = await requirePatient();

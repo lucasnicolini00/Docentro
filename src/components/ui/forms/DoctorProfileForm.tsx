@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import LoadingButton from "./LoadingButton";
+import LoadingButton from "../buttons/LoadingButton";
 import Link from "next/link";
 
 interface Doctor {

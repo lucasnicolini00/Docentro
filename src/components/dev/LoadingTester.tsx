@@ -1,6 +1,6 @@
 "use client";
 
-import { useGlobalLoading } from "./GlobalLoadingProvider";
+import { useGlobalLoading } from "../providers/GlobalLoadingProvider";
 
 export default function LoadingTester() {
   const { isLoading, setIsLoading } = useGlobalLoading();

@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { signIn, getSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import LoadingButton from "@/components/LoadingButton";
+import LoadingButton from "@/components/ui/buttons/LoadingButton";
 
 function LoginForm() {
   const [email, setEmail] = useState("");

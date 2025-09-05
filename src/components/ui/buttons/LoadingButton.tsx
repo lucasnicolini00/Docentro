@@ -1,5 +1,5 @@
 import { ButtonHTMLAttributes, ReactNode } from "react";
-import LoadingSpinner from "./LoadingSpinner";
+import LoadingSpinner from "../feedback/LoadingSpinner";
 
 interface LoadingButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   isLoading?: boolean;

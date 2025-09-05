@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import LoadingButton from "./LoadingButton";
+import LoadingButton from "../../ui/buttons/LoadingButton";
 
 interface SearchFiltersProps {
   initialSpecialty?: string;

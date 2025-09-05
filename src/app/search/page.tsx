@@ -1,7 +1,7 @@
 import { getAllDoctors, searchDoctors } from "@/lib/data";
-import DoctorCard from "@/components/DoctorCard";
-import Navbar from "@/components/navbar";
-import SearchFilters from "@/components/SearchFilters";
+import { DoctorCard } from "@/components/features/doctor";
+import { Navbar } from "@/components/ui/navigation";
+import { SearchFilters } from "@/components/features/search";
 import type {
   Doctor,
   DoctorSpeciality,
