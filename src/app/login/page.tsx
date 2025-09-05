@@ -39,6 +39,7 @@ function LoginForm() {
 
       if (result?.error) {
         setError("Credenciales incorrectas. Verifica tu email y contraseña.");
+        setIsLoading(false);
       } else if (result?.ok) {
         // Get the session to check user role
         const session = await getSession();
@@ -50,10 +51,10 @@ function LoginForm() {
         } else {
           router.push("/dashboard");
         }
+        // Keep loading state active during redirect
       }
     } catch {
       setError("Error al iniciar sesión. Verifica tus credenciales.");
-    } finally {
       setIsLoading(false);
     }
   };

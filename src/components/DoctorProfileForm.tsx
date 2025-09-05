@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import LoadingButton from "./LoadingButton";
+import Link from "next/link";
 
 interface Doctor {
   id: string;
@@ -498,12 +499,12 @@ export default function DoctorProfileForm({
 
       {/* Submit Button */}
       <div className="flex justify-end space-x-4">
-        <a
+        <Link
           href="/dashboard/doctor"
           className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
         >
           Cancelar
-        </a>
+        </Link>
         <LoadingButton
           type="submit"
           isLoading={isLoading}

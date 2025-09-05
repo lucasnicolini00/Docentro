@@ -69,13 +69,14 @@ export default function RegisterPage() {
 
       if (!response.ok) {
         setError(result.error || "Error al crear la cuenta");
+        setIsLoading(false);
       } else {
         // Redirect to login with success message
         router.push("/login?message=registered");
+        // Keep loading state during redirect
       }
     } catch {
       setError("Error al crear la cuenta. Intenta nuevamente.");
-    } finally {
       setIsLoading(false);
     }
   };

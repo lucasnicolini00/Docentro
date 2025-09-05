@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import LoadingButton from "./LoadingButton";
+import Link from "next/link";
 
 interface Patient {
   id: string;
@@ -80,6 +81,7 @@ export default function PatientProfileForm({
       }
 
       setSuccessMessage("Perfil actualizado exitosamente");
+      // Show success message for 2 seconds before redirecting
       setTimeout(() => {
         router.push("/dashboard/patient");
       }, 2000);
@@ -266,12 +268,12 @@ export default function PatientProfileForm({
 
       {/* Submit Button */}
       <div className="flex justify-end space-x-4">
-        <a
+        <Link
           href="/dashboard/patient"
           className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
         >
           Cancelar
-        </a>
+        </Link>
         <LoadingButton
           type="submit"
           isLoading={isLoading}
