@@ -35,7 +35,7 @@ export default function PricingForm({
   const [formData, setFormData] = useState({
     title: pricing?.title || "",
     price: pricing?.price || 0,
-    currency: pricing?.currency || "CLP",
+    currency: pricing?.currency || "BOB",
     durationMinutes: pricing?.durationMinutes || 30,
     description: pricing?.description || "",
     isActive: pricing?.isActive ?? true,
@@ -90,7 +90,7 @@ export default function PricingForm({
   ];
 
   const currencies = [
-    { code: "CLP", name: "Peso Chileno", symbol: "$" },
+    { code: "BOB", name: "Boliviano Boliviano", symbol: "Bs" },
     { code: "USD", name: "Dólar Estadounidense", symbol: "$" },
     { code: "EUR", name: "Euro", symbol: "€" },
   ];

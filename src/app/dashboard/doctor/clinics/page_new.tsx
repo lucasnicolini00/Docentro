@@ -25,21 +25,9 @@ export default async function DoctorClinicsPage() {
 
   const { clinics } = result.data;
 
-  // Transform clinics data to handle Decimal price conversion
-  const transformedClinics = clinics.map((clinic: any) => ({
-    ...clinic,
-    pricings: clinic.pricings.map((pricing: any) => ({
-      ...pricing,
-      price:
-        typeof pricing.price === "number"
-          ? pricing.price
-          : Number(pricing.price),
-    })),
-  }));
-
   return (
     <ClinicsPageWrapper>
-      <ClinicsManagement initialClinics={transformedClinics} />
+      <ClinicsManagement initialClinics={clinics} />
     </ClinicsPageWrapper>
   );
 }
