@@ -39,6 +39,16 @@ enum UserRole {
   ADMIN
 }
 
+enum DayOfWeek {
+  MONDAY
+  TUESDAY
+  WEDNESDAY
+  THURSDAY
+  FRIDAY
+  SATURDAY
+  SUNDAY
+}
+
 // ======================
 // MODELS
 // ======================
@@ -99,6 +109,7 @@ model Doctor {
   experiences  Experience[]
   pricings     Pricing[]
   clinics      DoctorClinic[]
+  schedules    Schedule[]
   appointments Appointment[]
   opinions     Opinion[]
 
@@ -163,6 +174,7 @@ model Clinic {
   isVirtual    Boolean @default(false)
 
   doctorLinks  DoctorClinic[]
+  schedules    Schedule[]
   pricing      Pricing[]
   appointments Appointment[]
 
@@ -204,16 +216,57 @@ model Pricing {
 
 }
 
+model Schedule {
+  id        String    @id @default(cuid())
+  doctorId  String
+  clinicId  String
+  doctor    Doctor    @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+  clinic    Clinic    @relation(fields: [clinicId], references: [id], onDelete: Cascade)
+  dayOfWeek DayOfWeek
+  startTime String // Format: "09:00"
+  endTime   String // Format: "17:00"
+  isActive  Boolean   @default(true)
+
+  timeSlots TimeSlot[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  deletedAt DateTime?
+
+  @@unique([doctorId, clinicId, dayOfWeek])
+}
+
+model TimeSlot {
+  id         String   @id @default(cuid())
+  scheduleId String
+  schedule   Schedule @relation(fields: [scheduleId], references: [id], onDelete: Cascade)
+  startTime  String // Format: "09:00"
+  endTime    String // Format: "09:30"
+  isBooked   Boolean  @default(false)
+  isBlocked  Boolean  @default(false) // For doctor-blocked slots
+
+  appointmentId String?      @unique
+  appointment   Appointment? @relation(fields: [appointmentId], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  deletedAt DateTime?
+
+  @@unique([scheduleId, startTime])
+}
+
 model Appointment {
   id              String            @id @default(cuid())
   doctorId        String
   patientId       String
   clinicId        String
   pricingId       String?
+  timeSlotId      String?           @unique
   doctor          Doctor            @relation(fields: [doctorId], references: [id], onDelete: Cascade)
   patient         Patient           @relation(fields: [patientId], references: [id], onDelete: Cascade)
   clinic          Clinic            @relation(fields: [clinicId], references: [id], onDelete: Cascade)
   pricing         Pricing?          @relation(fields: [pricingId], references: [id], onDelete: SetNull)
+  timeSlot        TimeSlot?
   datetime        DateTime
   durationMinutes Int               @default(30)
   type            AppointmentType   @default(IN_PERSON)

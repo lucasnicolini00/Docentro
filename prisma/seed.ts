@@ -6,10 +6,12 @@ const prisma = new PrismaClient();
 async function main() {
   console.log("🌱 Starting seed...");
 
-  // Clean existing data
-  await prisma.opinion.deleteMany(); // ✅ for model Opinion
-  await prisma.appointment.deleteMany(); // ✅ for model Appointment
-  await prisma.pricing.deleteMany(); // ✅ for model Pricing
+  // Clean existing data in correct order (respecting foreign key constraints)
+  await prisma.opinion.deleteMany();
+  await prisma.appointment.deleteMany();
+  await prisma.timeSlot.deleteMany();
+  await prisma.schedule.deleteMany();
+  await prisma.pricing.deleteMany();
   await prisma.doctorClinic.deleteMany();
   await prisma.experience.deleteMany();
   await prisma.doctorSpeciality.deleteMany();

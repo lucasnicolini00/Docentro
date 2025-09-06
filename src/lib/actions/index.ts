@@ -18,6 +18,16 @@ export {
   togglePricingStatus,
 } from "./clinics";
 
+// Schedule actions
+export {
+  createSchedule,
+  updateSchedule,
+  deleteSchedule,
+  getDoctorSchedules,
+  getAvailableTimeSlots,
+  toggleTimeSlotBlock,
+} from "./schedules";
+
 // Patient actions
 export {
   updatePatientProfile,

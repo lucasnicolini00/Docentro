@@ -94,6 +94,17 @@ export default async function DoctorPage({ params }: DoctorPageProps) {
                 </div>
               )}
             </div>
+
+            {/* Book Appointment Button */}
+            <div className="flex-shrink-0">
+              <a
+                href={`/book/${doctor.id}`}
+                className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg transition-colors inline-flex items-center space-x-2"
+              >
+                <span>📅</span>
+                <span>Agendar Cita</span>
+              </a>
+            </div>
           </div>
         </div>
 
