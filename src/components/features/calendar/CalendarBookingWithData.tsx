@@ -1,7 +1,11 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { CalendarBooking, AvailableTimeSlot, generateTimeSlotEvents } from "@/components/features/calendar";
+import {
+  CalendarBooking,
+  AvailableTimeSlot,
+  generateTimeSlotEvents,
+} from "@/components/features/calendar";
 
 interface CalendarBookingWithDataProps {
   doctorId: string;
@@ -16,7 +20,9 @@ export default function CalendarBookingWithData({
   doctorName,
   specialty = "Medicina General",
 }: CalendarBookingWithDataProps) {
-  const [selectedSlot, setSelectedSlot] = useState<AvailableTimeSlot | null>(null);
+  const [selectedSlot, setSelectedSlot] = useState<AvailableTimeSlot | null>(
+    null
+  );
   const [availableSlots, setAvailableSlots] = useState<AvailableTimeSlot[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -33,10 +39,13 @@ export default function CalendarBookingWithData({
       const endDate = new Date();
       endDate.setDate(endDate.getDate() + 30); // Next 30 days
 
-      const response = await fetch(`/api/time-slots/${doctorId}/${clinicId}?` + new URLSearchParams({
-        startDate: new Date().toISOString(),
-        endDate: endDate.toISOString(),
-      }));
+      const response = await fetch(
+        `/api/time-slots/${doctorId}/${clinicId}?` +
+          new URLSearchParams({
+            startDate: new Date().toISOString(),
+            endDate: endDate.toISOString(),
+          })
+      );
 
       if (!response.ok) {
         throw new Error("Error al cargar horarios disponibles");
@@ -69,12 +78,12 @@ export default function CalendarBookingWithData({
 
     try {
       setBookingLoading(true);
-      
+
       // Create the appointment
-      const response = await fetch('/api/appointments', {
-        method: 'POST',
+      const response = await fetch("/api/appointments", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           timeSlotId: selectedSlot.id,
@@ -84,28 +93,28 @@ export default function CalendarBookingWithData({
       });
 
       if (!response.ok) {
-        throw new Error('Error al crear la cita');
+        throw new Error("Error al crear la cita");
       }
 
       const result = await response.json();
-      
+
       if (result.success) {
         // Clear selection and refresh data
         setSelectedSlot(null);
         setNotes("");
         setConsultationType("REGULAR");
-        
+
         // Show success message
-        alert('¡Cita confirmada exitosamente!');
-        
+        alert("¡Cita confirmada exitosamente!");
+
         // Refetch time slots to update availability
         await fetchTimeSlots();
       } else {
-        throw new Error(result.error || 'Error al crear la cita');
+        throw new Error(result.error || "Error al crear la cita");
       }
     } catch (error) {
-      console.error('Error booking appointment:', error);
-      alert('Error al crear la cita. Por favor, intenta de nuevo.');
+      console.error("Error booking appointment:", error);
+      alert("Error al crear la cita. Por favor, intenta de nuevo.");
     } finally {
       setBookingLoading(false);
     }
@@ -166,17 +175,23 @@ export default function CalendarBookingWithData({
           {selectedSlot ? (
             <div className="space-y-4">
               <div>
-                <label className="text-sm font-medium text-gray-700">Doctor:</label>
+                <label className="text-sm font-medium text-gray-700">
+                  Doctor:
+                </label>
                 <p className="text-gray-900">Dr. {doctorName}</p>
               </div>
 
               <div>
-                <label className="text-sm font-medium text-gray-700">Especialidad:</label>
+                <label className="text-sm font-medium text-gray-700">
+                  Especialidad:
+                </label>
                 <p className="text-gray-900">{specialty}</p>
               </div>
 
               <div>
-                <label className="text-sm font-medium text-gray-700">Fecha:</label>
+                <label className="text-sm font-medium text-gray-700">
+                  Fecha:
+                </label>
                 <p className="text-gray-900">
                   {new Date(selectedSlot.start).toLocaleDateString("es-ES", {
                     weekday: "long",
@@ -188,7 +203,9 @@ export default function CalendarBookingWithData({
               </div>
 
               <div>
-                <label className="text-sm font-medium text-gray-700">Hora:</label>
+                <label className="text-sm font-medium text-gray-700">
+                  Hora:
+                </label>
                 <p className="text-gray-900">
                   {new Date(selectedSlot.start).toLocaleTimeString("es-ES", {
                     hour: "2-digit",
@@ -198,8 +215,10 @@ export default function CalendarBookingWithData({
               </div>
 
               <div>
-                <label className="text-sm font-medium text-gray-700">Tipo de consulta:</label>
-                <select 
+                <label className="text-sm font-medium text-gray-700">
+                  Tipo de consulta:
+                </label>
+                <select
                   className="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"
                   value={consultationType}
                   onChange={(e) => setConsultationType(e.target.value)}
@@ -212,8 +231,10 @@ export default function CalendarBookingWithData({
               </div>
 
               <div>
-                <label className="text-sm font-medium text-gray-700">Notas (opcional):</label>
-                <textarea 
+                <label className="text-sm font-medium text-gray-700">
+                  Notas (opcional):
+                </label>
+                <textarea
                   className="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2 text-sm h-20"
                   placeholder="Describe brevemente el motivo de tu consulta..."
                   value={notes}
@@ -249,7 +270,7 @@ export default function CalendarBookingWithData({
                     Procesando...
                   </>
                 ) : (
-                  'Confirmar Reserva'
+                  "Confirmar Reserva"
                 )}
               </button>
             </div>

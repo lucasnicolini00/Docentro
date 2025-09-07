@@ -9,7 +9,8 @@ export default function CalendarDemo() {
             Demostración del Sistema de Reservas
           </h1>
           <p className="mt-2 text-gray-600">
-            Selecciona un horario disponible y confirma tu cita con el Dr. García
+            Selecciona un horario disponible y confirma tu cita con el Dr.
+            García
           </p>
         </div>
 

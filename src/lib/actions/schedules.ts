@@ -417,7 +417,8 @@ export async function getTimeSlotsForCalendar(
 ) {
   try {
     const startDate = options?.startDate || new Date();
-    const endDate = options?.endDate || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); // 30 days from now
+    const endDate =
+      options?.endDate || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); // 30 days from now
 
     const timeSlots = await prisma.timeSlot.findMany({
       where: {
@@ -481,7 +482,8 @@ export async function getDoctorSchedulesWithSlots(
 ) {
   try {
     const startDate = options?.startDate || new Date();
-    const endDate = options?.endDate || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+    const endDate =
+      options?.endDate || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
 
     const whereClause: any = {
       doctorId: doctorId,

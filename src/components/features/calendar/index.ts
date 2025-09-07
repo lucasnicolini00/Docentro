@@ -98,27 +98,30 @@ export const getAppointmentStatusColor = (status: string) => {
   }
 };
 
-export const transformAppointmentToCalendarEvent = (appointment: any): CalendarAppointment => {
+export const transformAppointmentToCalendarEvent = (
+  appointment: any
+): CalendarAppointment => {
   return {
     id: appointment.id,
-    title: appointment.patient?.name 
+    title: appointment.patient?.name
       ? `${appointment.patient.name} ${appointment.patient.surname}`
-      : appointment.timeSlot?.schedule?.doctor?.name 
+      : appointment.timeSlot?.schedule?.doctor?.name
       ? `Dr. ${appointment.timeSlot.schedule.doctor.name} ${appointment.timeSlot.schedule.doctor.surname}`
       : "Cita",
     start: appointment.timeSlot.startTime,
     end: appointment.timeSlot.endTime,
     extendedProps: {
       status: appointment.status,
-      patientName: appointment.patient?.name 
+      patientName: appointment.patient?.name
         ? `${appointment.patient.name} ${appointment.patient.surname}`
         : undefined,
-      doctorName: appointment.timeSlot?.schedule?.doctor?.name 
+      doctorName: appointment.timeSlot?.schedule?.doctor?.name
         ? `${appointment.timeSlot.schedule.doctor.name} ${appointment.timeSlot.schedule.doctor.surname}`
         : undefined,
       specialty: undefined, // Need to add specialty relation
       clinicName: appointment.timeSlot?.schedule?.clinic?.name || "Clínica",
-      clinicAddress: appointment.timeSlot?.schedule?.clinic?.address || undefined,
+      clinicAddress:
+        appointment.timeSlot?.schedule?.clinic?.address || undefined,
       notes: appointment.notes || undefined,
       phone: appointment.patient?.phone || undefined,
       type: appointment.type,
@@ -127,7 +130,9 @@ export const transformAppointmentToCalendarEvent = (appointment: any): CalendarA
   };
 };
 
-export const generateTimeSlotEvents = (timeSlots: any[]): AvailableTimeSlot[] => {
+export const generateTimeSlotEvents = (
+  timeSlots: any[]
+): AvailableTimeSlot[] => {
   return timeSlots.map((slot) => ({
     id: slot.id,
     start: slot.startTime,
