@@ -236,8 +236,104 @@ export async function getDoctorSchedules(): Promise<ActionResult> {
 }
 
 /**
- * Server action for getting available time slots for a specific date and clinic
+ * Server action for creating multiple schedules at once (bulk creation)
  */
+export async function createBulkSchedules(
+  clinicId: string,
+  scheduleData: Array<{
+    dayOfWeek: DayOfWeek;
+    startTime: string;
+    endTime: string;
+    slotDuration?: number;
+  }>
+): Promise<ActionResult> {
+  try {
+    const validation = await validateDoctor();
+
+    if ("error" in validation) {
+      return { success: false, error: validation.error };
+    }
+
+    const { doctor } = validation;
+
+    // Create multiple schedules
+    const createdSchedules: any[] = [];
+
+    for (const data of scheduleData) {
+      // Check if schedule already exists for this day
+      const existingSchedule = await prisma.schedule.findUnique({
+        where: {
+          doctorId_clinicId_dayOfWeek: {
+            doctorId: doctor.id,
+            clinicId: clinicId,
+            dayOfWeek: data.dayOfWeek,
+          },
+        },
+      });
+
+      if (existingSchedule) {
+        console.log(
+          `Schedule already exists for ${data.dayOfWeek}, skipping...`
+        );
+        continue;
+      }
+
+      // Create the schedule
+      const schedule = await prisma.schedule.create({
+        data: {
+          doctorId: doctor.id,
+          clinicId: clinicId,
+          dayOfWeek: data.dayOfWeek,
+          startTime: data.startTime,
+          endTime: data.endTime,
+        },
+        include: {
+          clinic: {
+            select: {
+              id: true,
+              name: true,
+              address: true,
+            },
+          },
+          timeSlots: true,
+        },
+      });
+
+      // Generate time slots
+      await generateTimeSlots(
+        schedule.id,
+        data.startTime,
+        data.endTime,
+        data.slotDuration || 30
+      );
+
+      // Fetch the schedule with time slots
+      const scheduleWithSlots = await prisma.schedule.findUnique({
+        where: { id: schedule.id },
+        include: {
+          clinic: {
+            select: {
+              id: true,
+              name: true,
+              address: true,
+            },
+          },
+          timeSlots: true,
+        },
+      });
+
+      if (scheduleWithSlots) {
+        createdSchedules.push(scheduleWithSlots);
+      }
+    }
+
+    revalidatePath("/dashboard/doctor/schedules");
+    return { success: true, data: createdSchedules };
+  } catch (error) {
+    console.error("Error creating bulk schedules:", error);
+    return { success: false, error: "Error al crear los horarios" };
+  }
+}
 export async function getAvailableTimeSlots(
   doctorId: string,
   clinicId: string,

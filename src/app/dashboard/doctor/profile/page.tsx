@@ -1,6 +1,7 @@
 import { requireDoctor } from "@/lib/auth-guards";
 import { getDoctorProfile, getAllSpecialities } from "@/lib/actions/doctors";
 import { DoctorProfileForm } from "@/components/ui/forms";
+import { DoctorSettingsPanel } from "@/components/features";
 
 export default async function DoctorProfilePage() {
   // Ensure user is authenticated as a doctor
@@ -69,7 +70,40 @@ export default async function DoctorProfilePage() {
 
       {/* Main Content */}
       <div className="max-w-4xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
-        <DoctorProfileForm doctor={doctor} allSpecialities={allSpecialities} />
+        <div className="space-y-8">
+          {/* Profile Form */}
+          <div className="bg-white rounded-lg shadow-sm">
+            <div className="p-6 border-b border-gray-200">
+              <h2 className="text-lg font-semibold text-gray-900">
+                Información del Perfil
+              </h2>
+              <p className="text-sm text-gray-600 mt-1">
+                Actualiza tu información profesional y personal
+              </p>
+            </div>
+            <div className="p-6">
+              <DoctorProfileForm
+                doctor={doctor}
+                allSpecialities={allSpecialities}
+              />
+            </div>
+          </div>
+
+          {/* Settings Management */}
+          <div className="bg-white rounded-lg shadow-sm">
+            <div className="p-6 border-b border-gray-200">
+              <h2 className="text-lg font-semibold text-gray-900">
+                Configuración de la Cuenta
+              </h2>
+              <p className="text-sm text-gray-600 mt-1">
+                Gestiona tus preferencias y configuraciones del sistema
+              </p>
+            </div>
+            <div className="p-6">
+              <DoctorSettingsPanel />
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );

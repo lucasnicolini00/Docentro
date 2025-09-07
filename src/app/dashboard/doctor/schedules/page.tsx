@@ -1,6 +1,9 @@
 import { requireDoctor } from "@/lib/auth-guards";
 import { getDoctorSchedules, getDoctorClinics } from "@/lib/actions";
-import { ScheduleManagement } from "@/components/features";
+import {
+  EnhancedScheduleManagement,
+  ScheduleAnalytics,
+} from "@/components/features";
 import { SchedulesPageWrapper } from "@/components/ui/navigation";
 
 export default async function DoctorSchedules() {
@@ -32,7 +35,16 @@ export default async function DoctorSchedules() {
 
   return (
     <SchedulesPageWrapper>
-      <ScheduleManagement initialSchedules={schedules} clinics={clinics} />
+      <div className="space-y-8">
+        {/* Analytics Section */}
+        <ScheduleAnalytics doctorId="current-doctor-id" />
+
+        {/* Schedule Management Section */}
+        <EnhancedScheduleManagement
+          initialSchedules={schedules}
+          clinics={clinics}
+        />
+      </div>
     </SchedulesPageWrapper>
   );
 }

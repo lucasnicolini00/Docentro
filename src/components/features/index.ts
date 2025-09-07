@@ -4,3 +4,5 @@ export * from "./search";
 export * from "./appointments";
 export * from "./schedules";
 export * from "./calendar";
+export * from "./settings";
+export * from "./dashboard";
