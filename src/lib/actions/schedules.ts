@@ -403,3 +403,135 @@ function getDayOfWeekFromDate(date: Date): DayOfWeek {
   ];
   return days[dayIndex];
 }
+
+/**
+ * Get available time slots for calendar view (for calendar booking)
+ */
+export async function getTimeSlotsForCalendar(
+  doctorId: string,
+  clinicId: string,
+  options?: {
+    startDate?: Date;
+    endDate?: Date;
+  }
+) {
+  try {
+    const startDate = options?.startDate || new Date();
+    const endDate = options?.endDate || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); // 30 days from now
+
+    const timeSlots = await prisma.timeSlot.findMany({
+      where: {
+        schedule: {
+          doctorId: doctorId,
+          clinicId: clinicId,
+          isActive: true,
+        },
+        startTime: {
+          gte: startDate.toISOString(),
+          lte: endDate.toISOString(),
+        },
+      },
+      include: {
+        schedule: {
+          select: {
+            dayOfWeek: true,
+            doctor: {
+              select: {
+                name: true,
+                surname: true,
+              },
+            },
+            clinic: {
+              select: {
+                name: true,
+                address: true,
+              },
+            },
+          },
+        },
+        appointment: {
+          select: {
+            id: true,
+            status: true,
+          },
+        },
+      },
+      orderBy: {
+        startTime: "asc",
+      },
+    });
+
+    return timeSlots;
+  } catch (error) {
+    console.error("Error fetching time slots for calendar:", error);
+    return [];
+  }
+}
+
+/**
+ * Get doctor schedules with time slots for calendar display
+ */
+export async function getDoctorSchedulesWithSlots(
+  doctorId: string,
+  options?: {
+    startDate?: Date;
+    endDate?: Date;
+    clinicId?: string;
+  }
+) {
+  try {
+    const startDate = options?.startDate || new Date();
+    const endDate = options?.endDate || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+
+    const whereClause: any = {
+      doctorId: doctorId,
+      isActive: true,
+    };
+
+    if (options?.clinicId) {
+      whereClause.clinicId = options.clinicId;
+    }
+
+    const schedules = await prisma.schedule.findMany({
+      where: whereClause,
+      include: {
+        clinic: {
+          select: {
+            name: true,
+            address: true,
+          },
+        },
+        timeSlots: {
+          where: {
+            startTime: {
+              gte: startDate.toISOString(),
+              lte: endDate.toISOString(),
+            },
+          },
+          include: {
+            appointment: {
+              select: {
+                id: true,
+                status: true,
+                patient: {
+                  select: {
+                    name: true,
+                    surname: true,
+                  },
+                },
+              },
+            },
+          },
+          orderBy: {
+            startTime: "asc",
+          },
+        },
+      },
+    });
+
+    return schedules;
+  } catch (error) {
+    console.error("Error fetching doctor schedules with slots:", error);
+    return [];
+  }
+}

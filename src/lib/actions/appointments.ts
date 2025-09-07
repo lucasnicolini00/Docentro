@@ -11,6 +11,168 @@ import {
 import { AppointmentStatus, AppointmentType } from "@prisma/client";
 
 /**
+ * Get doctor appointments for calendar view
+ */
+export async function getDoctorAppointments(
+  doctorId: string,
+  options?: {
+    startDate?: Date;
+    endDate?: Date;
+    status?: AppointmentStatus[];
+  }
+) {
+  try {
+    const whereClause: any = {
+      timeSlot: {
+        schedule: {
+          doctorId: doctorId,
+        },
+      },
+    };
+
+    if (options?.startDate && options?.endDate) {
+      whereClause.timeSlot.startTime = {
+        gte: options.startDate,
+        lte: options.endDate,
+      };
+    }
+
+    if (options?.status) {
+      whereClause.status = {
+        in: options.status,
+      };
+    }
+
+    const appointments = await prisma.appointment.findMany({
+      where: whereClause,
+      include: {
+        patient: {
+          select: {
+            id: true,
+            name: true,
+            surname: true,
+            email: true,
+            phone: true,
+          },
+        },
+        timeSlot: {
+          select: {
+            id: true,
+            startTime: true,
+            endTime: true,
+            schedule: {
+              select: {
+                clinic: {
+                  select: {
+                    name: true,
+                    address: true,
+                  },
+                },
+              },
+            },
+          },
+        },
+        pricing: {
+          select: {
+            title: true,
+            price: true,
+          },
+        },
+      },
+      orderBy: {
+        timeSlot: {
+          startTime: "asc",
+        },
+      },
+    });
+
+    return appointments;
+  } catch (error) {
+    console.error("Error fetching doctor appointments:", error);
+    return [];
+  }
+}
+
+/**
+ * Get patient appointments for calendar view
+ */
+export async function getPatientAppointments(
+  patientId: string,
+  options?: {
+    startDate?: Date;
+    endDate?: Date;
+    status?: AppointmentStatus[];
+  }
+) {
+  try {
+    const whereClause: any = {
+      patientId: patientId,
+    };
+
+    if (options?.startDate && options?.endDate) {
+      whereClause.timeSlot = {
+        startTime: {
+          gte: options.startDate,
+          lte: options.endDate,
+        },
+      };
+    }
+
+    if (options?.status) {
+      whereClause.status = {
+        in: options.status,
+      };
+    }
+
+    const appointments = await prisma.appointment.findMany({
+      where: whereClause,
+      include: {
+        timeSlot: {
+          select: {
+            id: true,
+            startTime: true,
+            endTime: true,
+            schedule: {
+              select: {
+                doctor: {
+                  select: {
+                    name: true,
+                    surname: true,
+                    // Note: specialty field needs to be checked in schema
+                  },
+                },
+                clinic: {
+                  select: {
+                    name: true,
+                    address: true,
+                  },
+                },
+              },
+            },
+          },
+        },
+        pricing: {
+          select: {
+            title: true,
+            price: true,
+          },
+        },
+      },
+      orderBy: {
+        timeSlot: {
+          startTime: "asc",
+        },
+      },
+    });
+
+    return appointments;
+  } catch (error) {
+    console.error("Error fetching patient appointments:", error);
+    return [];
+  }
+}
+
+/**
  * Server action for creating a new appointment with time slot integration (Patient)
  */
 export async function createAppointmentWithTimeSlot(
