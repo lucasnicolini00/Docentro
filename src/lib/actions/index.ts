@@ -68,3 +68,6 @@ export {
   validateDoctor,
   type ActionResult,
 } from "./utils";
+
+// Analytics actions
+export { getDashboardStats, getScheduleAnalytics } from "./analytics";

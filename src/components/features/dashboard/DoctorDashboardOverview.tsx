@@ -12,6 +12,7 @@ import {
   TrendingUp,
   TrendingDown,
 } from "lucide-react";
+import { getDashboardStats } from "@/lib/actions/analytics";
 
 interface DashboardStats {
   todayAppointments: number;
@@ -47,19 +48,18 @@ export default function DoctorDashboardOverview() {
   useEffect(() => {
     const loadStats = async () => {
       try {
-        // Simulate loading stats (replace with actual API call)
-        await new Promise((resolve) => setTimeout(resolve, 1000));
+        // Call real API endpoint
+        const result = await getDashboardStats();
 
-        setStats({
-          todayAppointments: 8,
-          weekAppointments: 42,
-          monthlyRevenue: 125000,
-          utilizationRate: 78,
-          pendingBookings: 5,
-          totalPatients: 234,
-        });
+        if (result.success && result.data) {
+          setStats(result.data);
+        } else {
+          console.error("Failed to load stats:", result.error);
+          // Keep default stats on error
+        }
       } catch (error) {
         console.error("Error loading stats:", error);
+        // Keep default stats on error
       } finally {
         setLoading(false);
       }

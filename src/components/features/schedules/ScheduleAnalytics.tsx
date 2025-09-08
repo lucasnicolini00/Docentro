@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { getScheduleAnalytics } from "@/lib/actions/analytics";
 
 interface ScheduleAnalytics {
   totalSlots: number;
@@ -30,49 +31,28 @@ export default function ScheduleAnalytics({
   );
 
   useEffect(() => {
+    const fetchAnalytics = async () => {
+      setLoading(true);
+      try {
+        // Call real API endpoint
+        const result = await getScheduleAnalytics(timeRange, doctorId);
+
+        if (result.success && result.data) {
+          setAnalytics(result.data);
+        } else {
+          console.error("Failed to load analytics:", result.error);
+          // Keep null analytics on error
+        }
+      } catch (error) {
+        console.error("Error loading analytics:", error);
+        // Keep null analytics on error
+      } finally {
+        setLoading(false);
+      }
+    };
+
     fetchAnalytics();
   }, [doctorId, timeRange]);
-
-  const fetchAnalytics = async () => {
-    setLoading(true);
-    try {
-      // Simulate API call - replace with actual API endpoint
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
-      // Mock data - replace with real API response
-      const mockAnalytics: ScheduleAnalytics = {
-        totalSlots: 280,
-        availableSlots: 145,
-        bookedSlots: 98,
-        blockedSlots: 37,
-        utilizationRate: 35,
-        schedulesByDay: {
-          Lunes: 42,
-          Martes: 39,
-          Miércoles: 44,
-          Jueves: 41,
-          Viernes: 38,
-          Sábado: 28,
-          Domingo: 0,
-        },
-        upcomingWeekSlots: [
-          { date: "2025-09-08", availableSlots: 8, bookedSlots: 4 },
-          { date: "2025-09-09", availableSlots: 6, bookedSlots: 6 },
-          { date: "2025-09-10", availableSlots: 7, bookedSlots: 5 },
-          { date: "2025-09-11", availableSlots: 8, bookedSlots: 4 },
-          { date: "2025-09-12", availableSlots: 9, bookedSlots: 3 },
-          { date: "2025-09-13", availableSlots: 5, bookedSlots: 2 },
-          { date: "2025-09-14", availableSlots: 0, bookedSlots: 0 },
-        ],
-      };
-
-      setAnalytics(mockAnalytics);
-    } catch (error) {
-      console.error("Error fetching analytics:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   if (loading) {
     return (
