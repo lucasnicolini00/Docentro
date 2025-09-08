@@ -1,7 +1,7 @@
 import { requireDoctor } from "@/lib/auth-guards";
 import { getDoctorClinics } from "@/lib/actions/clinics";
 import { ClinicsPageWrapper } from "@/components/ui/navigation";
-import ClinicsManagement from "./components/ClinicsManagement";
+import ClinicsManagement from "./components/ClinicsManagementRefactored";
 
 export default async function DoctorClinicsPage() {
   // Ensure user is authenticated as a doctor
