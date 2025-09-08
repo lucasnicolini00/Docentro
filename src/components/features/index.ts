@@ -6,3 +6,4 @@ export * from "./schedules";
 export * from "./calendar";
 export * from "./settings";
 export * from "./dashboard";
+export * from "./analytics";

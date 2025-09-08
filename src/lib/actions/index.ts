@@ -70,7 +70,12 @@ export {
 } from "./utils";
 
 // Analytics actions
-export { getDashboardStats, getScheduleAnalytics } from "./analytics";
+export {
+  getDashboardStats,
+  getScheduleAnalytics,
+  getPatientAnalytics,
+  getRevenueAnalytics,
+} from "./analytics";
 
 // Time Slots actions
 export {

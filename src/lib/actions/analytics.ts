@@ -334,3 +334,386 @@ export async function getScheduleAnalytics(
     return { success: false, error: "Failed to fetch schedule analytics" };
   }
 }
+
+/**
+ * Advanced patient analytics for doctors
+ */
+export async function getPatientAnalytics(
+  doctorId?: string,
+  timeRange: "month" | "quarter" | "year" = "month"
+): Promise<ActionResult> {
+  try {
+    let doctor;
+
+    if (doctorId) {
+      doctor = await prisma.doctor.findUnique({
+        where: { id: doctorId },
+      });
+    } else {
+      const validation = await validateDoctor();
+      if ("error" in validation) {
+        return { success: false, error: validation.error };
+      }
+      doctor = validation.doctor;
+    }
+
+    if (!doctor) {
+      return { success: false, error: "Doctor not found" };
+    }
+
+    // Calculate date range
+    const now = new Date();
+    let startDate: Date;
+
+    switch (timeRange) {
+      case "year":
+        startDate = new Date(now.getFullYear(), 0, 1);
+        break;
+      case "quarter":
+        const currentQuarter = Math.floor(now.getMonth() / 3);
+        startDate = new Date(now.getFullYear(), currentQuarter * 3, 1);
+        break;
+      default: // month
+        startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+        break;
+    }
+
+    // Get all appointments in date range
+    const appointments = await prisma.appointment.findMany({
+      where: {
+        doctorId: doctor.id,
+        datetime: {
+          gte: startDate,
+          lte: now,
+        },
+      },
+      include: {
+        patient: {
+          include: {
+            user: true,
+          },
+        },
+        pricing: true,
+      },
+    });
+
+    // Patient demographics
+    const patientAges = appointments
+      .map((apt) => {
+        const birthDate = apt.patient.birthdate;
+        if (!birthDate) return null;
+        const age = now.getFullYear() - birthDate.getFullYear();
+        return age;
+      })
+      .filter(Boolean) as number[];
+
+    const ageGroups = {
+      "0-17": 0,
+      "18-30": 0,
+      "31-50": 0,
+      "51-70": 0,
+      "70+": 0,
+    };
+
+    patientAges.forEach((age) => {
+      if (age <= 17) ageGroups["0-17"]++;
+      else if (age <= 30) ageGroups["18-30"]++;
+      else if (age <= 50) ageGroups["31-50"]++;
+      else if (age <= 70) ageGroups["51-70"]++;
+      else ageGroups["70+"]++;
+    });
+
+    // Gender distribution
+    const genderDistribution = appointments.reduce((acc, apt) => {
+      const gender = apt.patient.gender || "No especificado";
+      acc[gender] = (acc[gender] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>);
+
+    // New vs returning patients
+    const uniquePatients = new Set(appointments.map((apt) => apt.patientId));
+    const totalUniquePatients = uniquePatients.size;
+
+    // Calculate returning patients (patients with more than 1 appointment)
+    const patientAppointmentCounts = appointments.reduce((acc, apt) => {
+      acc[apt.patientId] = (acc[apt.patientId] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>);
+
+    const returningPatients = Object.values(patientAppointmentCounts).filter(
+      (count) => count > 1
+    ).length;
+
+    const newPatients = totalUniquePatients - returningPatients;
+    const retentionRate =
+      totalUniquePatients > 0
+        ? Math.round((returningPatients / totalUniquePatients) * 100)
+        : 0;
+
+    // Appointment status distribution
+    const statusDistribution = appointments.reduce((acc, apt) => {
+      acc[apt.status] = (acc[apt.status] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>);
+
+    // Monthly trends
+    const monthlyTrends: Array<{
+      month: string;
+      patients: number;
+      appointments: number;
+      revenue: number;
+    }> = [];
+
+    for (let i = 0; i < 6; i++) {
+      const monthStart = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const monthEnd = new Date(now.getFullYear(), now.getMonth() - i + 1, 0);
+
+      const monthAppointments = appointments.filter((apt) => {
+        const aptDate = new Date(apt.datetime);
+        return aptDate >= monthStart && aptDate <= monthEnd;
+      });
+
+      const monthlyPatients = new Set(
+        monthAppointments.map((apt) => apt.patientId)
+      ).size;
+
+      monthlyTrends.unshift({
+        month: monthStart.toLocaleDateString("es-ES", {
+          month: "short",
+          year: "numeric",
+        }),
+        patients: monthlyPatients,
+        appointments: monthAppointments.length,
+        revenue: monthAppointments
+          .filter((apt) => apt.status === "COMPLETED")
+          .reduce((total, apt) => total + (Number(apt.pricing?.price) || 0), 0),
+      });
+    }
+
+    const analytics = {
+      totalPatients: totalUniquePatients,
+      newPatients,
+      returningPatients,
+      retentionRate,
+      ageGroups,
+      genderDistribution,
+      statusDistribution,
+      monthlyTrends,
+      insights: [
+        retentionRate > 60
+          ? "Excelente retención de pacientes"
+          : "Oportunidad de mejorar retención de pacientes",
+        newPatients > returningPatients
+          ? "Alto crecimiento en nuevos pacientes"
+          : "Base sólida de pacientes recurrentes",
+        statusDistribution.COMPLETED > statusDistribution.CANCELLED
+          ? "Baja tasa de cancelaciones"
+          : "Revisar proceso de confirmación de citas",
+      ],
+    };
+
+    return { success: true, data: analytics };
+  } catch (error) {
+    console.error("Error fetching patient analytics:", error);
+    return { success: false, error: "Failed to fetch patient analytics" };
+  }
+}
+
+/**
+ * Revenue and financial analytics
+ */
+export async function getRevenueAnalytics(
+  doctorId?: string,
+  timeRange: "month" | "quarter" | "year" = "month"
+): Promise<ActionResult> {
+  try {
+    let doctor;
+
+    if (doctorId) {
+      doctor = await prisma.doctor.findUnique({
+        where: { id: doctorId },
+      });
+    } else {
+      const validation = await validateDoctor();
+      if ("error" in validation) {
+        return { success: false, error: validation.error };
+      }
+      doctor = validation.doctor;
+    }
+
+    if (!doctor) {
+      return { success: false, error: "Doctor not found" };
+    }
+
+    // Calculate date range
+    const now = new Date();
+    let startDate: Date;
+
+    switch (timeRange) {
+      case "year":
+        startDate = new Date(now.getFullYear(), 0, 1);
+        break;
+      case "quarter":
+        const currentQuarter = Math.floor(now.getMonth() / 3);
+        startDate = new Date(now.getFullYear(), currentQuarter * 3, 1);
+        break;
+      default: // month
+        startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+        break;
+    }
+
+    // Get completed appointments with pricing
+    const completedAppointments = await prisma.appointment.findMany({
+      where: {
+        doctorId: doctor.id,
+        status: "COMPLETED",
+        datetime: {
+          gte: startDate,
+          lte: now,
+        },
+      },
+      include: {
+        pricing: {
+          include: {
+            clinic: true,
+          },
+        },
+        timeSlot: {
+          include: {
+            schedule: {
+              include: {
+                clinic: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    // Calculate total revenue
+    const totalRevenue = completedAppointments.reduce(
+      (total, apt) => total + (Number(apt.pricing?.price) || 0),
+      0
+    );
+
+    // Revenue by clinic
+    const revenueByClinic = completedAppointments.reduce((acc, apt) => {
+      const clinicName =
+        apt.timeSlot?.schedule?.clinic?.name ||
+        apt.pricing?.clinic?.name ||
+        "Sin clínica";
+      const revenue = Number(apt.pricing?.price) || 0;
+      acc[clinicName] = (acc[clinicName] || 0) + revenue;
+      return acc;
+    }, {} as Record<string, number>);
+
+    // Daily revenue trends (last 30 days)
+    const dailyRevenue: Array<{
+      date: string;
+      revenue: number;
+      appointments: number;
+    }> = [];
+
+    for (let i = 29; i >= 0; i--) {
+      const date = new Date(now);
+      date.setDate(now.getDate() - i);
+      const dayStart = new Date(date.setHours(0, 0, 0, 0));
+      const dayEnd = new Date(date.setHours(23, 59, 59, 999));
+
+      const dayAppointments = completedAppointments.filter((apt) => {
+        const aptDate = new Date(apt.datetime);
+        return aptDate >= dayStart && aptDate <= dayEnd;
+      });
+
+      const dayRevenue = dayAppointments.reduce(
+        (total, apt) => total + (Number(apt.pricing?.price) || 0),
+        0
+      );
+
+      dailyRevenue.push({
+        date: dayStart.toISOString().split("T")[0],
+        revenue: dayRevenue,
+        appointments: dayAppointments.length,
+      });
+    }
+
+    // Average appointment value
+    const averageValue =
+      completedAppointments.length > 0
+        ? totalRevenue / completedAppointments.length
+        : 0;
+
+    // Monthly comparison (current vs previous month)
+    const previousMonthStart = new Date(
+      now.getFullYear(),
+      now.getMonth() - 1,
+      1
+    );
+    const previousMonthEnd = new Date(now.getFullYear(), now.getMonth(), 0);
+
+    const previousMonthAppointments = await prisma.appointment.count({
+      where: {
+        doctorId: doctor.id,
+        status: "COMPLETED",
+        datetime: {
+          gte: previousMonthStart,
+          lte: previousMonthEnd,
+        },
+      },
+    });
+
+    const currentMonthAppointments = completedAppointments.length;
+    const growthRate =
+      previousMonthAppointments > 0
+        ? Math.round(
+            ((currentMonthAppointments - previousMonthAppointments) /
+              previousMonthAppointments) *
+              100
+          )
+        : 100;
+
+    // Peak revenue days
+    const peakDays = dailyRevenue
+      .sort((a, b) => b.revenue - a.revenue)
+      .slice(0, 5)
+      .map((day) => ({
+        date: new Date(day.date).toLocaleDateString("es-ES", {
+          weekday: "long",
+          day: "numeric",
+          month: "short",
+        }),
+        revenue: day.revenue,
+        appointments: day.appointments,
+      }));
+
+    const analytics = {
+      totalRevenue,
+      averageValue,
+      totalAppointments: completedAppointments.length,
+      growthRate,
+      revenueByClinic,
+      dailyRevenue,
+      peakDays,
+      insights: [
+        growthRate > 10
+          ? `Crecimiento excelente: ${growthRate}% vs mes anterior`
+          : growthRate > 0
+          ? `Crecimiento moderado: ${growthRate}% vs mes anterior`
+          : `Oportunidad de crecimiento: ${Math.abs(
+              growthRate
+            )}% menos que el mes anterior`,
+        averageValue > 50000
+          ? "Valor promedio de consulta alto"
+          : "Oportunidad de incrementar valor promedio",
+        Object.keys(revenueByClinic).length > 1
+          ? "Buena diversificación entre clínicas"
+          : "Considera expandir a más clínicas",
+      ],
+    };
+
+    return { success: true, data: analytics };
+  } catch (error) {
+    console.error("Error fetching revenue analytics:", error);
+    return { success: false, error: "Failed to fetch revenue analytics" };
+  }
+}

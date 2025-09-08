@@ -47,8 +47,8 @@ const sidebarItems = [
     icon: MessageSquare,
   },
   {
-    label: "Reportes",
-    href: "/dashboard/doctor/reports",
+    label: "Analytics",
+    href: "/dashboard/doctor/analytics",
     icon: BarChart3,
   },
   {

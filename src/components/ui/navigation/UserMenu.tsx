@@ -9,6 +9,7 @@ import {
   LogOut,
   Calendar,
   Activity,
+  BarChart3,
 } from "lucide-react";
 
 export default function UserMenu() {
@@ -74,6 +75,11 @@ export default function UserMenu() {
             label: "Mis Citas",
             href: "/dashboard/doctor/appointments",
             icon: Calendar,
+          },
+          {
+            label: "Analytics",
+            href: "/dashboard/doctor/analytics",
+            icon: BarChart3,
           },
           {
             label: "Configuración",
