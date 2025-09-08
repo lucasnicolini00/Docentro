@@ -20,7 +20,7 @@ interface Appointment {
   clinic: {
     id: string;
     name: string;
-    address: string;
+    address: string | null;
   };
 }
 

@@ -1,6 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { createAppointmentAction } from "@/lib/actions/appointments";
+import { getTimeSlotsForCalendarAction } from "@/lib/actions/timeSlots";
 import {
   CalendarBooking,
   AvailableTimeSlot,
@@ -30,7 +32,7 @@ export default function CalendarBookingWithData({
   const [consultationType, setConsultationType] = useState("REGULAR");
   const [notes, setNotes] = useState("");
 
-  // Fetch available time slots from the API
+  // Fetch available time slots using server action
   const fetchTimeSlots = async () => {
     try {
       setLoading(true);
@@ -39,19 +41,17 @@ export default function CalendarBookingWithData({
       const endDate = new Date();
       endDate.setDate(endDate.getDate() + 30); // Next 30 days
 
-      const response = await fetch(
-        `/api/time-slots/${doctorId}/${clinicId}?` +
-          new URLSearchParams({
-            startDate: new Date().toISOString(),
-            endDate: endDate.toISOString(),
-          })
-      );
+      // Use server action instead of API fetch
+      const result = await getTimeSlotsForCalendarAction(doctorId, clinicId, {
+        startDate: new Date(),
+        endDate: endDate,
+      });
 
-      if (!response.ok) {
-        throw new Error("Error al cargar horarios disponibles");
+      if (!result.success) {
+        throw new Error(result.error || "Error al cargar horarios disponibles");
       }
 
-      const timeSlots = await response.json();
+      const timeSlots = result.data;
       const calendarSlots = generateTimeSlotEvents(timeSlots);
       setAvailableSlots(calendarSlots);
     } catch (err) {
@@ -79,24 +79,13 @@ export default function CalendarBookingWithData({
     try {
       setBookingLoading(true);
 
-      // Create the appointment
-      const response = await fetch("/api/appointments", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          timeSlotId: selectedSlot.id,
-          type: consultationType,
-          notes: notes,
-        }),
-      });
+      // Create form data for the server action
+      const formData = new FormData();
+      formData.append("type", consultationType);
+      if (notes) formData.append("notes", notes);
 
-      if (!response.ok) {
-        throw new Error("Error al crear la cita");
-      }
-
-      const result = await response.json();
+      // Use server action instead of API route
+      const result = await createAppointmentAction(selectedSlot.id, formData);
 
       if (result.success) {
         // Clear selection and refresh data

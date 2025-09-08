@@ -11,6 +11,113 @@ import {
 import { AppointmentStatus, AppointmentType } from "@prisma/client";
 
 /**
+ * Create appointment via Server Action (replaces /api/appointments POST)
+ */
+export async function createAppointmentAction(
+  timeSlotId: string,
+  formData: FormData
+): Promise<ActionResult> {
+  try {
+    const validation = await validatePatient();
+    if ("error" in validation) {
+      return { success: false, error: validation.error };
+    }
+
+    if (!timeSlotId) {
+      return { success: false, error: "ID de horario requerido" };
+    }
+
+    const result = await createAppointmentWithTimeSlot(timeSlotId, formData);
+
+    if (result.success) {
+      revalidatePath("/dashboard/patient/appointments");
+      revalidatePath("/dashboard/doctor/appointments");
+      return {
+        success: true,
+        data: result.data,
+        message: "Cita creada exitosamente",
+      };
+    }
+
+    return result;
+  } catch (error) {
+    console.error("Error creating appointment:", error);
+    return { success: false, error: "Error interno del servidor" };
+  }
+}
+
+/**
+ * Get user appointments (replaces /api/appointments GET)
+ */
+export async function getUserAppointments(): Promise<ActionResult> {
+  try {
+    const authResult = await validateAuth();
+    if (!authResult) {
+      return { success: false, error: "No autorizado" };
+    }
+
+    const session = authResult;
+
+    if (!session.user?.email) {
+      return { success: false, error: "Email de usuario requerido" };
+    }
+
+    if (session.user.role === "PATIENT") {
+      const patient = await prisma.patient.findFirst({
+        where: { user: { email: session.user.email } },
+      });
+
+      if (!patient) {
+        return { success: false, error: "Paciente no encontrado" };
+      }
+
+      const appointments = await prisma.appointment.findMany({
+        where: { patientId: patient.id },
+        include: {
+          doctor: {
+            include: { user: true },
+          },
+          clinic: true,
+          pricing: true,
+          timeSlot: true,
+        },
+        orderBy: { datetime: "asc" },
+      });
+
+      return { success: true, data: appointments };
+    } else if (session.user.role === "DOCTOR") {
+      const doctor = await prisma.doctor.findFirst({
+        where: { user: { email: session.user.email } },
+      });
+
+      if (!doctor) {
+        return { success: false, error: "Doctor no encontrado" };
+      }
+
+      const appointments = await prisma.appointment.findMany({
+        where: { doctorId: doctor.id },
+        include: {
+          patient: {
+            include: { user: true },
+          },
+          clinic: true,
+          pricing: true,
+          timeSlot: true,
+        },
+        orderBy: { datetime: "asc" },
+      });
+
+      return { success: true, data: appointments };
+    }
+
+    return { success: false, error: "Rol de usuario no válido" };
+  } catch (error) {
+    console.error("Error fetching appointments:", error);
+    return { success: false, error: "Error interno del servidor" };
+  }
+}
+
+/**
  * Get doctor appointments for calendar view
  */
 export async function getDoctorAppointments(
@@ -55,6 +162,13 @@ export async function getDoctorAppointments(
             phone: true,
           },
         },
+        clinic: {
+          select: {
+            id: true,
+            name: true,
+            address: true,
+          },
+        },
         timeSlot: {
           select: {
             id: true,
@@ -80,9 +194,7 @@ export async function getDoctorAppointments(
         },
       },
       orderBy: {
-        timeSlot: {
-          startTime: "asc",
-        },
+        datetime: "asc",
       },
     });
 

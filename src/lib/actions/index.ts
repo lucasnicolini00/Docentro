@@ -71,3 +71,11 @@ export {
 
 // Analytics actions
 export { getDashboardStats, getScheduleAnalytics } from "./analytics";
+
+// Time Slots actions
+export {
+  getTimeSlotsForBooking,
+  getDoctorWeeklySchedule,
+  getAvailabilityOverview,
+  getTimeSlotsForCalendarAction,
+} from "./timeSlots";

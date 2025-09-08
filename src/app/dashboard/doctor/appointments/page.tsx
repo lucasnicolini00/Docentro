@@ -1,15 +1,45 @@
 import { requireDoctor } from "@/lib/auth-guards";
+import { getDoctorAppointments } from "@/lib/actions/appointments";
 import { DoctorAppointmentList } from "@/components/features";
+import { validateDoctor } from "@/lib/actions/utils";
 
 export default async function DoctorAppointments() {
   await requireDoctor();
 
-  // This would typically fetch all appointments
-  const mockAppointments = {
-    pending: [],
-    today: [],
-    upcoming: [],
-    completed: [],
+  // Get doctor from session
+  const validation = await validateDoctor();
+  if ("error" in validation) {
+    return (
+      <div className="space-y-6">
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+          <div className="text-center">
+            <h1 className="text-2xl font-bold text-gray-900">
+              Error al cargar las citas
+            </h1>
+            <p className="text-gray-600">{validation.error}</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Fetch real appointments using server action
+  const appointments = await getDoctorAppointments(validation.doctor.id);
+
+  // Organize appointments by status
+  const organizedAppointments = {
+    pending: appointments.filter((apt) => apt.status === "PENDING"),
+    today: appointments.filter((apt) => {
+      const today = new Date();
+      const aptDate = new Date(apt.datetime);
+      return aptDate.toDateString() === today.toDateString();
+    }),
+    upcoming: appointments.filter((apt) => {
+      const today = new Date();
+      const aptDate = new Date(apt.datetime);
+      return aptDate > today && apt.status === "CONFIRMED";
+    }),
+    completed: appointments.filter((apt) => apt.status === "COMPLETED"),
   };
 
   return (
@@ -38,7 +68,9 @@ export default async function DoctorAppointments() {
             </div>
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600">Hoy</p>
-              <p className="text-2xl font-bold text-gray-900">5</p>
+              <p className="text-2xl font-bold text-gray-900">
+                {organizedAppointments.today.length}
+              </p>
             </div>
           </div>
         </div>
@@ -50,7 +82,9 @@ export default async function DoctorAppointments() {
             </div>
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600">Pendientes</p>
-              <p className="text-2xl font-bold text-gray-900">8</p>
+              <p className="text-2xl font-bold text-gray-900">
+                {organizedAppointments.pending.length}
+              </p>
             </div>
           </div>
         </div>
@@ -62,7 +96,9 @@ export default async function DoctorAppointments() {
             </div>
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600">Completadas</p>
-              <p className="text-2xl font-bold text-gray-900">142</p>
+              <p className="text-2xl font-bold text-gray-900">
+                {organizedAppointments.completed.length}
+              </p>
             </div>
           </div>
         </div>
@@ -70,11 +106,13 @@ export default async function DoctorAppointments() {
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
           <div className="flex items-center">
             <div className="h-12 w-12 bg-red-500 rounded-lg flex items-center justify-center">
-              <span className="text-white text-xl">❌</span>
+              <span className="text-white text-xl">📋</span>
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Canceladas</p>
-              <p className="text-2xl font-bold text-gray-900">12</p>
+              <p className="text-sm font-medium text-gray-600">Próximas</p>
+              <p className="text-2xl font-bold text-gray-900">
+                {organizedAppointments.upcoming.length}
+              </p>
             </div>
           </div>
         </div>
@@ -84,19 +122,19 @@ export default async function DoctorAppointments() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="space-y-6">
           <DoctorAppointmentList
-            appointments={mockAppointments.pending}
+            appointments={organizedAppointments.pending}
             title="Citas Pendientes de Confirmación"
           />
 
           <DoctorAppointmentList
-            appointments={mockAppointments.today}
+            appointments={organizedAppointments.today}
             title="Citas de Hoy"
           />
         </div>
 
         <div className="space-y-6">
           <DoctorAppointmentList
-            appointments={mockAppointments.upcoming}
+            appointments={organizedAppointments.upcoming}
             title="Próximas Citas"
           />
         </div>
