@@ -13,27 +13,27 @@ export async function getOptimizedDashboardStats(): Promise<ActionResult> {
       return { success: false, error: validation.error };
     }
 
-    const { doctor } = validation;
+    // const { doctor } = validation;
 
     // Get current date ranges
-    const now = new Date();
-    const startOfToday = new Date(
-      now.getFullYear(),
-      now.getMonth(),
-      now.getDate()
-    );
-    const startOfWeek = new Date(now);
-    startOfWeek.setDate(now.getDate() - now.getDay());
-    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    // const now = new Date();
+    // const startOfToday = new Date(
+    //   now.getFullYear(),
+    //   now.getMonth(),
+    //   now.getDate()
+    // );
+    // const startOfWeek = new Date(now);
+    // startOfWeek.setDate(now.getDate() - now.getDay());
+    // const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
 
     // Previous periods
-    const yesterday = new Date(startOfToday.getTime() - 24 * 60 * 60 * 1000);
-    const lastWeekStart = new Date(
-      startOfWeek.getTime() - 7 * 24 * 60 * 60 * 1000
-    );
-    const lastWeekEnd = new Date(startOfWeek.getTime() - 1);
-    const lastMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-    const lastMonthEnd = new Date(now.getFullYear(), now.getMonth(), 0);
+    // const yesterday = new Date(startOfToday.getTime() - 24 * 60 * 60 * 1000);
+    // const lastWeekStart = new Date(
+    //   startOfWeek.getTime() - 7 * 24 * 60 * 60 * 1000
+    // );
+    // const lastWeekEnd = new Date(startOfWeek.getTime() - 1);
+    // const lastMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+    // const lastMonthEnd = new Date(now.getFullYear(), now.getMonth(), 0);
 
     // Single optimized query using raw SQL for better performance
     const statsQuery = `
@@ -113,9 +113,9 @@ export async function getOptimizedDashboardStats(): Promise<ActionResult> {
       FROM appointment_stats ast, revenue_stats rst, slot_stats sst;
     `;
 
-    const endOfToday = new Date(startOfToday.getTime() + 24 * 60 * 60 * 1000);
-    const endOfYesterday = startOfToday;
-    const endOfWeek = now;
+    // const endOfToday = new Date(startOfToday.getTime() + 24 * 60 * 60 * 1000);
+    // const endOfYesterday = startOfToday;
+    // const endOfWeek = now;
 
     const result = (await prisma.$queryRaw`${statsQuery}`) as any[];
 
