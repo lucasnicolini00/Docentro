@@ -26,6 +26,18 @@ export async function getDashboardStats(): Promise<ActionResult> {
     startOfWeek.setDate(now.getDate() - now.getDay());
     const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
 
+    // Get previous periods for comparison
+    const yesterday = new Date(startOfToday.getTime() - 24 * 60 * 60 * 1000);
+    const startOfYesterday = new Date(yesterday);
+
+    const lastWeekStart = new Date(
+      startOfWeek.getTime() - 7 * 24 * 60 * 60 * 1000
+    );
+    const lastWeekEnd = new Date(startOfWeek.getTime() - 1);
+
+    const lastMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+    const lastMonthEnd = new Date(now.getFullYear(), now.getMonth(), 0);
+
     // Get today's appointments
     const todayAppointments = await prisma.appointment.count({
       where: {
@@ -37,6 +49,17 @@ export async function getDashboardStats(): Promise<ActionResult> {
       },
     });
 
+    // Get yesterday's appointments for comparison
+    const yesterdayAppointments = await prisma.appointment.count({
+      where: {
+        doctorId: doctor.id,
+        datetime: {
+          gte: startOfYesterday,
+          lt: startOfToday,
+        },
+      },
+    });
+
     // Get this week's appointments
     const weekAppointments = await prisma.appointment.count({
       where: {
@@ -44,6 +67,17 @@ export async function getDashboardStats(): Promise<ActionResult> {
         datetime: {
           gte: startOfWeek,
           lt: now,
+        },
+      },
+    });
+
+    // Get last week's appointments for comparison
+    const lastWeekAppointments = await prisma.appointment.count({
+      where: {
+        doctorId: doctor.id,
+        datetime: {
+          gte: lastWeekStart,
+          lt: lastWeekEnd,
         },
       },
     });
@@ -89,6 +123,28 @@ export async function getDashboardStats(): Promise<ActionResult> {
       0
     );
 
+    // Calculate last month's revenue for comparison
+    const lastMonthAppointments = await prisma.appointment.findMany({
+      where: {
+        doctorId: doctor.id,
+        datetime: {
+          gte: lastMonthStart,
+          lt: lastMonthEnd,
+        },
+        status: "COMPLETED",
+      },
+      include: {
+        pricing: true,
+      },
+    });
+
+    const lastMonthRevenue = lastMonthAppointments.reduce(
+      (total, appointment) =>
+        total +
+        (appointment.pricing?.price ? Number(appointment.pricing.price) : 0),
+      0
+    );
+
     // Calculate utilization rate using time slots
     const totalTimeSlots = await prisma.timeSlot.count({
       where: {
@@ -120,6 +176,99 @@ export async function getDashboardStats(): Promise<ActionResult> {
         ? Math.round((bookedTimeSlots / totalTimeSlots) * 100)
         : 0;
 
+    // Calculate last month's utilization for comparison
+    const lastMonthTotalSlots = await prisma.timeSlot.count({
+      where: {
+        schedule: {
+          doctorId: doctor.id,
+        },
+        createdAt: {
+          gte: lastMonthStart,
+          lt: lastMonthEnd,
+        },
+      },
+    });
+
+    const lastMonthBookedSlots = await prisma.timeSlot.count({
+      where: {
+        schedule: {
+          doctorId: doctor.id,
+        },
+        isBooked: true,
+        createdAt: {
+          gte: lastMonthStart,
+          lt: lastMonthEnd,
+        },
+      },
+    });
+
+    const lastMonthUtilization =
+      lastMonthTotalSlots > 0
+        ? Math.round((lastMonthBookedSlots / lastMonthTotalSlots) * 100)
+        : 0;
+
+    // Get last month's total patients for comparison
+    const lastMonthPatients = await prisma.appointment.groupBy({
+      by: ["patientId"],
+      where: {
+        doctorId: doctor.id,
+        datetime: {
+          gte: lastMonthStart,
+          lt: lastMonthEnd,
+        },
+      },
+      _count: {
+        patientId: true,
+      },
+    });
+
+    // Calculate percentage changes
+    const calculateChange = (current: number, previous: number) => {
+      if (previous === 0) return current > 0 ? 100 : 0;
+      return Math.round(((current - previous) / previous) * 100);
+    };
+
+    const appointmentDayChange = calculateChange(
+      todayAppointments,
+      yesterdayAppointments
+    );
+    const appointmentWeekChange = calculateChange(
+      weekAppointments,
+      lastWeekAppointments
+    );
+    const revenueChange = calculateChange(monthlyRevenue, lastMonthRevenue);
+    const utilizationChange = calculateChange(
+      utilizationRate,
+      lastMonthUtilization
+    );
+    const patientsChange = calculateChange(
+      totalPatients.length,
+      lastMonthPatients.length
+    );
+
+    // Helper function to determine change type
+    const getChangeType = (
+      value: number
+    ): "increase" | "decrease" | "neutral" => {
+      if (value > 0) return "increase";
+      if (value < 0) return "decrease";
+      return "neutral";
+    };
+
+    // Helper function to get change text
+    const getChangeText = (
+      value: number,
+      unit: string,
+      comparisonPeriod: string
+    ): string => {
+      if (value === 0) {
+        return `Sin cambios vs ${comparisonPeriod}`;
+      }
+      return `${Math.abs(value)}${unit} ${
+        value >= 0 ? "más" : "menos"
+      } vs ${comparisonPeriod}`;
+    };
+
     const stats = {
       todayAppointments,
       weekAppointments,
@@ -127,12 +276,334 @@ export async function getDashboardStats(): Promise<ActionResult> {
       utilizationRate,
       pendingBookings,
       totalPatients: totalPatients.length,
+      // Comparative data
+      changes: {
+        appointmentDay: {
+          value: appointmentDayChange,
+          type: getChangeType(appointmentDayChange),
+          text: getChangeText(appointmentDayChange, "", "ayer"),
+        },
+        appointmentWeek: {
+          value: appointmentWeekChange,
+          type: getChangeType(appointmentWeekChange),
+          text: getChangeText(appointmentWeekChange, "%", "semana anterior"),
+        },
+        revenue: {
+          value: revenueChange,
+          type: getChangeType(revenueChange),
+          text: getChangeText(revenueChange, "%", "mes anterior"),
+        },
+        utilization: {
+          value: utilizationChange,
+          type: getChangeType(utilizationChange),
+          text: getChangeText(utilizationChange, "%", "mes anterior"),
+        },
+        patients: {
+          value: patientsChange,
+          type: getChangeType(patientsChange),
+          text: getChangeText(patientsChange, "", "mes anterior"),
+        },
+      },
     };
 
     return { success: true, data: stats };
   } catch (error) {
     console.error("Error fetching dashboard stats:", error);
     return { success: false, error: "Failed to fetch dashboard statistics" };
+  }
+}
+
+/**
+ * Server action to get recent activities for the dashboard
+ */
+export async function getRecentActivities(): Promise<ActionResult> {
+  try {
+    const validation = await validateDoctor();
+    if ("error" in validation) {
+      return { success: false, error: validation.error };
+    }
+
+    const { doctor } = validation;
+
+    // Get recent appointments (last 24 hours)
+    const recentAppointments = await prisma.appointment.findMany({
+      where: {
+        doctorId: doctor.id,
+        createdAt: {
+          gte: new Date(Date.now() - 24 * 60 * 60 * 1000), // Last 24 hours
+        },
+      },
+      include: {
+        patient: {
+          include: {
+            user: true,
+          },
+        },
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+      take: 3, // Get latest 3 appointments
+    });
+
+    // Get recent schedule updates (last 24 hours)
+    const recentScheduleUpdates = await prisma.schedule.findMany({
+      where: {
+        doctorId: doctor.id,
+        updatedAt: {
+          gte: new Date(Date.now() - 24 * 60 * 60 * 1000),
+        },
+      },
+      include: {
+        clinic: true,
+      },
+      orderBy: {
+        updatedAt: "desc",
+      },
+      take: 2, // Get latest 2 schedule updates
+    });
+
+    // Get new patients (registered in the last 7 days who have appointments)
+    const newPatients = await prisma.appointment.findMany({
+      where: {
+        doctorId: doctor.id,
+        patient: {
+          user: {
+            createdAt: {
+              gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000), // Last 7 days
+            },
+          },
+        },
+      },
+      include: {
+        patient: {
+          include: {
+            user: true,
+          },
+        },
+      },
+      orderBy: {
+        patient: {
+          user: {
+            createdAt: "desc",
+          },
+        },
+      },
+      take: 1, // Get info about recent new patients
+    });
+
+    // Format activities with timestamps
+    const activities: Array<{
+      id: string;
+      type: string;
+      icon: string;
+      title: string;
+      timestamp: Date;
+      iconColor: string;
+    }> = [];
+
+    // Add appointment activities
+    recentAppointments.forEach((appointment) => {
+      activities.push({
+        id: `appointment-${appointment.id}`,
+        type: "appointment",
+        icon: "Calendar",
+        title: `Nueva cita agendada con ${appointment.patient.user.firstName} ${appointment.patient.user.lastName}`,
+        timestamp: appointment.createdAt,
+        iconColor: "green",
+      });
+    });
+
+    // Add schedule update activities
+    recentScheduleUpdates.forEach((schedule) => {
+      activities.push({
+        id: `schedule-${schedule.id}`,
+        type: "schedule",
+        icon: "Clock",
+        title: `Horario actualizado para ${schedule.clinic?.name || "clínica"}`,
+        timestamp: schedule.updatedAt,
+        iconColor: "blue",
+      });
+    });
+
+    // Add new patient activities
+    if (newPatients.length > 0) {
+      const uniquePatients = new Map();
+      newPatients.forEach((appointment) => {
+        const patientId = appointment.patient.id;
+        if (!uniquePatients.has(patientId)) {
+          uniquePatients.set(patientId, appointment.patient);
+        }
+      });
+
+      if (uniquePatients.size > 0) {
+        activities.push({
+          id: `patients-new`,
+          type: "patient",
+          icon: "Users",
+          title: `${uniquePatients.size} ${
+            uniquePatients.size === 1
+              ? "nuevo paciente registrado"
+              : "nuevos pacientes registrados"
+          }`,
+          timestamp: newPatients[0].patient.user.createdAt,
+          iconColor: "purple",
+        });
+      }
+    }
+
+    // Sort all activities by timestamp (most recent first)
+    activities.sort(
+      (a, b) =>
+        new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+    );
+
+    // Take only the 3 most recent activities
+    const recentActivities = activities.slice(0, 3);
+
+    // Format timestamps for display
+    const formatTimestamp = (timestamp: Date) => {
+      const now = new Date();
+      const diffInMinutes = Math.floor(
+        (now.getTime() - timestamp.getTime()) / (1000 * 60)
+      );
+
+      if (diffInMinutes < 1) return "Hace un momento";
+      if (diffInMinutes < 60)
+        return `Hace ${diffInMinutes} minuto${diffInMinutes > 1 ? "s" : ""}`;
+
+      const diffInHours = Math.floor(diffInMinutes / 60);
+      if (diffInHours < 24)
+        return `Hace ${diffInHours} hora${diffInHours > 1 ? "s" : ""}`;
+
+      const diffInDays = Math.floor(diffInHours / 24);
+      return `Hace ${diffInDays} día${diffInDays > 1 ? "s" : ""}`;
+    };
+
+    const formattedActivities = recentActivities.map((activity) => ({
+      ...activity,
+      timeAgo: formatTimestamp(new Date(activity.timestamp)),
+    }));
+
+    return { success: true, data: formattedActivities };
+  } catch (error) {
+    console.error("Error fetching recent activities:", error);
+    return { success: false, error: "Failed to fetch recent activities" };
+  }
+}
+
+/**
+ * Server action to get upcoming appointments for the dashboard
+ */
+export async function getUpcomingAppointments(): Promise<ActionResult> {
+  try {
+    const validation = await validateDoctor();
+    if ("error" in validation) {
+      return { success: false, error: validation.error };
+    }
+
+    const { doctor } = validation;
+
+    // Get current date and next 7 days
+    const now = new Date();
+    const endOfWeek = new Date(now);
+    endOfWeek.setDate(now.getDate() + 7); // Next 7 days
+
+    // Get upcoming appointments
+    const upcomingAppointments = await prisma.appointment.findMany({
+      where: {
+        doctorId: doctor.id,
+        datetime: {
+          gte: now,
+          lte: endOfWeek,
+        },
+        status: {
+          in: ["CONFIRMED", "PENDING"], // Only confirmed or pending appointments
+        },
+      },
+      include: {
+        patient: {
+          include: {
+            user: true,
+          },
+        },
+        pricing: true,
+      },
+      orderBy: {
+        datetime: "asc",
+      },
+      take: 3, // Get next 3 appointments
+    });
+
+    // Format appointments for display
+    const formatTime = (datetime: Date) => {
+      return datetime.toLocaleTimeString("es-ES", {
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: true,
+      });
+    };
+
+    const formatDate = (datetime: Date) => {
+      const today = new Date();
+      const tomorrow = new Date(today);
+      tomorrow.setDate(today.getDate() + 1);
+
+      // Check if it's today
+      if (datetime.toDateString() === today.toDateString()) {
+        return "Hoy";
+      }
+
+      // Check if it's tomorrow
+      if (datetime.toDateString() === tomorrow.toDateString()) {
+        return "Mañana";
+      }
+
+      // Check if it's this week
+      const diffTime = datetime.getTime() - today.getTime();
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+      if (diffDays <= 7) {
+        const dayNames = [
+          "Domingo",
+          "Lunes",
+          "Martes",
+          "Miércoles",
+          "Jueves",
+          "Viernes",
+          "Sábado",
+        ];
+        return dayNames[datetime.getDay()];
+      }
+
+      // Otherwise, return formatted date
+      return datetime.toLocaleDateString("es-ES", {
+        month: "short",
+        day: "numeric",
+      });
+    };
+
+    const getAppointmentType = (pricing: any) => {
+      if (pricing?.title) {
+        return pricing.title;
+      }
+      return "Consulta general";
+    };
+
+    const formattedAppointments = upcomingAppointments.map((appointment) => ({
+      id: appointment.id,
+      patientName: `${appointment.patient.user.firstName} ${appointment.patient.user.lastName}`,
+      type: getAppointmentType(appointment.pricing),
+      time: formatTime(appointment.datetime),
+      date: formatDate(appointment.datetime),
+      status: appointment.status,
+      datetime: appointment.datetime,
+    }));
+
+    return { success: true, data: formattedAppointments };
+  } catch (error) {
+    console.error("Error fetching upcoming appointments:", error);
+    return { success: false, error: "Failed to fetch upcoming appointments" };
   }
 }
 

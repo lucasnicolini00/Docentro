@@ -1,6 +1,7 @@
 "use client";
 
 import { Session } from "next-auth";
+import { useSession } from "next-auth/react";
 
 interface DoctorHeaderProps {
   session: Session;
@@ -13,13 +14,24 @@ interface DoctorHeaderProps {
 
 export default function DoctorHeader({
   session,
-  title,
   subtitle,
   showDate = true,
   showProfile = true,
-  customContent,
 }: DoctorHeaderProps) {
-  const defaultTitle = `Bienvenido Dr. ${session.user.name}`;
+  const { status } = useSession();
+  const getDoctorName = () => {
+    if (!session?.user?.name) return "Doctor";
+
+    const fullName = session.user.name.trim();
+    const nameParts = fullName.split(" ");
+    if (
+      fullName.toLowerCase().includes("dr.") ||
+      fullName.toLowerCase().includes("dra.")
+    ) {
+      return fullName;
+    }
+    return `Dr. ${nameParts[0]}`;
+  };
   const defaultSubtitle = showDate
     ? `Panel de control médico - ${new Date().toLocaleDateString("es-ES", {
         weekday: "long",
@@ -31,12 +43,17 @@ export default function DoctorHeader({
 
   return (
     <div className="bg-gradient-to-r from-blue-600 to-blue-900 text-white -m-6 mb-6">
-      <div className="px-6 py-8 max-w-7xl mx-auto">
+      <div className="px-3 py-5 max-w-7xl mx-auto">
         <div className="flex items-center justify-between">
           <div className="flex-1">
-            <h1 className="text-3xl font-bold">{title || defaultTitle}</h1>
+            <h1 className="text-3xl font-bold mb-2">
+              {status === "loading" ? (
+                <span className="animate-pulse">¡Bienvenido de vuelta!</span>
+              ) : (
+                `¡Bienvenido de vuelta, ${getDoctorName()}!`
+              )}
+            </h1>
             <p className="mt-2 text-blue-100">{subtitle || defaultSubtitle}</p>
-            {customContent && <div className="mt-4">{customContent}</div>}
           </div>
 
           {showProfile && (
@@ -47,13 +64,6 @@ export default function DoctorHeader({
                     <span className="text-xl font-bold">
                       {session.user.name?.charAt(0)}
                     </span>
-                  </div>
-                  <div>
-                    <p className="font-medium text-lg">{session.user.name}</p>
-                    <p className="text-sm text-blue-100">Especialista Médico</p>
-                    <p className="text-xs text-blue-200 mt-1">
-                      {session.user.email}
-                    </p>
                   </div>
                 </div>
               </div>
