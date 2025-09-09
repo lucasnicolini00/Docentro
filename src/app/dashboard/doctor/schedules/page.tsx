@@ -4,7 +4,6 @@ import {
   EnhancedScheduleManagement,
   ScheduleAnalytics,
 } from "@/components/features";
-import { SchedulesPageWrapper } from "@/components/ui/navigation";
 
 export default async function DoctorSchedules() {
   await requireDoctor();
@@ -17,7 +16,7 @@ export default async function DoctorSchedules() {
 
   if (!schedulesResult.success || !clinicsResult.success) {
     return (
-      <SchedulesPageWrapper>
+      <div className="p-6">
         <div className="text-center py-8">
           <h2 className="text-xl font-semibold text-gray-900 mb-2">
             Error al cargar los datos
@@ -26,7 +25,7 @@ export default async function DoctorSchedules() {
             {schedulesResult.error || clinicsResult.error}
           </p>
         </div>
-      </SchedulesPageWrapper>
+      </div>
     );
   }
 
@@ -34,10 +33,20 @@ export default async function DoctorSchedules() {
   const clinics = clinicsResult.data?.clinics || [];
 
   return (
-    <SchedulesPageWrapper>
+    <div className="p-6">
+      {/* Page Header */}
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold text-gray-900">
+          Horarios de Atención
+        </h1>
+        <p className="text-gray-600 mt-1">
+          Configura tu disponibilidad semanal
+        </p>
+      </div>
+
       <div className="space-y-8">
         {/* Analytics Section */}
-        <ScheduleAnalytics doctorId="current-doctor-id" />
+        <ScheduleAnalytics />
 
         {/* Schedule Management Section */}
         <EnhancedScheduleManagement
@@ -45,6 +54,6 @@ export default async function DoctorSchedules() {
           clinics={clinics}
         />
       </div>
-    </SchedulesPageWrapper>
+    </div>
   );
 }

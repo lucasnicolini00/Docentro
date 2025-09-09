@@ -3,7 +3,7 @@ import StatCard from "./StatCard";
 import { DashboardStats } from "./types";
 
 interface StatisticsGridProps {
-  stats: DashboardStats;
+  stats: DashboardStats | null;
   loading: boolean;
 }
 
@@ -11,51 +11,72 @@ export default function StatisticsGrid({
   stats,
   loading,
 }: StatisticsGridProps) {
+  // Provide default values when stats is null
+  const defaultStats: DashboardStats = {
+    todayAppointments: 0,
+    weekAppointments: 0,
+    monthlyRevenue: 0,
+    utilizationRate: 0,
+    pendingBookings: 0,
+    totalPatients: 0,
+    changes: {
+      appointmentDay: { value: 0, text: "0%", type: "neutral" },
+      appointmentWeek: { value: 0, text: "0%", type: "neutral" },
+      revenue: { value: 0, text: "0%", type: "neutral" },
+      utilization: { value: 0, text: "0%", type: "neutral" },
+      patients: { value: 0, text: "0%", type: "neutral" },
+    },
+  };
+
+  const currentStats = stats || defaultStats;
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       <StatCard
         title="Citas de Hoy"
-        value={stats.todayAppointments}
-        change={stats.changes?.appointmentDay.text}
-        changeType={stats.changes?.appointmentDay.type}
+        value={currentStats.todayAppointments}
+        change={currentStats.changes?.appointmentDay.text}
+        changeType={currentStats.changes?.appointmentDay.type}
         icon={Calendar}
         loading={loading}
       />
       <StatCard
         title="Esta Semana"
-        value={stats.weekAppointments}
-        change={stats.changes?.appointmentWeek.text}
-        changeType={stats.changes?.appointmentWeek.type}
+        value={currentStats.weekAppointments}
+        change={currentStats.changes?.appointmentWeek.text}
+        changeType={currentStats.changes?.appointmentWeek.type}
         icon={Clock}
         loading={loading}
       />
       <StatCard
         title="Ingresos del Mes"
-        value={loading ? "" : `$${stats.monthlyRevenue.toLocaleString()}`}
-        change={stats.changes?.revenue.text}
-        changeType={stats.changes?.revenue.type}
+        value={
+          loading ? "" : `$${currentStats.monthlyRevenue.toLocaleString()}`
+        }
+        change={currentStats.changes?.revenue.text}
+        changeType={currentStats.changes?.revenue.type}
         icon={BarChart3}
         loading={loading}
       />
       <StatCard
-        title="Utilización"
-        value={loading ? "" : `${stats.utilizationRate}%`}
-        change={stats.changes?.utilization.text}
-        changeType={stats.changes?.utilization.type}
+        title="Tasa de Utilización"
+        value={loading ? "" : `${currentStats.utilizationRate}%`}
+        change={currentStats.changes?.utilization.text}
+        changeType={currentStats.changes?.utilization.type}
         icon={BarChart3}
         loading={loading}
       />
       <StatCard
-        title="Solicitudes Pendientes"
-        value={stats.pendingBookings}
+        title="Citas Pendientes"
+        value={currentStats.pendingBookings}
         icon={Clock}
         loading={loading}
       />
       <StatCard
         title="Total Pacientes"
-        value={stats.totalPatients}
-        change={stats.changes?.patients.text}
-        changeType={stats.changes?.patients.type}
+        value={currentStats.totalPatients}
+        change={currentStats.changes?.patients.text}
+        changeType={currentStats.changes?.patients.type}
         icon={Users}
         loading={loading}
       />

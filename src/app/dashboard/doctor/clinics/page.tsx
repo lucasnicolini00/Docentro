@@ -1,6 +1,5 @@
 import { requireDoctor } from "@/lib/auth-guards";
 import { getDoctorClinics } from "@/lib/actions/clinics";
-import { ClinicsPageWrapper } from "@/components/ui/navigation";
 import ClinicsManagement from "./components/ClinicsManagementRefactored";
 
 export default async function DoctorClinicsPage() {
@@ -12,14 +11,14 @@ export default async function DoctorClinicsPage() {
 
   if (!result.success || !result.data) {
     return (
-      <ClinicsPageWrapper>
+      <div className="p-6">
         <div className="text-center py-12">
           <h2 className="text-2xl font-bold text-gray-900 mb-4">
             Error al cargar las clínicas
           </h2>
           <p className="text-gray-600">{result.error}</p>
         </div>
-      </ClinicsPageWrapper>
+      </div>
     );
   }
 
@@ -38,8 +37,14 @@ export default async function DoctorClinicsPage() {
   }));
 
   return (
-    <ClinicsPageWrapper>
+    <div className="p-6">
+      {/* Page Header */}
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold text-gray-900">Clínicas y Precios</h1>
+        <p className="text-gray-600 mt-1">Gestiona tus ubicaciones y tarifas</p>
+      </div>
+
       <ClinicsManagement initialClinics={transformedClinics} />
-    </ClinicsPageWrapper>
+    </div>
   );
 }

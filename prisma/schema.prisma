@@ -243,6 +243,8 @@ model Schedule {
   deletedAt DateTime?
 
   @@unique([doctorId, clinicId, dayOfWeek])
+  // Performance indexes for schedule queries
+  @@index([doctorId, updatedAt])
 }
 
 model TimeSlot {
@@ -262,6 +264,10 @@ model TimeSlot {
   deletedAt DateTime?
 
   @@unique([scheduleId, startTime])
+  // Performance indexes for utilization rate queries
+  @@index([scheduleId, isBooked])
+  @@index([scheduleId, createdAt])
+  @@index([scheduleId, isBooked, createdAt])
 }
 
 model Appointment {
@@ -286,6 +292,12 @@ model Appointment {
   updatedAt DateTime @updatedAt
   deletedAt DateTime?
 
+  // Performance indexes for dashboard queries
+  @@index([doctorId, datetime])
+  @@index([doctorId, status])
+  @@index([doctorId, createdAt])
+  @@index([doctorId, status, datetime])
+  @@index([patientId, doctorId])
 }
 
 model Opinion {

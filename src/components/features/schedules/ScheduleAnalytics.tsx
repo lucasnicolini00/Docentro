@@ -18,7 +18,7 @@ interface ScheduleAnalytics {
 }
 
 interface ScheduleAnalyticsProps {
-  doctorId: string;
+  doctorId?: string;
 }
 
 export default function ScheduleAnalytics({
@@ -139,33 +139,36 @@ export default function ScheduleAnalytics({
           <h3 className="text-lg font-semibold text-gray-900 mb-4">
             Distribución por Día de la Semana
           </h3>
-          <div className="space-y-3">
-            {Object.entries(analytics.schedulesByDay).map(([day, slots]) => (
-              <div key={day} className="flex items-center justify-between">
-                <span className="text-sm font-medium text-gray-700 w-20">
-                  {day}
-                </span>
-                <div className="flex-1 mx-4">
-                  <div className="bg-gray-200 rounded-full h-2">
-                    <div
-                      className="bg-blue-600 h-2 rounded-full"
-                      style={{
-                        width: `${
-                          (slots /
-                            Math.max(
-                              ...Object.values(analytics.schedulesByDay)
-                            )) *
-                          100
-                        }%`,
-                      }}
-                    ></div>
+          <div className="space-y-2">
+            {Object.entries(analytics.schedulesByDay || {}).map(
+              ([day, slots]) => (
+                <div key={day} className="flex items-center justify-between">
+                  <span className="text-sm text-gray-600 capitalize">
+                    {day}
+                  </span>
+                  <div className="flex items-center space-x-2">
+                    <div className="w-20 bg-gray-200 rounded-full h-2">
+                      <div
+                        className="bg-blue-600 h-2 rounded-full"
+                        style={{
+                          width: `${Math.min(
+                            100,
+                            (slots /
+                              Math.max(
+                                ...Object.values(analytics.schedulesByDay || {})
+                              )) *
+                              100
+                          )}%`,
+                        }}
+                      ></div>
+                    </div>
                   </div>
+                  <span className="text-sm font-semibold text-gray-900 w-8">
+                    {slots}
+                  </span>
                 </div>
-                <span className="text-sm font-semibold text-gray-900 w-8">
-                  {slots}
-                </span>
-              </div>
-            ))}
+              )
+            )}
           </div>
         </div>
 
@@ -175,7 +178,7 @@ export default function ScheduleAnalytics({
             Próxima Semana
           </h3>
           <div className="space-y-3">
-            {analytics.upcomingWeekSlots.map((day) => (
+            {(analytics.upcomingWeekSlots || []).map((day) => (
               <div
                 key={day.date}
                 className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
@@ -308,7 +311,7 @@ export default function ScheduleAnalytics({
             </h4>
             <p className="text-sm text-green-700 mb-3">
               Los{" "}
-              {Object.entries(analytics.schedulesByDay)
+              {Object.entries(analytics.schedulesByDay || {})
                 .sort(([, a], [, b]) => b - a)
                 .slice(0, 2)
                 .map(([day]) => day)
