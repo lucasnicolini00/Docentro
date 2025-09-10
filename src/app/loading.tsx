@@ -5,7 +5,7 @@ export default function Loading() {
     <div className="min-h-screen bg-gray-50">
       <Navbar />
 
-      <div className="flex items-center justify-center px-4 py-16">
+      <div className="flex items-center justify-center px-4 py-16 align-middle">
         <div className="text-center">
           {/* Medical-themed loading animation */}
           <div className="relative mb-8">
@@ -23,13 +23,6 @@ export default function Loading() {
 
           {/* Additional loading indicators */}
           <div className="mt-8 space-y-3">
-            <div className="h-3 bg-gray-200 rounded-full overflow-hidden">
-              <div
-                className="h-full bg-blue-600 rounded-full animate-pulse"
-                style={{ width: "45%" }}
-              ></div>
-            </div>
-
             <div className="flex space-x-2 justify-center">
               <div className="w-2 h-2 bg-blue-600 rounded-full animate-bounce"></div>
               <div

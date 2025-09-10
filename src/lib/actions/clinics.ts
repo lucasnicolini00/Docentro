@@ -31,19 +31,23 @@ export async function getDoctorClinics() {
       },
     });
 
-    const clinicsWithPricing = doctorClinics.map((dc) => ({
-      ...dc.clinic,
-      createdAt: dc.clinic.createdAt.toISOString(),
-      updatedAt: dc.clinic.updatedAt.toISOString(),
-      deletedAt: dc.clinic.deletedAt?.toISOString() || null,
-      pricings: dc.clinic.pricing.map((pricing) => ({
-        ...pricing,
-        price: pricing.price.toNumber(),
-        createdAt: pricing.createdAt.toISOString(),
-        updatedAt: pricing.updatedAt.toISOString(),
-        deletedAt: pricing.deletedAt?.toISOString() || null,
-      })),
-    }));
+    // Properly serialize all Decimal and Date objects
+    const clinicsWithPricing = doctorClinics.map((dc) => {
+      const { pricing, ...clinicWithoutPricing } = dc.clinic;
+      return {
+        ...clinicWithoutPricing,
+        createdAt: dc.clinic.createdAt.toISOString(),
+        updatedAt: dc.clinic.updatedAt.toISOString(),
+        deletedAt: dc.clinic.deletedAt?.toISOString() || null,
+        pricings: pricing.map((pricingItem) => ({
+          ...pricingItem,
+          price: pricingItem.price.toNumber(), // Convert Decimal to number
+          createdAt: pricingItem.createdAt.toISOString(),
+          updatedAt: pricingItem.updatedAt.toISOString(),
+          deletedAt: pricingItem.deletedAt?.toISOString() || null,
+        })),
+      };
+    });
 
     return {
       success: true,
@@ -310,6 +314,30 @@ export async function updatePricing(
 export async function togglePricingStatus(pricingId: string) {
   try {
     const session = await requireDoctor();
+
+    // Development mode bypass
+    if (
+      process.env.NODE_ENV === "development" &&
+      session.user.id === "dev-user-id"
+    ) {
+      return {
+        success: true,
+        data: {
+          id: pricingId,
+          doctorId: "dev-doctor-id",
+          clinicId: "dev-clinic-1",
+          title: "Dev Pricing",
+          price: 150,
+          currency: "BOB",
+          durationMinutes: 30,
+          description: "Development pricing",
+          isActive: true, // Toggle the status
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          deletedAt: null,
+        },
+      };
+    }
 
     const doctor = await prisma.doctor.findUnique({
       where: { userId: session.user.id },

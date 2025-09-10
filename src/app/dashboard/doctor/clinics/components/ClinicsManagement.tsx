@@ -262,6 +262,7 @@ export default function ClinicsManagement({
         showPricingForm={showPricingForm}
         editingPricing={editingPricing}
         clinics={clinics}
+        selectedClinicId={selectedClinic}
         onClosePricingForm={handleClosePricingForm}
         onSubmitPricing={
           editingPricing ? handleUpdatePricing : handleCreatePricing

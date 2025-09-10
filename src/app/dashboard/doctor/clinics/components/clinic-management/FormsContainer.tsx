@@ -12,6 +12,7 @@ interface FormsContainerProps {
   showPricingForm: boolean;
   editingPricing: Pricing | null;
   clinics: Clinic[];
+  selectedClinicId?: string;
   onClosePricingForm: () => void;
   onSubmitPricing: (formData: FormData) => void;
 }
@@ -24,6 +25,7 @@ export default function FormsContainer({
   showPricingForm,
   editingPricing,
   clinics,
+  selectedClinicId,
   onClosePricingForm,
   onSubmitPricing,
 }: FormsContainerProps) {
@@ -57,6 +59,7 @@ export default function FormsContainer({
           isOpen={showPricingForm}
           onClose={onClosePricingForm}
           onSubmit={onSubmitPricing}
+          selectedClinicId={selectedClinicId}
           clinics={clinics.map((clinic) => ({
             id: clinic.id,
             name: clinic.name,

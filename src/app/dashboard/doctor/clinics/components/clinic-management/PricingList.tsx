@@ -7,6 +7,7 @@ import {
   CheckCircle,
   AlertCircle,
 } from "lucide-react";
+import { Tooltip } from "@/components/ui";
 import { Pricing } from "./types";
 import { formatPrice } from "./utils";
 
@@ -65,35 +66,47 @@ export default function PricingList({
                   </p>
                 </div>
                 <div className="flex items-center space-x-1">
-                  <button
-                    onClick={() => onTogglePricingStatus(pricing.id, clinicId)}
-                    disabled={isPending}
-                    className={`p-1 rounded ${
-                      pricing.isActive
-                        ? "text-green-600 hover:bg-green-50"
-                        : "text-gray-400 hover:bg-gray-50"
-                    }`}
+                  <Tooltip
+                    content={
+                      pricing.isActive ? "Desactivar tarifa" : "Activar tarifa"
+                    }
                   >
-                    {pricing.isActive ? (
-                      <CheckCircle className="w-5 h-5" />
-                    ) : (
-                      <AlertCircle className="w-5 h-5" />
-                    )}
-                  </button>
-                  <button
-                    onClick={() => onEditPricing(pricing, clinicId)}
-                    disabled={isPending}
-                    className="p-1 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded disabled:opacity-50"
-                  >
-                    <Edit className="w-4 h-4" />
-                  </button>
-                  <button
-                    onClick={() => onDeletePricing(pricing.id, clinicId)}
-                    disabled={isPending}
-                    className="p-1 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded disabled:opacity-50"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
+                    <button
+                      onClick={() =>
+                        onTogglePricingStatus(pricing.id, clinicId)
+                      }
+                      disabled={isPending}
+                      className={`p-1 rounded ${
+                        pricing.isActive
+                          ? "text-green-600 hover:bg-green-50"
+                          : "text-gray-400 hover:bg-gray-50"
+                      }`}
+                    >
+                      {pricing.isActive ? (
+                        <CheckCircle className="w-5 h-5" />
+                      ) : (
+                        <AlertCircle className="w-5 h-5" />
+                      )}
+                    </button>
+                  </Tooltip>
+                  <Tooltip content="Editar tarifa">
+                    <button
+                      onClick={() => onEditPricing(pricing, clinicId)}
+                      disabled={isPending}
+                      className="p-1 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded disabled:opacity-50"
+                    >
+                      <Edit className="w-4 h-4" />
+                    </button>
+                  </Tooltip>
+                  <Tooltip content="Eliminar tarifa">
+                    <button
+                      onClick={() => onDeletePricing(pricing.id, clinicId)}
+                      disabled={isPending}
+                      className="p-1 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded disabled:opacity-50"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </Tooltip>
                 </div>
               </div>
 
