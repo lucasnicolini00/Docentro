@@ -2,13 +2,11 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { useSession } from "next-auth/react";
 import UserMenu from "./UserMenu";
-import { Menu, X, Search, Bell } from "lucide-react";
+import { Menu, X, Search } from "lucide-react";
 
 export default function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const { data: session } = useSession();
 
   const navigationItems = [
     { name: "Inicio", href: "/" },
