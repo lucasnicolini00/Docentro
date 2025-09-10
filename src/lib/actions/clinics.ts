@@ -10,29 +10,39 @@ export async function getDoctorClinics() {
 
     const doctor = await prisma.doctor.findUnique({
       where: { userId: session.user.id },
-      include: {
-        clinics: {
-          include: {
-            clinic: {
-              include: {
-                pricing: {
-                  where: { doctorId: { not: undefined } },
-                  orderBy: { title: "asc" },
-                },
-              },
-            },
-          },
-        },
-      },
     });
 
     if (!doctor) {
       return { success: false, error: "Doctor no encontrado" };
     }
 
-    const clinicsWithPricing = doctor.clinics.map((dc) => ({
+    // Get doctor's clinics with pricing data
+    const doctorClinics = await prisma.doctorClinic.findMany({
+      where: { doctorId: doctor.id },
+      include: {
+        clinic: {
+          include: {
+            pricing: {
+              where: { doctorId: doctor.id },
+              orderBy: { title: "asc" },
+            },
+          },
+        },
+      },
+    });
+
+    const clinicsWithPricing = doctorClinics.map((dc) => ({
       ...dc.clinic,
-      pricings: dc.clinic.pricing,
+      createdAt: dc.clinic.createdAt.toISOString(),
+      updatedAt: dc.clinic.updatedAt.toISOString(),
+      deletedAt: dc.clinic.deletedAt?.toISOString() || null,
+      pricings: dc.clinic.pricing.map((pricing) => ({
+        ...pricing,
+        price: pricing.price.toNumber(),
+        createdAt: pricing.createdAt.toISOString(),
+        updatedAt: pricing.updatedAt.toISOString(),
+        deletedAt: pricing.deletedAt?.toISOString() || null,
+      })),
     }));
 
     return {
@@ -90,7 +100,12 @@ export async function createClinic(data: {
 
     return {
       success: true,
-      data: clinic,
+      data: {
+        ...clinic,
+        createdAt: clinic.createdAt.toISOString(),
+        updatedAt: clinic.updatedAt.toISOString(),
+        deletedAt: clinic.deletedAt?.toISOString() || null,
+      },
     };
   } catch (error) {
     console.error("Error creating clinic:", error);
@@ -151,7 +166,12 @@ export async function updateClinic(
 
     return {
       success: true,
-      data: clinic,
+      data: {
+        ...clinic,
+        createdAt: clinic.createdAt.toISOString(),
+        updatedAt: clinic.updatedAt.toISOString(),
+        deletedAt: clinic.deletedAt?.toISOString() || null,
+      },
     };
   } catch (error) {
     console.error("Error updating clinic:", error);
@@ -211,7 +231,13 @@ export async function createPricing(data: {
 
     return {
       success: true,
-      data: pricing,
+      data: {
+        ...pricing,
+        price: pricing.price.toNumber(),
+        createdAt: pricing.createdAt.toISOString(),
+        updatedAt: pricing.updatedAt.toISOString(),
+        deletedAt: pricing.deletedAt?.toISOString() || null,
+      },
     };
   } catch (error) {
     console.error("Error creating pricing:", error);
@@ -267,7 +293,13 @@ export async function updatePricing(
 
     return {
       success: true,
-      data: pricing,
+      data: {
+        ...pricing,
+        price: pricing.price.toNumber(),
+        createdAt: pricing.createdAt.toISOString(),
+        updatedAt: pricing.updatedAt.toISOString(),
+        deletedAt: pricing.deletedAt?.toISOString() || null,
+      },
     };
   } catch (error) {
     console.error("Error updating pricing:", error);
@@ -308,7 +340,13 @@ export async function togglePricingStatus(pricingId: string) {
 
     return {
       success: true,
-      data: pricing,
+      data: {
+        ...pricing,
+        price: pricing.price.toNumber(),
+        createdAt: pricing.createdAt.toISOString(),
+        updatedAt: pricing.updatedAt.toISOString(),
+        deletedAt: pricing.deletedAt?.toISOString() || null,
+      },
     };
   } catch (error) {
     console.error("Error toggling pricing status:", error);

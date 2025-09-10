@@ -53,7 +53,7 @@ export default function ClinicForm({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+    <div className="fixed inset-0 bg-black/40 backdrop-blur-xs z-50 flex items-center justify-center p-4">
       <div className="bg-white rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
@@ -69,7 +69,11 @@ export default function ClinicForm({
         </div>
 
         {/* Form */}
-        <form onSubmit={handleSubmit} className="p-6 space-y-6">
+        <form
+          onSubmit={handleSubmit}
+          className="p-6 space-y-6"
+          autoComplete="off"
+        >
           {/* Clinic Type */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-3">
@@ -124,6 +128,7 @@ export default function ClinicForm({
               name="name"
               value={formData.name}
               onChange={handleInputChange}
+              autoComplete="off"
               required
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               placeholder="Ej: Clínica Central, Consultas Online"
@@ -144,6 +149,7 @@ export default function ClinicForm({
               name="address"
               value={formData.address}
               onChange={handleInputChange}
+              autoComplete="off"
               required
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               placeholder={
@@ -170,8 +176,9 @@ export default function ClinicForm({
                   name="country"
                   value={formData.country}
                   onChange={handleInputChange}
+                  autoComplete="off"
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="Chile"
+                  placeholder="Bolivia"
                 />
               </div>
 
@@ -188,8 +195,9 @@ export default function ClinicForm({
                   name="city"
                   value={formData.city}
                   onChange={handleInputChange}
+                  autoComplete="off"
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="Santiago"
+                  placeholder="Santa Cruz"
                 />
               </div>
 
@@ -206,8 +214,9 @@ export default function ClinicForm({
                   name="neighborhood"
                   value={formData.neighborhood}
                   onChange={handleInputChange}
+                  autoComplete="off"
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="Las Condes"
+                  placeholder="La Palmas"
                 />
               </div>
             </div>

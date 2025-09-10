@@ -606,9 +606,46 @@ export async function getDoctorClinicsAndPricing(
       return { success: false, error: "Doctor no encontrado" };
     }
 
+    // Serialize the data to ensure Decimal and Date objects are properly converted
+    const serializedDoctor = {
+      ...doctor,
+      createdAt: doctor.createdAt.toISOString(),
+      updatedAt: doctor.updatedAt.toISOString(),
+      deletedAt: doctor.deletedAt?.toISOString() || null,
+      user: {
+        ...doctor.user,
+        createdAt: doctor.user.createdAt.toISOString(),
+        updatedAt: doctor.user.updatedAt.toISOString(),
+        deletedAt: doctor.user.deletedAt?.toISOString() || null,
+      },
+      clinics: doctor.clinics.map((dc) => ({
+        ...dc,
+        createdAt: dc.createdAt.toISOString(),
+        clinic: {
+          ...dc.clinic,
+          createdAt: dc.clinic.createdAt.toISOString(),
+          updatedAt: dc.clinic.updatedAt.toISOString(),
+          deletedAt: dc.clinic.deletedAt?.toISOString() || null,
+        },
+      })),
+      pricings: doctor.pricings.map((pricing) => ({
+        ...pricing,
+        price: pricing.price.toNumber(), // Convert Decimal to number
+        createdAt: pricing.createdAt.toISOString(),
+        updatedAt: pricing.updatedAt.toISOString(),
+        deletedAt: pricing.deletedAt?.toISOString() || null,
+        clinic: {
+          ...pricing.clinic,
+          createdAt: pricing.clinic.createdAt.toISOString(),
+          updatedAt: pricing.clinic.updatedAt.toISOString(),
+          deletedAt: pricing.clinic.deletedAt?.toISOString() || null,
+        },
+      })),
+    };
+
     return {
       success: true,
-      data: doctor,
+      data: serializedDoctor,
     };
   } catch (error) {
     console.error("Error getting doctor clinics and pricing:", error);

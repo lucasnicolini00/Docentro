@@ -89,3 +89,7 @@ body {
 .animate-slide-down {
   animation: slideInFromTop 0.4s ease-out;
 }
+
+button {
+  cursor: pointer;
+}

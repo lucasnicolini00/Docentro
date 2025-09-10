@@ -5,60 +5,54 @@ import {
   updatePricing,
 } from "@/lib/actions/clinics";
 
-// Wrapper functions to convert FormData to expected object format
-export async function createClinicWrapper(formData: FormData) {
-  const data = {
-    name: formData.get("name") as string,
-    address: formData.get("address") as string,
-    isVirtual: formData.get("isVirtual") === "true",
-    country: (formData.get("country") as string) || undefined,
-    city: (formData.get("city") as string) || undefined,
-    neighborhood: (formData.get("neighborhood") as string) || undefined,
+// Wrapper functions to convert data to expected object format
+export async function createClinicWrapper(data: any) {
+  const clinicData = {
+    name: data.name as string,
+    address: data.address as string,
+    isVirtual: data.isVirtual === true || data.isVirtual === "true",
+    country: data.country || undefined,
+    city: data.city || undefined,
+    neighborhood: data.neighborhood || undefined,
   };
-  return createClinic(data);
+  return createClinic(clinicData);
 }
 
-export async function updateClinicWrapper(
-  clinicId: string,
-  formData: FormData
-) {
-  const data = {
-    name: formData.get("name") as string,
-    address: formData.get("address") as string,
-    isVirtual: formData.get("isVirtual") === "true",
-    country: (formData.get("country") as string) || undefined,
-    city: (formData.get("city") as string) || undefined,
-    neighborhood: (formData.get("neighborhood") as string) || undefined,
+export async function updateClinicWrapper(clinicId: string, data: any) {
+  const clinicData = {
+    name: data.name as string,
+    address: data.address as string,
+    isVirtual: data.isVirtual === true || data.isVirtual === "true",
+    country: data.country || undefined,
+    city: data.city || undefined,
+    neighborhood: data.neighborhood || undefined,
   };
-  return updateClinic(clinicId, data);
+  return updateClinic(clinicId, clinicData);
 }
 
-export async function createPricingWrapper(formData: FormData) {
-  const data = {
-    clinicId: formData.get("clinicId") as string,
-    title: formData.get("title") as string,
-    price: parseFloat(formData.get("price") as string),
-    currency: (formData.get("currency") as string) || "BOB",
-    durationMinutes: parseInt(formData.get("durationMinutes") as string),
-    description: (formData.get("description") as string) || undefined,
-    isActive: formData.get("isActive") === "true",
+export async function createPricingWrapper(data: any) {
+  const pricingData = {
+    clinicId: data.clinicId as string,
+    title: data.title as string,
+    price: parseFloat(data.price),
+    currency: data.currency || "BOB",
+    durationMinutes: parseInt(data.durationMinutes),
+    description: data.description || undefined,
+    isActive: data.isActive === true || data.isActive === "true",
   };
-  return createPricing(data);
+  return createPricing(pricingData);
 }
 
-export async function updatePricingWrapper(
-  pricingId: string,
-  formData: FormData
-) {
-  const data = {
-    title: formData.get("title") as string,
-    price: parseFloat(formData.get("price") as string),
-    currency: (formData.get("currency") as string) || "BOB",
-    durationMinutes: parseInt(formData.get("durationMinutes") as string),
-    description: (formData.get("description") as string) || undefined,
-    isActive: formData.get("isActive") === "true",
+export async function updatePricingWrapper(pricingId: string, data: any) {
+  const pricingData = {
+    title: data.title as string,
+    price: parseFloat(data.price),
+    currency: data.currency || "BOB",
+    durationMinutes: parseInt(data.durationMinutes),
+    description: data.description || undefined,
+    isActive: data.isActive === true || data.isActive === "true",
   };
-  return updatePricing(pricingId, data);
+  return updatePricing(pricingId, pricingData);
 }
 
 export const formatPrice = (price: number, currency: string) => {

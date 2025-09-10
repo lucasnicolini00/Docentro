@@ -86,7 +86,7 @@ export default async function DoctorPage({ params }: DoctorPageProps) {
                           {pricing.clinic.name} - Consulta
                         </span>
                         <span className="font-semibold text-green-600">
-                          ${pricing.consultationFee.toLocaleString()}
+                          ${pricing.price.toLocaleString()}
                         </span>
                       </div>
                     ))}
