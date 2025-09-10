@@ -1,11 +1,9 @@
 "use client";
 
-import {
-  StatisticsGrid,
-  QuickActions,
-  RecentActivity,
-  UpcomingAppointments,
-} from "./components";
+import StatisticsGrid from "./components/StatisticsGrid";
+import QuickActions from "./components/QuickActions";
+import RecentActivity from "./components/RecentActivity";
+import UpcomingAppointments from "./components/UpcomingAppointments";
 
 interface DashboardData {
   stats: any;

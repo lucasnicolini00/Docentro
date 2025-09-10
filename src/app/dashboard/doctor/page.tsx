@@ -4,7 +4,7 @@ import {
   getRecentActivities,
   getUpcomingAppointments,
 } from "@/lib/actions/analytics";
-import { DoctorDashboardOverview } from "@/components/features";
+import DoctorDashboardOverview from "./components/DoctorDashboardOverview";
 import { Plus } from "lucide-react";
 import Link from "next/link";
 

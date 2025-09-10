@@ -1,10 +1,11 @@
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import { redirect } from "next/navigation";
+import DoctorCalendar from "./components/DoctorCalendar";
 import {
-  DoctorCalendar,
   transformAppointmentToCalendarEvent,
-} from "@/components/features/calendar";
+  CalendarAppointment,
+} from "./utils";
 import { getDoctorAppointments } from "@/lib/actions/appointments";
 import prisma from "@/lib/prisma";
 

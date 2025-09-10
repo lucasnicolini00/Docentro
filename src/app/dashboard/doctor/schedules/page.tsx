@@ -1,9 +1,7 @@
 import { requireDoctor } from "@/lib/auth-guards";
 import { getDoctorSchedules, getDoctorClinics } from "@/lib/actions";
-import {
-  EnhancedScheduleManagement,
-  ScheduleAnalytics,
-} from "@/components/features";
+import EnhancedScheduleManagement from "./components/EnhancedScheduleManagement";
+import ScheduleAnalytics from "./components/ScheduleAnalytics";
 
 export default async function DoctorSchedules() {
   await requireDoctor();

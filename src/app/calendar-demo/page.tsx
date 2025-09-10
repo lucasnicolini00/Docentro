@@ -1,4 +1,4 @@
-import { CalendarBookingWithData } from "@/components/features/calendar";
+import CalendarBookingWithData from "./components/CalendarBookingWithData";
 
 export default function CalendarDemo() {
   return (

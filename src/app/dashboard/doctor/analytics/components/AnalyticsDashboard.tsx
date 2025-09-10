@@ -9,19 +9,17 @@ import {
 } from "@/lib/actions";
 import { AlertCircle, ChevronDown } from "lucide-react";
 
-// Import smaller components
-import {
-  MetricsCards,
-  WeeklyOverviewChart,
-  PeakHoursChart,
-  AgeGroupsChart,
-  PatientRetentionChart,
-  RevenueOverview,
-  RevenueByClinicChart,
-  ScheduleUtilization,
-  InsightsPanel,
-  TabNavigation,
-} from "./index";
+// Import smaller components - now local
+import MetricsCards from "./MetricsCards";
+import WeeklyOverviewChart from "./WeeklyOverviewChart";
+import PeakHoursChart from "./PeakHoursChart";
+import AgeGroupsChart from "./AgeGroupsChart";
+import PatientRetentionChart from "./PatientRetentionChart";
+import RevenueOverview from "./RevenueOverview";
+import RevenueByClinicChart from "./RevenueByClinicChart";
+import ScheduleUtilization from "./ScheduleUtilization";
+import InsightsPanel from "./InsightsPanel";
+import TabNavigation from "./TabNavigation";
 
 // Type definitions
 interface DashboardStats {

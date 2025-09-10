@@ -3,11 +3,31 @@
 import { useState, useEffect } from "react";
 import { createAppointmentAction } from "@/lib/actions/appointments";
 import { getTimeSlotsForCalendarAction } from "@/lib/actions/timeSlots";
-import {
-  CalendarBooking,
-  AvailableTimeSlot,
-  generateTimeSlotEvents,
-} from "@/components/features/calendar";
+import CalendarBooking from "./CalendarBooking";
+
+// Local types
+interface AvailableTimeSlot {
+  id: string;
+  start: string;
+  end: string;
+  available: boolean;
+  startTime?: string;
+  endTime?: string;
+  isAvailable?: boolean;
+}
+
+// Local utility function
+function generateTimeSlotEvents(timeSlots: any[]) {
+  return timeSlots.map((slot) => ({
+    id: slot.id,
+    start: slot.startTime,
+    end: slot.endTime,
+    available: slot.isAvailable,
+    startTime: slot.startTime,
+    endTime: slot.endTime,
+    isAvailable: slot.isAvailable,
+  }));
+}
 
 interface CalendarBookingWithDataProps {
   doctorId: string;

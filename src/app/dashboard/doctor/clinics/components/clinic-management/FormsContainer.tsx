@@ -1,4 +1,5 @@
-import { ClinicForm, PricingForm } from "@/components/ui/forms";
+import ClinicForm from "./ClinicForm";
+import PricingForm from "./PricingForm";
 import { Clinic, Pricing } from "./types";
 
 interface FormsContainerProps {

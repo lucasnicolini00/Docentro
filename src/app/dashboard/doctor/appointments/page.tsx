@@ -1,6 +1,6 @@
 import { requireDoctor } from "@/lib/auth-guards";
 import { getDoctorAppointments } from "@/lib/actions/appointments";
-import { DoctorAppointmentList } from "@/components/features";
+import DoctorAppointmentList from "./components/DoctorAppointmentList";
 import { validateDoctor } from "@/lib/actions/utils";
 
 export default async function DoctorAppointments() {

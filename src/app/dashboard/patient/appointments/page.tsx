@@ -1,6 +1,6 @@
 import { requirePatient } from "@/lib/auth-guards";
 import { getPatientDashboard } from "@/lib/actions/patients";
-import { AppointmentList } from "@/components/features";
+import AppointmentList from "./components/AppointmentList";
 import { Navbar } from "@/components/ui/navigation";
 
 export default async function PatientAppointments() {

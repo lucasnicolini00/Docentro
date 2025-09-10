@@ -1,7 +1,7 @@
 import { requireDoctor } from "@/lib/auth-guards";
 import { getDoctorProfile, getAllSpecialities } from "@/lib/actions/doctors";
 import { DoctorProfileForm } from "@/components/ui/forms";
-import { DoctorSettingsPanel } from "@/components/features";
+import DoctorSettingsPanel from "./components/DoctorSettingsPanel";
 
 export default async function DoctorProfilePage() {
   // Ensure user is authenticated as a doctor

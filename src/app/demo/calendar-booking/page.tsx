@@ -1,10 +1,16 @@
 "use client";
 
 import { useState } from "react";
-import {
-  CalendarBooking,
-  AvailableTimeSlot,
-} from "@/components/features/calendar";
+import CalendarBooking from "./components/CalendarBooking";
+
+// Local type definition
+interface AvailableTimeSlot {
+  id: string;
+  start: string;
+  end: string;
+  available: boolean;
+  blocked?: boolean;
+}
 
 export default function CalendarBookingDemo() {
   const [selectedSlot, setSelectedSlot] = useState<AvailableTimeSlot | null>(

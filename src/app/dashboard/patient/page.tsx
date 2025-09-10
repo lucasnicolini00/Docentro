@@ -1,7 +1,7 @@
 import { requirePatient } from "@/lib/auth-guards";
 import { getPatientDashboard } from "@/lib/actions/patients";
 import { Navbar } from "@/components/ui/navigation";
-import { AppointmentList } from "@/components/features";
+import AppointmentList from "./components/AppointmentList";
 
 export default async function PatientDashboard() {
   // Ensure user is authenticated as a patient

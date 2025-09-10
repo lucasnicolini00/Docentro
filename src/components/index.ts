@@ -1,6 +1,6 @@
 // Main component exports
 export * from "./ui";
 export * from "./sections";
-export * from "./features";
+// Features are now co-located, no longer exported globally
 export * from "./providers";
 export * from "./dev";

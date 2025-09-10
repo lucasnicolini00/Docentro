@@ -1,5 +1,5 @@
 import { requireDoctor } from "@/lib/auth-guards";
-import { SettingsManagement } from "@/components/features/settings";
+import SettingsManagement from "./components/SettingsManagement";
 import { getDoctorSettings } from "@/lib/actions/settings";
 
 export default async function DoctorSettings() {

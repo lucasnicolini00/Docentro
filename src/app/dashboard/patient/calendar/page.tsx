@@ -1,7 +1,7 @@
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import { redirect } from "next/navigation";
-import { PatientCalendar } from "@/components/features/calendar";
+import PatientCalendar from "./components/PatientCalendar";
 
 export default async function PatientCalendarPage() {
   const session = await getServerSession(authOptions);

@@ -49,7 +49,7 @@ export default function Navbar() {
           {/* Right side - Search, Notifications, User Menu */}
           <div className="flex items-center space-x-4">
             {/* Quick Search (desktop only) */}
-            <div className="hidden lg:flex">
+            {/* <div className="hidden lg:flex">
               <Link
                 href="/search"
                 className="flex items-center space-x-2 text-gray-500 hover:text-blue-600 transition-colors"
@@ -57,9 +57,9 @@ export default function Navbar() {
                 <Search className="w-5 h-5" />
                 <span className="text-sm">Buscar</span>
               </Link>
-            </div>
+            </div> */}
 
-            {/* Notifications (only for logged in users) */}
+            {/* Notifications (only for logged in users)
             {session && (
               <button className="relative p-2 text-gray-500 hover:text-blue-600 transition-colors">
                 <Bell className="w-5 h-5" />
@@ -67,7 +67,7 @@ export default function Navbar() {
                   <span className="sr-only">Nuevas notificaciones</span>
                 </span>
               </button>
-            )}
+            )} */}
 
             {/* User Menu */}
             <UserMenu />

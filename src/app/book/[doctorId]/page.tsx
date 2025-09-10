@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { requirePatient } from "@/lib/auth-guards";
-import { AppointmentBooking } from "@/components/features";
+import AppointmentBooking from "../components/AppointmentBooking";
 import { Navbar } from "@/components/ui/navigation";
 
 async function getDoctorForBooking(doctorId: string) {
