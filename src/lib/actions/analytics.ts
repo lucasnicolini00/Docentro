@@ -685,7 +685,7 @@ export async function getScheduleAnalytics(
     const utilizationRate =
       totalSlots > 0 ? Math.round((bookedSlots / totalSlots) * 100) : 0;
 
-    // Group by day of week
+    // Group by day of week - use schedule.dayOfWeek instead of createdAt
     const schedulesByDay = {
       Lunes: 0,
       Martes: 0,
@@ -696,20 +696,22 @@ export async function getScheduleAnalytics(
       Domingo: 0,
     };
 
-    const dayNames = [
-      "Domingo",
-      "Lunes",
-      "Martes",
-      "Miércoles",
-      "Jueves",
-      "Viernes",
-      "Sábado",
-    ];
+    // Map Prisma DayOfWeek enum to Spanish day names
+    const dayOfWeekMapping = {
+      MONDAY: "Lunes",
+      TUESDAY: "Martes",
+      WEDNESDAY: "Miércoles",
+      THURSDAY: "Jueves",
+      FRIDAY: "Viernes",
+      SATURDAY: "Sábado",
+      SUNDAY: "Domingo",
+    } as const;
 
     timeSlots.forEach((slot) => {
-      const dayOfWeek = new Date(slot.createdAt).getDay();
-      const dayName = dayNames[dayOfWeek] as keyof typeof schedulesByDay;
-      if (schedulesByDay.hasOwnProperty(dayName)) {
+      const scheduleDay = slot.schedule.dayOfWeek;
+      const dayName =
+        dayOfWeekMapping[scheduleDay as keyof typeof dayOfWeekMapping];
+      if (dayName && schedulesByDay.hasOwnProperty(dayName)) {
         schedulesByDay[dayName]++;
       }
     });
@@ -774,6 +776,70 @@ export async function getScheduleAnalytics(
       });
     }
 
+    // Calculate upcoming week slots (next 7 days)
+    const upcomingWeekSlots: Array<{
+      date: string;
+      availableSlots: number;
+      bookedSlots: number;
+    }> = [];
+
+    // Get all schedules for the doctor
+    const doctorSchedules = await prisma.schedule.findMany({
+      where: {
+        doctorId: doctor.id,
+        isActive: true,
+      },
+      include: {
+        timeSlots: true,
+      },
+    });
+
+    // Generate next 7 days
+    for (let i = 1; i <= 7; i++) {
+      const date = new Date(now);
+      date.setDate(now.getDate() + i);
+
+      // Map JS day (0=Sunday, 1=Monday...) to Prisma DayOfWeek
+      const jsDay = date.getDay();
+      const dayMapping = [
+        "SUNDAY",
+        "MONDAY",
+        "TUESDAY",
+        "WEDNESDAY",
+        "THURSDAY",
+        "FRIDAY",
+        "SATURDAY",
+      ];
+      const prismaDay = dayMapping[jsDay];
+
+      // Find schedule for this day
+      const daySchedule = doctorSchedules.find(
+        (s) => s.dayOfWeek === prismaDay
+      );
+
+      if (daySchedule) {
+        const availableSlots = daySchedule.timeSlots.filter(
+          (slot) => !slot.isBooked && !slot.isBlocked
+        ).length;
+        const bookedSlots = daySchedule.timeSlots.filter(
+          (slot) => slot.isBooked
+        ).length;
+
+        upcomingWeekSlots.push({
+          date: date.toISOString().split("T")[0], // YYYY-MM-DD format
+          availableSlots,
+          bookedSlots,
+        });
+      } else {
+        // No schedule for this day
+        upcomingWeekSlots.push({
+          date: date.toISOString().split("T")[0],
+          availableSlots: 0,
+          bookedSlots: 0,
+        });
+      }
+    }
+
     const analytics = {
       totalSlots,
       availableSlots,
@@ -781,6 +847,7 @@ export async function getScheduleAnalytics(
       blockedSlots,
       utilizationRate,
       schedulesByDay,
+      upcomingWeekSlots,
       clinicDistribution,
       weeklyOverview,
       totalRevenue,

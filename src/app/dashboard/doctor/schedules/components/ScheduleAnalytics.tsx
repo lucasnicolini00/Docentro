@@ -131,7 +131,6 @@ export default function ScheduleAnalytics({
           </div>
         </div>
       </div>
-
       {/* Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Schedule Distribution by Day */}
@@ -139,17 +138,17 @@ export default function ScheduleAnalytics({
           <h3 className="text-lg font-semibold text-gray-900 mb-4">
             Distribución por Día de la Semana
           </h3>
-          <div className="space-y-2">
+          <div className="space-y-3">
             {Object.entries(analytics.schedulesByDay || {}).map(
               ([day, slots]) => (
-                <div key={day} className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600 capitalize">
+                <div key={day} className="flex items-center gap-4">
+                  <span className="text-sm text-gray-600 capitalize w-20 flex-shrink-0">
                     {day}
                   </span>
-                  <div className="flex items-center space-x-2">
-                    <div className="w-20 bg-gray-200 rounded-full h-2">
+                  <div className="flex-1">
+                    <div className="w-full bg-gray-200 rounded-full h-2">
                       <div
-                        className="bg-blue-600 h-2 rounded-full"
+                        className="bg-blue-600 h-2 rounded-full transition-all duration-300"
                         style={{
                           width: `${Math.min(
                             100,
@@ -163,19 +162,55 @@ export default function ScheduleAnalytics({
                       ></div>
                     </div>
                   </div>
-                  <span className="text-sm font-semibold text-gray-900 w-8">
+                  <span className="text-sm font-semibold text-gray-900 w-8 text-right flex-shrink-0">
                     {slots}
                   </span>
                 </div>
               )
             )}
           </div>
+
+          {/* Insights Section */}
+          <div className="mt-6 pt-4 border-t border-gray-100">
+            <div className="flex items-center justify-between mb-3">
+              <h4 className="text-sm font-medium text-gray-700">Resumen</h4>
+              <div className="flex items-center space-x-2">
+                <div className="w-2 h-2 bg-blue-600 rounded-full"></div>
+                <span className="text-xs text-gray-500">Horarios por día</span>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3 text-xs">
+              <div className="bg-blue-50 p-2 rounded">
+                <p className="text-blue-700 font-medium">Día más activo</p>
+                <p className="text-blue-900 font-semibold">
+                  {Object.entries(analytics.schedulesByDay || {}).reduce(
+                    (max, [day, slots]) =>
+                      slots > max[1] ? [day, slots] : max,
+                    ["", 0]
+                  )[0] || "N/A"}
+                </p>
+              </div>
+              <div className="bg-gray-50 p-2 rounded">
+                <p className="text-gray-700 font-medium">Día menos activo</p>
+                <p className="text-gray-900 font-semibold">
+                  {Object.entries(analytics.schedulesByDay || {})
+                    .filter(([, slots]) => slots > 0)
+                    .reduce(
+                      (min, [day, slots]) =>
+                        slots < min[1] ? [day, slots] : min,
+                      ["", Infinity]
+                    )[0] || "N/A"}
+                </p>
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* Upcoming Week Overview */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">
-            Próxima Semana
+            Próximos 7 Días
           </h3>
           <div className="space-y-3">
             {(analytics.upcomingWeekSlots || []).map((day) => (
@@ -208,17 +243,13 @@ export default function ScheduleAnalytics({
           </div>
         </div>
       </div>
-
-      {/* Utilization Chart */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+      {/* <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
         <h3 className="text-lg font-semibold text-gray-900 mb-4">
           Distribución de Horarios
         </h3>
         <div className="flex items-center space-x-8">
-          {/* Pie Chart Representation */}
           <div className="relative w-32 h-32">
             <svg className="w-32 h-32 transform -rotate-90" viewBox="0 0 36 36">
-              {/* Background circle */}
               <path
                 d="M18 2.0845
                   a 15.9155 15.9155 0 0 1 0 31.831
@@ -227,7 +258,6 @@ export default function ScheduleAnalytics({
                 stroke="#f3f4f6"
                 strokeWidth="2"
               />
-              {/* Available slots */}
               <path
                 d="M18 2.0845
                   a 15.9155 15.9155 0 0 1 0 31.831
@@ -239,7 +269,6 @@ export default function ScheduleAnalytics({
                   (analytics.availableSlots / analytics.totalSlots) * 100
                 }, 100`}
               />
-              {/* Booked slots */}
               <path
                 d="M18 2.0845
                   a 15.9155 15.9155 0 0 1 0 31.831
@@ -262,7 +291,6 @@ export default function ScheduleAnalytics({
             </div>
           </div>
 
-          {/* Legend */}
           <div className="space-y-2">
             <div className="flex items-center space-x-2">
               <div className="w-3 h-3 bg-green-500 rounded-full"></div>
@@ -284,9 +312,8 @@ export default function ScheduleAnalytics({
             </div>
           </div>
         </div>
-      </div>
-
-      {/* Quick Actions */}
+      </div> */}
+      {/* Quick Actions
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
         <h3 className="text-lg font-semibold text-gray-900 mb-4">
           Acciones Recomendadas
@@ -336,7 +363,7 @@ export default function ScheduleAnalytics({
             </button>
           </div>
         </div>
-      </div>
+      </div> */}
     </div>
   );
 }

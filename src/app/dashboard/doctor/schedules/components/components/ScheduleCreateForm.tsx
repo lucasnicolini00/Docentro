@@ -7,18 +7,38 @@ interface ScheduleCreateFormProps {
   clinics: Clinic[];
   onSubmit: (formData: FormData) => void;
   isPending: boolean;
+  onShowTemplates?: () => void;
 }
 
 export default function ScheduleCreateForm({
   clinics,
   onSubmit,
   isPending,
+  onShowTemplates,
 }: ScheduleCreateFormProps) {
   const [isCreating, setIsCreating] = useState(false);
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const formData = new FormData(event.currentTarget);
+
+    // Basic validation
+    const clinicId = formData.get("clinicId") as string;
+    const dayOfWeek = formData.get("dayOfWeek") as string;
+    const startTime = formData.get("startTime") as string;
+    const endTime = formData.get("endTime") as string;
+
+    if (!clinicId || !dayOfWeek || !startTime || !endTime) {
+      alert("Por favor complete todos los campos requeridos");
+      return;
+    }
+
+    // Validate time range
+    if (startTime >= endTime) {
+      alert("La hora de inicio debe ser anterior a la hora de fin");
+      return;
+    }
+
     onSubmit(formData);
     setIsCreating(false);
     event.currentTarget.reset();
@@ -36,12 +56,22 @@ export default function ScheduleCreateForm({
               Configura tus horarios de atención por clínica
             </p>
           </div>
-          <button
-            onClick={() => setIsCreating(true)}
-            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors"
-          >
-            Crear Nuevo Horario
-          </button>
+          <div className="flex space-x-3">
+            {onShowTemplates && (
+              <button
+                onClick={onShowTemplates}
+                className="bg-white hover:bg-gray-50 text-gray-700 px-4 py-2 rounded-lg transition-colors border border-gray-300 hover:border-gray-400"
+              >
+                Usar Plantillas
+              </button>
+            )}
+            <button
+              onClick={() => setIsCreating(true)}
+              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors"
+            >
+              Crear Nuevo Horario
+            </button>
+          </div>
         </div>
       </div>
     );
@@ -122,6 +152,9 @@ export default function ScheduleCreateForm({
               id="startTime"
               name="startTime"
               required
+              min="06:00"
+              max="23:00"
+              step="900" // 15-minute intervals
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             />
           </div>
@@ -139,8 +172,38 @@ export default function ScheduleCreateForm({
               id="endTime"
               name="endTime"
               required
+              min="06:00"
+              max="23:59"
+              step="900" // 15-minute intervals
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             />
+          </div>
+        </div>
+
+        {/* Helpful Note */}
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+          <div className="flex">
+            <div className="flex-shrink-0">
+              <svg
+                className="h-5 w-5 text-blue-400"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a.75.75 0 000 1.5h.253a.25.25 0 01.244.304l-.459 2.066A1.75 1.75 0 0010.747 15H11a.75.75 0 000-1.5h-.253a.25.25 0 01-.244-.304l.459-2.066A1.75 1.75 0 009.253 9H9z"
+                  clipRule="evenodd"
+                />
+              </svg>
+            </div>
+            <div className="ml-3">
+              <p className="text-sm text-blue-800">
+                <strong>Consejos:</strong>• Asegúrate de que la hora de inicio
+                sea anterior a la hora de fin • Los horarios se pueden
+                configurar desde las 6:00 AM hasta las 11:59 PM • No puedes
+                crear horarios duplicados para el mismo día y clínica
+              </p>
+            </div>
           </div>
         </div>
 

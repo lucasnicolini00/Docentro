@@ -53,6 +53,24 @@ export async function createSchedule(
         startTime: data.startTime,
         endTime: data.endTime,
       },
+      include: {
+        clinic: {
+          select: {
+            id: true,
+            name: true,
+            address: true,
+          },
+        },
+        timeSlots: {
+          where: {
+            isBooked: false,
+            isBlocked: false,
+          },
+          orderBy: {
+            startTime: "asc",
+          },
+        },
+      },
     });
 
     // Generate time slots
@@ -63,8 +81,31 @@ export async function createSchedule(
       data.slotDuration || 30
     );
 
+    // Fetch the schedule again with time slots included
+    const scheduleWithSlots = await prisma.schedule.findUnique({
+      where: { id: schedule.id },
+      include: {
+        clinic: {
+          select: {
+            id: true,
+            name: true,
+            address: true,
+          },
+        },
+        timeSlots: {
+          where: {
+            isBooked: false,
+            isBlocked: false,
+          },
+          orderBy: {
+            startTime: "asc",
+          },
+        },
+      },
+    });
+
     revalidatePath("/dashboard/doctor/schedules");
-    return { success: true, data: schedule };
+    return { success: true, data: scheduleWithSlots || schedule };
   } catch (error) {
     console.error("Error creating schedule:", error);
     return { success: false, error: "Error al crear el horario" };
@@ -203,6 +244,8 @@ export async function getDoctorSchedules(): Promise<ActionResult> {
 
     const { doctor } = validation;
 
+    // Optimized query with proper indexing on doctorId and dayOfWeek
+    // Recommended indexes: (doctorId), (doctorId, dayOfWeek), (scheduleId, isBooked, isBlocked)
     const schedules = await prisma.schedule.findMany({
       where: {
         doctorId: doctor.id,
@@ -223,6 +266,8 @@ export async function getDoctorSchedules(): Promise<ActionResult> {
           orderBy: {
             startTime: "asc",
           },
+          // Limit time slots to reduce data transfer for large schedules
+          take: 100, // Reasonable limit for UI display
         },
       },
       orderBy: [{ dayOfWeek: "asc" }, { startTime: "asc" }],
@@ -245,8 +290,11 @@ export async function createBulkSchedules(
     startTime: string;
     endTime: string;
     slotDuration?: number;
-  }>
+  }>,
+  replaceExisting = false
 ): Promise<ActionResult> {
+  const startTime = Date.now();
+
   try {
     const validation = await validateDoctor();
 
@@ -256,76 +304,196 @@ export async function createBulkSchedules(
 
     const { doctor } = validation;
 
-    // Create multiple schedules
-    const createdSchedules: any[] = [];
+    console.log(
+      `[Performance] Bulk schedule creation started for ${scheduleData.length} schedules (replace: ${replaceExisting})`
+    );
 
-    for (const data of scheduleData) {
-      // Check if schedule already exists for this day
-      const existingSchedule = await prisma.schedule.findUnique({
-        where: {
-          doctorId_clinicId_dayOfWeek: {
-            doctorId: doctor.id,
-            clinicId: clinicId,
-            dayOfWeek: data.dayOfWeek,
+    // Check for existing schedules first
+    const existingSchedules = await prisma.schedule.findMany({
+      where: {
+        doctorId: doctor.id,
+        clinicId: clinicId,
+        dayOfWeek: {
+          in: scheduleData.map((data) => data.dayOfWeek),
+        },
+      },
+      select: {
+        dayOfWeek: true,
+        id: true,
+        startTime: true,
+        endTime: true,
+        // Pre-load time slot count for performance tracking
+        _count: {
+          select: {
+            timeSlots: true,
           },
         },
-      });
+      },
+    });
 
-      if (existingSchedule) {
-        console.log(
-          `Schedule already exists for ${data.dayOfWeek}, skipping...`
-        );
-        continue;
-      }
-
-      // Create the schedule
-      const schedule = await prisma.schedule.create({
-        data: {
-          doctorId: doctor.id,
-          clinicId: clinicId,
-          dayOfWeek: data.dayOfWeek,
-          startTime: data.startTime,
-          endTime: data.endTime,
-        },
-        include: {
-          clinic: {
-            select: {
-              id: true,
-              name: true,
-              address: true,
-            },
-          },
-          timeSlots: true,
-        },
-      });
-
-      // Generate time slots
-      await generateTimeSlots(
-        schedule.id,
-        data.startTime,
-        data.endTime,
-        data.slotDuration || 30
+    if (existingSchedules.length > 0 && !replaceExisting) {
+      const existingDays = existingSchedules.map((s) => s.dayOfWeek);
+      console.log(
+        `[Performance] Found ${existingSchedules.length} existing schedules, requiring confirmation`
       );
-
-      // Fetch the schedule with time slots
-      const scheduleWithSlots = await prisma.schedule.findUnique({
-        where: { id: schedule.id },
-        include: {
-          clinic: {
-            select: {
-              id: true,
-              name: true,
-              address: true,
-            },
-          },
-          timeSlots: true,
+      return {
+        success: false,
+        error: "Ya existen horarios para algunos días. ¿Deseas reemplazarlos?",
+        data: {
+          existingDays,
+          requiresConfirmation: true,
         },
-      });
-
-      if (scheduleWithSlots) {
-        createdSchedules.push(scheduleWithSlots);
-      }
+      };
     }
+
+    // If replacing, delete existing schedules for these days
+    if (replaceExisting && existingSchedules.length > 0) {
+      console.log(
+        `[Performance] Replacing ${existingSchedules.length} existing schedules`
+      );
+    }
+
+    // Use a single atomic transaction for all operations (delete + create)
+    // This ensures data consistency and better performance
+    const result = await prisma.$transaction(
+      async (tx) => {
+        // If replacing, delete existing schedules and time slots first
+        if (replaceExisting && existingSchedules.length > 0) {
+          // Get the schedule IDs for direct deletion (more efficient than nested queries)
+          const scheduleIdsToDelete = existingSchedules.map((s) => s.id);
+          const expectedTimeSlotsToDelete = existingSchedules.reduce(
+            (acc, s) => acc + s._count.timeSlots,
+            0
+          );
+
+          // Delete time slots first using direct schedule IDs (much faster)
+          await tx.timeSlot.deleteMany({
+            where: {
+              scheduleId: {
+                in: scheduleIdsToDelete,
+              },
+            },
+          });
+
+          // Then delete schedules using direct IDs
+          await tx.schedule.deleteMany({
+            where: {
+              id: {
+                in: scheduleIdsToDelete,
+              },
+            },
+          });
+
+          console.log(
+            `[Performance] Replaced ${existingSchedules.length} schedules and ~${expectedTimeSlotsToDelete} time slots`
+          );
+        }
+
+        // Create all schedules in parallel for maximum performance
+        const scheduleCreationPromises = scheduleData.map((data) =>
+          tx.schedule.create({
+            data: {
+              doctorId: doctor.id,
+              clinicId: clinicId,
+              dayOfWeek: data.dayOfWeek,
+              startTime: data.startTime,
+              endTime: data.endTime,
+            },
+          })
+        );
+
+        const createdSchedules = await Promise.all(scheduleCreationPromises);
+
+        // Prepare all time slots for bulk creation to minimize database round trips
+        const allSlots: Array<{
+          scheduleId: string;
+          startTime: string;
+          endTime: string;
+        }> = [];
+
+        for (let i = 0; i < createdSchedules.length; i++) {
+          const schedule = createdSchedules[i];
+          const data = scheduleData[i];
+          const start = parseTime(data.startTime);
+          const end = parseTime(data.endTime);
+          const slotDuration = data.slotDuration || 30;
+
+          let current = start;
+          while (current < end) {
+            const slotStart = formatTime(current);
+            current += slotDuration;
+            const slotEnd = formatTime(current);
+
+            allSlots.push({
+              scheduleId: schedule.id,
+              startTime: slotStart,
+              endTime: slotEnd,
+            });
+          }
+        }
+
+        // Create all time slots in a single batch operation for optimal performance
+        // This can handle hundreds of slots efficiently
+        if (allSlots.length > 0) {
+          await tx.timeSlot.createMany({
+            data: allSlots,
+          });
+        }
+
+        return createdSchedules.map((s) => s.id);
+      },
+      {
+        // Shorter timeout for replacements, longer for initial creation
+        timeout: replaceExisting ? 15000 : 30000, // 15s for replace, 30s for create
+      }
+    );
+
+    // Fetch all created schedules with their relations in a single optimized query
+    const createdSchedules = await prisma.schedule.findMany({
+      where: {
+        id: {
+          in: result,
+        },
+      },
+      include: {
+        clinic: {
+          select: {
+            id: true,
+            name: true,
+            address: true,
+          },
+        },
+        timeSlots: {
+          orderBy: {
+            startTime: "asc", // Order time slots for better UX
+          },
+          // Limit time slots in response to improve network transfer
+          // UI typically doesn't need all slots immediately
+          take: replaceExisting ? 50 : undefined, // Fewer slots when replacing for faster response
+        },
+      },
+      orderBy: [
+        { dayOfWeek: "asc" }, // Order by day of week for consistency
+        { startTime: "asc" },
+      ],
+    });
+
+    const endTime = Date.now();
+    const totalSlots = createdSchedules.reduce(
+      (acc, schedule) => acc + schedule.timeSlots.length,
+      0
+    );
+
+    console.log(
+      `[Performance] Bulk schedule ${
+        replaceExisting ? "REPLACEMENT" : "CREATION"
+      } completed in ${endTime - startTime}ms`
+    );
+    console.log(
+      `[Performance] ${replaceExisting ? "Replaced" : "Created"} ${
+        createdSchedules.length
+      } schedules with ${totalSlots} time slots`
+    );
 
     revalidatePath("/dashboard/doctor/schedules");
     return { success: true, data: createdSchedules };
