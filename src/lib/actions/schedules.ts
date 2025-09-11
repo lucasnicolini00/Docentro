@@ -289,8 +289,6 @@ export async function createBulkSchedules(
   }>,
   replaceExisting = false
 ): Promise<ActionResult> {
-  const startTime = Date.now();
-
   try {
     const validation = await validateDoctor();
 
@@ -343,10 +341,6 @@ export async function createBulkSchedules(
         if (replaceExisting && existingSchedules.length > 0) {
           // Get the schedule IDs for direct deletion (more efficient than nested queries)
           const scheduleIdsToDelete = existingSchedules.map((s) => s.id);
-          const expectedTimeSlotsToDelete = existingSchedules.reduce(
-            (acc, s) => acc + s._count.timeSlots,
-            0
-          );
 
           // Delete time slots first using direct schedule IDs (much faster)
           await tx.timeSlot.deleteMany({
