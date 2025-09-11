@@ -200,15 +200,37 @@ export async function deleteSchedule(
 
     const { doctor } = validation;
 
-    // Check if there are any booked appointments
-    const hasBookedSlots = await prisma.timeSlot.findFirst({
+    // First, let's check if the schedule exists and belongs to this doctor
+    const schedule = await prisma.schedule.findUnique({
       where: {
-        scheduleId: scheduleId,
-        isBooked: true,
+        id: scheduleId,
+      },
+      include: {
+        clinic: true,
+        timeSlots: {
+          where: {
+            isBooked: true,
+          },
+        },
       },
     });
 
-    if (hasBookedSlots) {
+    if (!schedule) {
+      return {
+        success: false,
+        error: "Horario no encontrado",
+      };
+    }
+
+    if (schedule.doctorId !== doctor.id) {
+      return {
+        success: false,
+        error: "No tienes permisos para eliminar este horario",
+      };
+    }
+
+    // Check if there are any booked appointments
+    if (schedule.timeSlots.length > 0) {
       return {
         success: false,
         error: "No se puede eliminar un horario con citas reservadas",
@@ -230,7 +252,6 @@ export async function deleteSchedule(
     return { success: false, error: "Error al eliminar el horario" };
   }
 }
-
 /**
  * Server action for getting doctor's schedules
  */

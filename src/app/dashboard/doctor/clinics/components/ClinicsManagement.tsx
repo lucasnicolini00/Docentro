@@ -2,13 +2,13 @@
 
 import { useState, useTransition } from "react";
 import { togglePricingStatus } from "@/lib/actions/clinics";
+import { ConfirmationModal } from "@/components/ui";
 import {
   ClinicsHeader,
   ClinicsStats,
   ClinicsList,
   LoadingOverlay,
   FormsContainer,
-  ConfirmationModal,
   type Clinic,
   type Pricing,
   type ClinicsManagementProps,

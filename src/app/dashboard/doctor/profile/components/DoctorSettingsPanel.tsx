@@ -1,12 +1,12 @@
 "use client";
 
 import { useState, useEffect, useTransition } from "react";
+import toast from "react-hot-toast";
 import {
   getDoctorSettings,
   updateDoctorSettings,
 } from "@/lib/actions/settings";
 import { LoadingSpinner } from "@/components/ui/feedback";
-import { Toast } from "@/components/ui/feedback";
 
 interface DoctorSettings {
   emailNotifications: boolean;
@@ -25,10 +25,6 @@ export default function DoctorSettingsPanel() {
   const [settings, setSettings] = useState<DoctorSettings | null>(null);
   const [loading, setLoading] = useState(true);
   const [isPending, startTransition] = useTransition();
-  const [toast, setToast] = useState<{
-    message: string;
-    type: "success" | "error";
-  } | null>(null);
 
   // Load settings on mount
   useEffect(() => {
@@ -55,7 +51,7 @@ export default function DoctorSettingsPanel() {
         }
       } catch (error) {
         console.error("Error loading settings:", error);
-        setToast({ message: "Error al cargar configuraciones", type: "error" });
+        toast.error("Error al cargar configuraciones");
       } finally {
         setLoading(false);
       }
@@ -77,22 +73,16 @@ export default function DoctorSettingsPanel() {
       try {
         const result = await updateDoctorSettings({ [key]: newValue });
         if (result.success) {
-          setToast({ message: "Configuración actualizada", type: "success" });
+          toast.success("Configuración actualizada");
         } else {
           // Revert on error
           setSettings(settings);
-          setToast({
-            message: result.error || "Error al actualizar",
-            type: "error",
-          });
+          toast.error(result.error || "Error al actualizar");
         }
       } catch {
         // Revert on error
         setSettings(settings);
-        setToast({
-          message: "Error al actualizar configuración",
-          type: "error",
-        });
+        toast.error("Error al actualizar configuración");
       }
     });
   };
@@ -107,15 +97,12 @@ export default function DoctorSettingsPanel() {
       try {
         const result = await updateDoctorSettings({ consultationPrice: price });
         if (result.success) {
-          setToast({ message: "Precio actualizado", type: "success" });
+          toast.success("Precio actualizado");
         } else {
-          setToast({
-            message: result.error || "Error al actualizar precio",
-            type: "error",
-          });
+          toast.error(result.error || "Error al actualizar precio");
         }
       } catch {
-        setToast({ message: "Error al actualizar precio", type: "error" });
+        toast.error("Error al actualizar precio");
       }
     });
   };
@@ -133,18 +120,12 @@ export default function DoctorSettingsPanel() {
       try {
         const result = await updateDoctorSettings({ [key]: value });
         if (result.success) {
-          setToast({ message: "Configuración actualizada", type: "success" });
+          toast.success("Configuración actualizada");
         } else {
-          setToast({
-            message: result.error || "Error al actualizar",
-            type: "error",
-          });
+          toast.error(result.error || "Error al actualizar");
         }
       } catch {
-        setToast({
-          message: "Error al actualizar configuración",
-          type: "error",
-        });
+        toast.error("Error al actualizar configuración");
       }
     });
   };
@@ -168,16 +149,6 @@ export default function DoctorSettingsPanel() {
 
   return (
     <div className="space-y-8">
-      {/* Toast */}
-      {toast && (
-        <Toast
-          message={toast.message}
-          type={toast.type}
-          isVisible={true}
-          onClose={() => setToast(null)}
-        />
-      )}
-
       {/* Notifications Section */}
       <div className="space-y-4">
         <h3 className="text-lg font-medium text-gray-900">Notificaciones</h3>

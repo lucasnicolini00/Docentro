@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import toast from "react-hot-toast";
 import {
   Calendar,
   Clock,
@@ -10,9 +11,11 @@ import {
   Trash2,
   Lock,
   Unlock,
+  Loader2,
 } from "lucide-react";
 import { deleteSchedule, toggleTimeSlotBlock } from "@/lib/actions/schedules";
 import { Schedule, DAY_NAMES, DAY_ORDER } from "./types";
+import { ConfirmationModal } from "@/components/ui";
 
 interface ScheduleListProps {
   schedules: Schedule[];
@@ -27,6 +30,13 @@ export default function ScheduleList({
     new Set()
   );
   const [isPending, startTransition] = useTransition();
+
+  // Modal and optimistic update states
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [scheduleToDelete, setScheduleToDelete] = useState<string | null>(null);
+  const [deletingSchedule, setDeletingSchedule] = useState<string | null>(null);
+  const [optimisticallyDeletedSchedules, setOptimisticallyDeletedSchedules] =
+    useState<Set<string>>(new Set());
 
   // Toggle expansion for individual schedules
   const toggleScheduleExpansion = (scheduleId: string) => {
@@ -61,6 +71,68 @@ export default function ScheduleList({
     });
   };
 
+  // Modal handlers
+  const openDeleteModal = (scheduleId: string) => {
+    setScheduleToDelete(scheduleId);
+    setDeleteModalOpen(true);
+  };
+
+  const closeDeleteModal = () => {
+    setDeleteModalOpen(false);
+    setScheduleToDelete(null);
+  };
+
+  const confirmDelete = () => {
+    if (scheduleToDelete) {
+      setDeleteModalOpen(false);
+      handleDeleteSchedule(scheduleToDelete);
+    }
+  };
+
+  // Optimistic delete handler
+  const handleDeleteSchedule = async (scheduleId: string) => {
+    setDeletingSchedule(scheduleId);
+
+    // Optimistic update: immediately hide the schedule from UI
+    setOptimisticallyDeletedSchedules((prev) => new Set([...prev, scheduleId]));
+    toast.loading("Eliminando horario...");
+
+    startTransition(async () => {
+      try {
+        const result = await deleteSchedule(scheduleId);
+
+        if (result.success) {
+          toast.dismiss();
+          toast.success("Horario eliminado exitosamente");
+          onScheduleUpdated(); // reload or refetch data
+
+          // Clean up local state (server data will make optimistic set irrelevant)
+          setDeletingSchedule(null);
+        } else {
+          // Revert optimistic update on error
+          setOptimisticallyDeletedSchedules((prev) => {
+            const newSet = new Set(prev);
+            newSet.delete(scheduleId);
+            return newSet;
+          });
+          setDeletingSchedule(null);
+          toast.dismiss();
+          toast.error(`Error al eliminar el horario: ${result.error}`);
+        }
+      } catch {
+        // Revert optimistic update on unexpected error
+        setOptimisticallyDeletedSchedules((prev) => {
+          const newSet = new Set(prev);
+          newSet.delete(scheduleId);
+          return newSet;
+        });
+        setDeletingSchedule(null);
+        toast.dismiss();
+        toast.error("Error inesperado al eliminar el horario");
+      }
+    });
+  };
+
   // Early return if no schedules
   if (!schedules || schedules.length === 0) {
     return (
@@ -78,17 +150,6 @@ export default function ScheduleList({
     );
   }
 
-  const handleDeleteSchedule = async (scheduleId: string) => {
-    if (confirm("¿Estás seguro de que deseas eliminar este horario?")) {
-      startTransition(async () => {
-        const result = await deleteSchedule(scheduleId);
-        if (result.success) {
-          onScheduleUpdated();
-        }
-      });
-    }
-  };
-
   const handleToggleTimeSlot = async (
     timeSlotId: string,
     currentlyBlocked: boolean
@@ -101,24 +162,26 @@ export default function ScheduleList({
     });
   };
 
-  // Group schedules by clinic
-  const schedulesByClinic = schedules.reduce((acc, schedule) => {
-    // Handle cases where clinic might be undefined
-    if (!schedule.clinic || !schedule.clinic.id) {
-      console.warn("Schedule missing clinic information:", schedule);
-      return acc;
-    }
+  // Group schedules by clinic, filtering out optimistically deleted ones
+  const schedulesByClinic = schedules
+    .filter((schedule) => !optimisticallyDeletedSchedules.has(schedule.id))
+    .reduce((acc, schedule) => {
+      // Handle cases where clinic might be undefined
+      if (!schedule.clinic || !schedule.clinic.id) {
+        console.warn("Schedule missing clinic information:", schedule);
+        return acc;
+      }
 
-    const clinicId = schedule.clinic.id;
-    if (!acc[clinicId]) {
-      acc[clinicId] = {
-        clinic: schedule.clinic,
-        schedules: [],
-      };
-    }
-    acc[clinicId].schedules.push(schedule);
-    return acc;
-  }, {} as Record<string, { clinic: any; schedules: Schedule[] }>);
+      const clinicId = schedule.clinic.id;
+      if (!acc[clinicId]) {
+        acc[clinicId] = {
+          clinic: schedule.clinic,
+          schedules: [],
+        };
+      }
+      acc[clinicId].schedules.push(schedule);
+      return acc;
+    }, {} as Record<string, { clinic: any; schedules: Schedule[] }>);
 
   // Sort schedules by day
   const sortSchedulesByDay = (schedules: Schedule[]) => {
@@ -224,12 +287,20 @@ export default function ScheduleList({
                         </div>
                       </div>
                       <button
-                        onClick={() => handleDeleteSchedule(schedule.id)}
-                        disabled={isPending}
+                        onClick={() => openDeleteModal(schedule.id)}
+                        disabled={isPending || deletingSchedule === schedule.id}
                         className="p-2 text-gray-400 hover:text-red-500 rounded-lg hover:bg-red-50 disabled:opacity-50 transition-all duration-200"
-                        title="Eliminar horario"
+                        title={
+                          deletingSchedule === schedule.id
+                            ? "Eliminando..."
+                            : "Eliminar horario"
+                        }
                       >
-                        <Trash2 className="w-4 h-4" />
+                        {deletingSchedule === schedule.id ? (
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                        ) : (
+                          <Trash2 className="w-4 h-4" />
+                        )}
                       </button>
                     </div>
 
@@ -386,6 +457,21 @@ export default function ScheduleList({
           </div>
         </div>
       ))}
+
+      {/* Delete Confirmation Modal */}
+      {deleteModalOpen && (
+        <ConfirmationModal
+          isOpen={deleteModalOpen}
+          onClose={closeDeleteModal}
+          onConfirm={confirmDelete}
+          isLoading={deletingSchedule !== null}
+          title="Eliminar Horario"
+          message="¿Estás seguro de que deseas eliminar este horario? Esta acción no se puede deshacer."
+          confirmText="Eliminar"
+          cancelText="Cancelar"
+          type="danger"
+        />
+      )}
     </div>
   );
 }

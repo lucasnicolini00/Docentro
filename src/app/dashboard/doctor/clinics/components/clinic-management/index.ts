@@ -10,7 +10,6 @@ export { default as PricingForm } from "./PricingForm";
 export { default as EmptyState } from "./EmptyState";
 export { default as LoadingOverlay } from "./LoadingOverlay";
 export { default as FormsContainer } from "./FormsContainer";
-export { default as ConfirmationModal } from "./ConfirmationModal";
 
 // Export types and utilities
 export * from "./types";
