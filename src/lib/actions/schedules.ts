@@ -259,14 +259,10 @@ export async function getDoctorSchedules(): Promise<ActionResult> {
           },
         },
         timeSlots: {
-          where: {
-            isBooked: false,
-            isBlocked: false,
-          },
           orderBy: {
             startTime: "asc",
           },
-          // Limit time slots to reduce data transfer for large schedules
+          // Include all time slots for proper management
           take: 100, // Reasonable limit for UI display
         },
       },

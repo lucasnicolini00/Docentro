@@ -8,6 +8,8 @@ import {
   ChevronDown,
   ChevronUp,
   Trash2,
+  Lock,
+  Unlock,
 } from "lucide-react";
 import { deleteSchedule, toggleTimeSlotBlock } from "@/lib/actions/schedules";
 import { Schedule, DAY_NAMES, DAY_ORDER } from "./types";
@@ -21,8 +23,43 @@ export default function ScheduleList({
   schedules,
   onScheduleUpdated,
 }: ScheduleListProps) {
-  const [expandedSchedule, setExpandedSchedule] = useState<string | null>(null);
+  const [expandedSchedules, setExpandedSchedules] = useState<Set<string>>(
+    new Set()
+  );
   const [isPending, startTransition] = useTransition();
+
+  // Toggle expansion for individual schedules
+  const toggleScheduleExpansion = (scheduleId: string) => {
+    setExpandedSchedules((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(scheduleId)) {
+        newSet.delete(scheduleId);
+      } else {
+        newSet.add(scheduleId);
+      }
+      return newSet;
+    });
+  };
+
+  // Toggle all schedules for a clinic
+  const toggleAllSchedulesForClinic = (clinicSchedules: Schedule[]) => {
+    const clinicScheduleIds = clinicSchedules.map((s) => s.id);
+    const allExpanded = clinicScheduleIds.every((id) =>
+      expandedSchedules.has(id)
+    );
+
+    setExpandedSchedules((prev) => {
+      const newSet = new Set(prev);
+      if (allExpanded) {
+        // Collapse all schedules for this clinic
+        clinicScheduleIds.forEach((id) => newSet.delete(id));
+      } else {
+        // Expand all schedules for this clinic
+        clinicScheduleIds.forEach((id) => newSet.add(id));
+      }
+      return newSet;
+    });
+  };
 
   // Early return if no schedules
   if (!schedules || schedules.length === 0) {
@@ -114,130 +151,238 @@ export default function ScheduleList({
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8 overflow-hidden">
       {validSchedulesByClinic.map(({ clinic, schedules: clinicSchedules }) => (
         <div
           key={clinic.id}
-          className="bg-white rounded-xl shadow-sm border border-gray-100"
+          className="bg-gradient-to-br from-white to-gray-50 rounded-2xl shadow-lg border border-gray-200 overflow-hidden hover:shadow-xl transition-shadow duration-300"
         >
-          <div className="p-6 border-b border-gray-100">
+          {/* Clinic Header */}
+          <div className="bg-gradient-to-r from-blue-600 to-blue-700 p-6 text-white">
             <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-3">
-                <div className="bg-blue-100 p-2 rounded-lg">
-                  <MapPin className="w-5 h-5 text-blue-600" />
+              <div className="flex items-center space-x-4">
+                <div className="bg-white/20 backdrop-blur-sm p-3 rounded-xl">
+                  <MapPin className="w-6 h-6 text-white" />
                 </div>
                 <div>
-                  <h3 className="text-lg font-semibold text-gray-900">
+                  <h3 className="text-xl font-bold">
                     {clinic.name || "Clínica sin nombre"}
                   </h3>
                   {clinic.address && (
-                    <p className="text-sm text-gray-500">{clinic.address}</p>
+                    <p className="text-blue-100 text-sm mt-1">
+                      {clinic.address}
+                    </p>
                   )}
                 </div>
               </div>
-              <div className="text-sm text-gray-500">
-                {clinicSchedules.length} horario
-                {clinicSchedules.length !== 1 ? "s" : ""}
+              <div className="flex items-center space-x-3">
+                <button
+                  onClick={() => toggleAllSchedulesForClinic(clinicSchedules)}
+                  className="bg-white/20 backdrop-blur-sm px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-white/30 transition-colors flex items-center space-x-1"
+                >
+                  {clinicSchedules.every((s) => expandedSchedules.has(s.id)) ? (
+                    <>
+                      <ChevronUp className="w-4 h-4" />
+                      <span>Ocultar Todo</span>
+                    </>
+                  ) : (
+                    <>
+                      <ChevronDown className="w-4 h-4" />
+                      <span>Ver Todo</span>
+                    </>
+                  )}
+                </button>
+                <div className="bg-white/20 backdrop-blur-sm px-4 py-2 rounded-full">
+                  <span className="text-sm font-medium">
+                    {clinicSchedules.length} horario
+                    {clinicSchedules.length !== 1 ? "s" : ""}
+                  </span>
+                </div>
               </div>
             </div>
           </div>
 
-          <div className="divide-y divide-gray-100">
-            {sortSchedulesByDay(clinicSchedules).map((schedule) => (
-              <div key={schedule.id} className="p-6">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-4">
-                    <div className="bg-green-100 p-2 rounded-lg">
-                      <Calendar className="w-5 h-5 text-green-600" />
+          {/* Schedules Grid */}
+          <div className="p-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 min-w-0">
+              {sortSchedulesByDay(clinicSchedules).map((schedule) => (
+                <div
+                  key={schedule.id}
+                  className="bg-white rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-all duration-200 hover:border-blue-200 min-w-0"
+                >
+                  {/* Schedule Card Header */}
+                  <div className="p-5 border-b border-gray-50">
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="flex items-center space-x-3">
+                        <div className="bg-gradient-to-br from-green-400 to-green-500 p-2.5 rounded-lg shadow-sm">
+                          <Calendar className="w-5 h-5 text-white" />
+                        </div>
+                        <div>
+                          <h4 className="font-semibold text-gray-900 text-lg">
+                            {DAY_NAMES[schedule.dayOfWeek]}
+                          </h4>
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => handleDeleteSchedule(schedule.id)}
+                        disabled={isPending}
+                        className="p-2 text-gray-400 hover:text-red-500 rounded-lg hover:bg-red-50 disabled:opacity-50 transition-all duration-200"
+                        title="Eliminar horario"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
                     </div>
-                    <div>
-                      <h4 className="font-medium text-gray-900">
-                        {DAY_NAMES[schedule.dayOfWeek]}
-                      </h4>
-                      <div className="flex items-center space-x-2 text-sm text-gray-500">
-                        <Clock className="w-4 h-4" />
+
+                    <div className="flex items-center space-x-2 text-gray-600">
+                      <Clock className="w-4 h-4" />
+                      <span className="font-medium text-sm">
+                        {schedule.startTime} - {schedule.endTime}
+                      </span>
+                    </div>
+
+                    <div className="mt-3 flex items-center justify-between">
+                      <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                        {schedule.timeSlots.length} espacios
+                      </span>
+                      <button
+                        onClick={() => toggleScheduleExpansion(schedule.id)}
+                        className="flex items-center space-x-1 text-blue-600 hover:text-blue-700 text-sm font-medium transition-colors"
+                      >
                         <span>
-                          {schedule.startTime} - {schedule.endTime}
+                          {expandedSchedules.has(schedule.id)
+                            ? "Ocultar"
+                            : "Ver espacios"}
                         </span>
-                        <span className="text-gray-300">•</span>
-                        <span>
-                          {schedule.timeSlots.length} espacios disponibles
-                        </span>
+                        {expandedSchedules.has(schedule.id) ? (
+                          <ChevronUp className="w-4 h-4" />
+                        ) : (
+                          <ChevronDown className="w-4 h-4" />
+                        )}
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Time Slots Details */}
+                  {expandedSchedules.has(schedule.id) && (
+                    <div className="p-5 bg-gray-50">
+                      <div className="mb-4">
+                        <h5 className="text-sm font-semibold text-gray-700 mb-2 flex items-center">
+                          <Clock className="w-4 h-4 mr-2 text-gray-500" />
+                          Espacios de Tiempo
+                        </h5>
+                        <p className="text-xs text-gray-500">
+                          Pasa el cursor sobre un espacio libre para ver las
+                          opciones disponibles
+                        </p>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto overflow-x-hidden">
+                        {schedule.timeSlots.map((slot) => (
+                          <button
+                            key={slot.id}
+                            onClick={() =>
+                              !slot.isBooked &&
+                              handleToggleTimeSlot(slot.id, slot.isBlocked)
+                            }
+                            disabled={slot.isBooked || isPending}
+                            className={`group relative text-xs p-2 rounded-lg border-2 transition-all duration-200 font-medium disabled:cursor-not-allowed min-w-0 ${
+                              slot.isBooked
+                                ? "bg-red-50 text-red-700 border-red-200 shadow-sm"
+                                : slot.isBlocked
+                                ? "bg-yellow-50 text-yellow-700 border-yellow-200 hover:bg-yellow-100 hover:border-yellow-300 shadow-sm hover:shadow-md"
+                                : "bg-green-50 text-green-700 border-green-200 hover:bg-green-100 hover:border-green-300 shadow-sm hover:shadow-md"
+                            }`}
+                            title={
+                              slot.isBooked
+                                ? "Horario reservado"
+                                : slot.isBlocked
+                                ? "Click para habilitar"
+                                : "Click para bloquear"
+                            }
+                          >
+                            {/* Main Content */}
+                            <div className="relative truncate">
+                              <div className="font-semibold truncate">
+                                {slot.startTime}
+                              </div>
+                              <div className="text-xs mt-1 opacity-75 truncate">
+                                {slot.isBooked
+                                  ? "Reservado"
+                                  : slot.isBlocked
+                                  ? "Bloqueado"
+                                  : "Libre"}
+                              </div>
+                            </div>
+
+                            {/* Hover Icons - Only show for actionable slots */}
+                            {!slot.isBooked && (
+                              <div className="absolute inset-0 flex items-center justify-center bg-black/5 opacity-0 group-hover:opacity-100 transition-opacity duration-200 rounded-lg">
+                                <div className="bg-white/90 backdrop-blur-sm p-1.5 rounded-full shadow-lg">
+                                  {slot.isBlocked ? (
+                                    <Unlock className="w-3 h-3 text-green-600" />
+                                  ) : (
+                                    <Lock className="w-3 h-3 text-yellow-600" />
+                                  )}
+                                </div>
+                              </div>
+                            )}
+
+                            {/* Hover Text Indicator - Fixed positioning */}
+                            {!slot.isBooked && (
+                              <div className="absolute -top-10 left-1/2 transform -translate-x-1/2 bg-gray-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-20 max-w-xs">
+                                {slot.isBlocked ? "Habilitar" : "Bloquear"}
+                                <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-2 border-r-2 border-t-2 border-transparent border-t-gray-900"></div>
+                              </div>
+                            )}
+                          </button>
+                        ))}
+                      </div>
+
+                      {/* Stats Summary */}
+                      <div className="mt-4 pt-4 border-t border-gray-200">
+                        <div className="grid grid-cols-3 gap-4 text-center">
+                          <div>
+                            <div className="text-lg font-bold text-green-600">
+                              {
+                                schedule.timeSlots.filter(
+                                  (slot) => !slot.isBooked && !slot.isBlocked
+                                ).length
+                              }
+                            </div>
+                            <div className="text-xs text-gray-500">Libres</div>
+                          </div>
+                          <div>
+                            <div className="text-lg font-bold text-yellow-600">
+                              {
+                                schedule.timeSlots.filter(
+                                  (slot) =>
+                                    slot.isBlocked === true && !slot.isBooked
+                                ).length
+                              }
+                            </div>
+                            <div className="text-xs text-gray-500">
+                              Bloqueados
+                            </div>
+                          </div>
+                          <div>
+                            <div className="text-lg font-bold text-red-600">
+                              {
+                                schedule.timeSlots.filter(
+                                  (slot) => slot.isBooked === true
+                                ).length
+                              }
+                            </div>
+                            <div className="text-xs text-gray-500">
+                              Reservados
+                            </div>
+                          </div>
+                        </div>
                       </div>
                     </div>
-                  </div>
-
-                  <div className="flex items-center space-x-2">
-                    <button
-                      onClick={() =>
-                        setExpandedSchedule(
-                          expandedSchedule === schedule.id ? null : schedule.id
-                        )
-                      }
-                      className="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100"
-                    >
-                      {expandedSchedule === schedule.id ? (
-                        <ChevronUp className="w-5 h-5" />
-                      ) : (
-                        <ChevronDown className="w-5 h-5" />
-                      )}
-                    </button>
-                    <button
-                      onClick={() => handleDeleteSchedule(schedule.id)}
-                      disabled={isPending}
-                      className="p-2 text-red-400 hover:text-red-600 rounded-lg hover:bg-red-50 disabled:opacity-50"
-                    >
-                      <Trash2 className="w-5 h-5" />
-                    </button>
-                  </div>
+                  )}
                 </div>
-
-                {/* Time Slots Details */}
-                {expandedSchedule === schedule.id && (
-                  <div className="mt-4 pt-4 border-t border-gray-100">
-                    <h5 className="text-sm font-medium text-gray-700 mb-3">
-                      Espacios de Tiempo
-                    </h5>
-                    <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-2">
-                      {schedule.timeSlots.map((slot) => (
-                        <button
-                          key={slot.id}
-                          onClick={() =>
-                            !slot.isBooked &&
-                            handleToggleTimeSlot(slot.id, slot.isBlocked)
-                          }
-                          disabled={slot.isBooked || isPending}
-                          className={`text-xs p-2 rounded border transition-colors disabled:cursor-not-allowed ${
-                            slot.isBooked
-                              ? "bg-red-100 text-red-800 border-red-200"
-                              : slot.isBlocked
-                              ? "bg-yellow-100 text-yellow-800 border-yellow-200 hover:bg-yellow-200"
-                              : "bg-green-100 text-green-800 border-green-200 hover:bg-green-200"
-                          }`}
-                          title={
-                            slot.isBooked
-                              ? "Horario reservado"
-                              : slot.isBlocked
-                              ? "Click para habilitar"
-                              : "Click para bloquear"
-                          }
-                        >
-                          {slot.startTime}
-                          <br />
-                          <span className="text-xs">
-                            {slot.isBooked
-                              ? "Reservado"
-                              : slot.isBlocked
-                              ? "Bloqueado"
-                              : "Libre"}
-                          </span>
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         </div>
       ))}
