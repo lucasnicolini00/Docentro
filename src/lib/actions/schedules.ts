@@ -304,10 +304,6 @@ export async function createBulkSchedules(
 
     const { doctor } = validation;
 
-    console.log(
-      `[Performance] Bulk schedule creation started for ${scheduleData.length} schedules (replace: ${replaceExisting})`
-    );
-
     // Check for existing schedules first
     const existingSchedules = await prisma.schedule.findMany({
       where: {
@@ -333,9 +329,6 @@ export async function createBulkSchedules(
 
     if (existingSchedules.length > 0 && !replaceExisting) {
       const existingDays = existingSchedules.map((s) => s.dayOfWeek);
-      console.log(
-        `[Performance] Found ${existingSchedules.length} existing schedules, requiring confirmation`
-      );
       return {
         success: false,
         error: "Ya existen horarios para algunos días. ¿Deseas reemplazarlos?",
@@ -344,13 +337,6 @@ export async function createBulkSchedules(
           requiresConfirmation: true,
         },
       };
-    }
-
-    // If replacing, delete existing schedules for these days
-    if (replaceExisting && existingSchedules.length > 0) {
-      console.log(
-        `[Performance] Replacing ${existingSchedules.length} existing schedules`
-      );
     }
 
     // Use a single atomic transaction for all operations (delete + create)
@@ -383,10 +369,6 @@ export async function createBulkSchedules(
               },
             },
           });
-
-          console.log(
-            `[Performance] Replaced ${existingSchedules.length} schedules and ~${expectedTimeSlotsToDelete} time slots`
-          );
         }
 
         // Create all schedules in parallel for maximum performance
@@ -477,23 +459,6 @@ export async function createBulkSchedules(
         { startTime: "asc" },
       ],
     });
-
-    const endTime = Date.now();
-    const totalSlots = createdSchedules.reduce(
-      (acc, schedule) => acc + schedule.timeSlots.length,
-      0
-    );
-
-    console.log(
-      `[Performance] Bulk schedule ${
-        replaceExisting ? "REPLACEMENT" : "CREATION"
-      } completed in ${endTime - startTime}ms`
-    );
-    console.log(
-      `[Performance] ${replaceExisting ? "Replaced" : "Created"} ${
-        createdSchedules.length
-      } schedules with ${totalSlots} time slots`
-    );
 
     revalidatePath("/dashboard/doctor/schedules");
     return { success: true, data: createdSchedules };

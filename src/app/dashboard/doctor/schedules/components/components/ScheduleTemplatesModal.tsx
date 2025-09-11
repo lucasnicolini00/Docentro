@@ -58,7 +58,6 @@ export default function ScheduleTemplatesModal({
       event.stopPropagation();
     }
 
-    console.log("Applying template:", template.name, "to clinic:", clinicId);
     setFeedback(null);
 
     startTransition(async () => {
@@ -66,28 +65,28 @@ export default function ScheduleTemplatesModal({
         // Step 1: Initialize loading
         setLoadingState({
           isLoading: true,
-          message: replaceExisting 
-            ? "Preparando reemplazo de horarios..." 
+          message: replaceExisting
+            ? "Preparando reemplazo de horarios..."
             : "Preparando creación de horarios...",
           step: 1,
           totalSteps: replaceExisting ? 4 : 3,
         });
 
         // Small delay to show the first message
-        await new Promise(resolve => setTimeout(resolve, 500));
+        await new Promise((resolve) => setTimeout(resolve, 500));
 
         // Step 2: If replacing, show deletion message
         if (replaceExisting) {
-          setLoadingState(prev => ({
+          setLoadingState((prev) => ({
             ...prev,
             message: "Eliminando horarios existentes...",
             step: 2,
           }));
-          await new Promise(resolve => setTimeout(resolve, 300));
+          await new Promise((resolve) => setTimeout(resolve, 300));
         }
 
         // Step 3: Show creation message
-        setLoadingState(prev => ({
+        setLoadingState((prev) => ({
           ...prev,
           message: "Creando nuevos horarios...",
           step: replaceExisting ? 3 : 2,
@@ -100,15 +99,13 @@ export default function ScheduleTemplatesModal({
         );
 
         // Step 4: Finalizing
-        setLoadingState(prev => ({
+        setLoadingState((prev) => ({
           ...prev,
           message: "Finalizando configuración...",
           step: replaceExisting ? 4 : 3,
         }));
 
-        await new Promise(resolve => setTimeout(resolve, 300));
-
-        console.log("Template result:", result);
+        await new Promise((resolve) => setTimeout(resolve, 300));
 
         if (result.success) {
           // Reset loading state
@@ -249,12 +246,18 @@ export default function ScheduleTemplatesModal({
               <div className="flex items-center space-x-3">
                 <Loader2 className="w-5 h-5 animate-spin text-blue-600" />
                 <div className="flex-1">
-                  <p className="font-medium text-blue-900">{loadingState.message}</p>
+                  <p className="font-medium text-blue-900">
+                    {loadingState.message}
+                  </p>
                   <div className="mt-2">
                     <div className="bg-blue-200 rounded-full h-2">
-                      <div 
+                      <div
                         className="bg-blue-600 h-2 rounded-full transition-all duration-300 ease-out"
-                        style={{ width: `${(loadingState.step / loadingState.totalSteps) * 100}%` }}
+                        style={{
+                          width: `${
+                            (loadingState.step / loadingState.totalSteps) * 100
+                          }%`,
+                        }}
                       ></div>
                     </div>
                     <p className="text-xs text-blue-700 mt-1">
@@ -299,7 +302,7 @@ export default function ScheduleTemplatesModal({
                         disabled={isPending || loadingState.isLoading}
                         className="bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white px-3 py-1 rounded text-sm disabled:opacity-50 flex items-center space-x-1 min-w-[120px] justify-center"
                       >
-                        {(isPending || loadingState.isLoading) ? (
+                        {isPending || loadingState.isLoading ? (
                           <>
                             <Loader2 className="w-3 h-3 animate-spin" />
                             <span className="text-xs">
