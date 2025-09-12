@@ -43,7 +43,7 @@ export async function updateDoctorSettings(
       },
     });
 
-    revalidatePath("/dashboard/doctor/settings");
+    revalidatePath("/dashboard/doctor/profile");
     return { success: true, data: updatedDoctor };
   } catch (error) {
     console.error("Error updating doctor settings:", error);
@@ -99,7 +99,7 @@ export async function updateDoctorPassword(): Promise<ActionResult> {
     // Update password (you'd need to hash the new password)
     // This is a placeholder - implement proper password hashing
 
-    revalidatePath("/dashboard/doctor/settings");
+    revalidatePath("/dashboard/doctor/profile");
     return { success: true, data: null };
   } catch (error) {
     console.error("Error updating password:", error);

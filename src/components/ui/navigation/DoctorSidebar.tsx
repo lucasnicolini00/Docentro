@@ -6,10 +6,7 @@ import {
   CalendarDays,
   Clock,
   User,
-  Settings,
-  FileText,
   BarChart3,
-  MessageSquare,
   Home,
   Building2,
 } from "lucide-react";
@@ -40,30 +37,25 @@ const sidebarItems = [
   //   href: "/dashboard/doctor/patients",
   //   icon: Users,
   // },
-  {
-    label: "Mensajes",
-    href: "/dashboard/doctor/messages",
-    icon: MessageSquare,
-  },
+  // {
+  //   label: "Mensajes",
+  //   href: "/dashboard/doctor/messages",
+  //   icon: MessageSquare,
+  // },
   {
     label: "Analytics",
     href: "/dashboard/doctor/analytics",
     icon: BarChart3,
   },
+  // {
+  //   label: "Historial Médico",
+  //   href: "/dashboard/doctor/medical-records",
+  //   icon: FileText,
+  // },
   {
-    label: "Historial Médico",
-    href: "/dashboard/doctor/medical-records",
-    icon: FileText,
-  },
-  {
-    label: "Mi Perfil",
+    label: "Perfil y Configuración",
     href: "/dashboard/doctor/profile",
     icon: User,
-  },
-  {
-    label: "Configuración",
-    href: "/dashboard/doctor/settings",
-    icon: Settings,
   },
 ];
 

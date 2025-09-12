@@ -5,7 +5,6 @@ import { useState, useRef, useEffect } from "react";
 import {
   ChevronDown,
   User,
-  Settings,
   LogOut,
   Calendar,
   Activity,
@@ -67,7 +66,7 @@ export default function UserMenu() {
             icon: Activity,
           },
           {
-            label: "Mi Perfil",
+            label: "Perfil y Configuración",
             href: "/dashboard/doctor/profile",
             icon: User,
           },
@@ -80,11 +79,6 @@ export default function UserMenu() {
             label: "Analytics",
             href: "/dashboard/doctor/analytics",
             icon: BarChart3,
-          },
-          {
-            label: "Configuración",
-            href: "/dashboard/doctor/settings",
-            icon: Settings,
           },
         ]
       : [

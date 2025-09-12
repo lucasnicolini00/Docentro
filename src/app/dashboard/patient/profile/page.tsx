@@ -29,28 +29,42 @@ export default async function PatientProfilePage() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <div className="bg-gradient-to-r from-green-600 to-green-800 text-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="flex items-center space-x-4">
-            <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center">
-              <span className="text-2xl font-bold">
-                {patient.user.firstName[0]}
-                {patient.user.lastName[0]}
-              </span>
-            </div>
+      <div className="bg-white shadow-sm border-b border-gray-200">
+        <div className="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold">Editar Perfil</h1>
-              <p className="text-green-100">
-                {patient.user.firstName} {patient.user.lastName}
+              <h1 className="text-2xl font-bold text-gray-900">
+                Editar Perfil
+              </h1>
+              <p className="mt-1 text-sm text-gray-500">
+                Actualiza tu información personal y de contacto
               </p>
             </div>
+            <a
+              href="/dashboard/patient"
+              className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg transition-colors"
+            >
+              ← Volver al Dashboard
+            </a>
           </div>
         </div>
       </div>
 
       {/* Content */}
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <PatientProfileForm patient={patient} />
+        <div className="bg-white rounded-lg shadow-sm">
+          <div className="p-6 border-b border-gray-200">
+            <h2 className="text-lg font-semibold text-gray-900">
+              Información Personal
+            </h2>
+            <p className="text-sm text-gray-600 mt-1">
+              Mantén actualizada tu información para una mejor experiencia
+            </p>
+          </div>
+          <div className="p-6">
+            <PatientProfileForm patient={patient} />
+          </div>
+        </div>
       </div>
     </div>
   );
