@@ -193,9 +193,11 @@ export default function ScheduleList({
   };
 
   // Filter out any remaining schedules with missing clinic data
-  const validSchedulesByClinic = Object.values(schedulesByClinic).filter(
-    ({ clinic }) => clinic && clinic.id && clinic.name
-  );
+  const validSchedulesByClinic = Object.values(schedulesByClinic)
+    .filter(({ clinic }) => clinic && clinic.id && clinic.name)
+    .sort((a, b) =>
+      a.clinic.name.localeCompare(b.clinic.name, "es", { sensitivity: "base" })
+    );
 
   if (validSchedulesByClinic.length === 0) {
     return (

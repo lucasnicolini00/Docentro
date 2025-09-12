@@ -200,16 +200,22 @@ export async function deleteSchedule(
 
     const { doctor } = validation;
 
-    // First, let's check if the schedule exists and belongs to this doctor
-    const schedule = await prisma.schedule.findUnique({
+    // Optimized: Single query with ownership validation
+    const schedule = await prisma.schedule.findFirst({
       where: {
         id: scheduleId,
+        doctorId: doctor.id, // ✅ Filter by doctor upfront for security & performance
       },
-      include: {
-        clinic: true,
-        timeSlots: {
-          where: {
-            isBooked: true,
+      select: {
+        id: true,
+        doctorId: true,
+        _count: {
+          select: {
+            timeSlots: {
+              where: {
+                isBooked: true, // ✅ Only count booked slots
+              },
+            },
           },
         },
       },
@@ -218,19 +224,12 @@ export async function deleteSchedule(
     if (!schedule) {
       return {
         success: false,
-        error: "Horario no encontrado",
+        error: "Horario no encontrado o no tienes permisos para eliminarlo",
       };
     }
 
-    if (schedule.doctorId !== doctor.id) {
-      return {
-        success: false,
-        error: "No tienes permisos para eliminar este horario",
-      };
-    }
-
-    // Check if there are any booked appointments
-    if (schedule.timeSlots.length > 0) {
+    // Check if there are any booked appointments using count
+    if (schedule._count.timeSlots > 0) {
       return {
         success: false,
         error: "No se puede eliminar un horario con citas reservadas",
@@ -241,7 +240,7 @@ export async function deleteSchedule(
     await prisma.schedule.delete({
       where: {
         id: scheduleId,
-        doctorId: doctor.id,
+        // doctorId already validated above, no need to double-check
       },
     });
 
@@ -543,7 +542,7 @@ export async function toggleTimeSlotBlock(
 
     const { doctor } = validation;
 
-    // Verify ownership through schedule
+    // Optimized: Single query with ownership validation and select only what we need
     const timeSlot = await prisma.timeSlot.findFirst({
       where: {
         id: timeSlotId,
@@ -552,15 +551,35 @@ export async function toggleTimeSlotBlock(
         },
         isBooked: false, // Can't block booked slots
       },
+      select: {
+        id: true,
+        isBlocked: true,
+      },
     });
 
     if (!timeSlot) {
       return { success: false, error: "Horario no encontrado o ya reservado" };
     }
 
+    // Optimized: Only update if the value is actually changing
+    if (timeSlot.isBlocked === isBlocked) {
+      return {
+        success: true,
+        data: timeSlot,
+        message: `Horario ya está ${isBlocked ? "bloqueado" : "disponible"}`,
+      };
+    }
+
     const updatedSlot = await prisma.timeSlot.update({
       where: { id: timeSlotId },
       data: { isBlocked },
+      select: {
+        id: true,
+        startTime: true,
+        endTime: true,
+        isBlocked: true,
+        isBooked: true,
+      },
     });
 
     revalidatePath("/dashboard/doctor/schedules");

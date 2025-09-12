@@ -9,7 +9,6 @@ import {
   Settings,
   FileText,
   BarChart3,
-  Users,
   MessageSquare,
   Home,
   Building2,
@@ -36,11 +35,11 @@ const sidebarItems = [
     href: "/dashboard/doctor/clinics",
     icon: Building2,
   },
-  {
-    label: "Pacientes",
-    href: "/dashboard/doctor/patients",
-    icon: Users,
-  },
+  // {
+  //   label: "Pacientes",
+  //   href: "/dashboard/doctor/patients",
+  //   icon: Users,
+  // },
   {
     label: "Mensajes",
     href: "/dashboard/doctor/messages",

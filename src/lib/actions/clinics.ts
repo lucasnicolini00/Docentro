@@ -23,7 +23,10 @@ export async function getDoctorClinics() {
         clinic: {
           include: {
             pricing: {
-              where: { doctorId: doctor.id },
+              where: {
+                doctorId: doctor.id,
+                deletedAt: null, // Only get non-deleted pricing
+              },
               orderBy: { title: "asc" },
             },
           },
@@ -379,5 +382,52 @@ export async function togglePricingStatus(pricingId: string) {
   } catch (error) {
     console.error("Error toggling pricing status:", error);
     return { success: false, error: "Error al cambiar el estado de la tarifa" };
+  }
+}
+
+export async function deletePricing(pricingId: string) {
+  try {
+    const session = await requireDoctor();
+
+    const doctor = await prisma.doctor.findUnique({
+      where: { userId: session.user.id },
+    });
+
+    if (!doctor) {
+      return { success: false, error: "Doctor no encontrado" };
+    }
+
+    // First, verify that the pricing belongs to this doctor
+    const pricing = await prisma.pricing.findFirst({
+      where: {
+        id: pricingId,
+        doctorId: doctor.id,
+        deletedAt: null, // Make sure we're only trying to delete non-deleted pricing
+      },
+    });
+
+    if (!pricing) {
+      return { success: false, error: "Tarifa no encontrada" };
+    }
+
+    // Soft delete the pricing
+    const deletedPricing = await prisma.pricing.update({
+      where: { id: pricingId },
+      data: {
+        deletedAt: new Date(),
+      },
+    });
+
+    revalidatePath("/dashboard/doctor/clinics");
+
+    return {
+      success: true,
+      data: {
+        id: deletedPricing.id,
+      },
+    };
+  } catch (error) {
+    console.error("Error deleting pricing:", error);
+    return { success: false, error: "Error al eliminar la tarifa" };
   }
 }

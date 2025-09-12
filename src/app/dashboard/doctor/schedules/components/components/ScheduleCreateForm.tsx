@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Loader2 } from "lucide-react";
 import { DAY_NAMES, Clinic } from "./types";
 
 interface ScheduleCreateFormProps {
@@ -235,9 +236,10 @@ export default function ScheduleCreateForm({
           <button
             type="submit"
             disabled={isPending}
-            className="bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white px-6 py-2 rounded-lg transition-colors"
+            className="bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-white px-6 py-2 rounded-lg transition-colors flex items-center space-x-2"
           >
-            {isPending ? "Creando..." : "Crear Horario"}
+            {isPending && <Loader2 className="w-4 h-4 animate-spin" />}
+            <span>{isPending ? "Creando..." : "Crear Horario"}</span>
           </button>
         </div>
       </form>

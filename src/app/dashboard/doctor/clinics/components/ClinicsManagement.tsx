@@ -1,13 +1,13 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import toast from "react-hot-toast";
 import { togglePricingStatus } from "@/lib/actions/clinics";
 import { ConfirmationModal } from "@/components/ui";
 import {
   ClinicsHeader,
   ClinicsStats,
   ClinicsList,
-  LoadingOverlay,
   FormsContainer,
   type Clinic,
   type Pricing,
@@ -16,6 +16,7 @@ import {
   updateClinicWrapper,
   createPricingWrapper,
   updatePricingWrapper,
+  deletePricingWrapper,
 } from "./clinic-management";
 
 export default function ClinicsManagement({
@@ -201,32 +202,52 @@ export default function ClinicsManagement({
     setSelectedClinic(undefined);
   };
 
-  const handleConfirmDelete = () => {
+  const handleConfirmDelete = async () => {
     if (!confirmAction) return;
 
-    if (confirmAction.type === "clinic") {
-      setClinics((prev) =>
-        prev.filter((clinic) => clinic.id !== confirmAction.id)
-      );
-    } else if (confirmAction.type === "pricing" && confirmAction.clinicId) {
-      setClinics((prev) =>
-        prev.map((clinic) =>
-          clinic.id === confirmAction.clinicId
-            ? {
-                ...clinic,
-                pricings: clinic.pricings.filter(
-                  (p) => p.id !== confirmAction.id
-                ),
-              }
-            : clinic
-        )
-      );
-    }
+    startTransition(async () => {
+      if (confirmAction.type === "clinic") {
+        // TODO: Implement clinic deletion API call
+        setClinics((prev) =>
+          prev.filter((clinic) => clinic.id !== confirmAction.id)
+        );
+      } else if (confirmAction.type === "pricing" && confirmAction.clinicId) {
+        // Call the API to delete the pricing
+        const result = await deletePricingWrapper(confirmAction.id);
+
+        if (result.success) {
+          // Update the frontend state after successful deletion
+          setClinics((prev) =>
+            prev.map((clinic) =>
+              clinic.id === confirmAction.clinicId
+                ? {
+                    ...clinic,
+                    pricings: clinic.pricings.filter(
+                      (p) => p.id !== confirmAction.id
+                    ),
+                  }
+                : clinic
+            )
+          );
+          toast.success("Precio eliminado exitosamente");
+        } else {
+          // Handle error and show toast notification
+          toast.error(result.error || "Error al eliminar el precio");
+          console.error("Error deleting pricing:", result.error);
+        }
+      }
+
+      // Close the confirmation modal
+      setShowConfirmModal(false);
+      setConfirmAction(null);
+    });
   };
 
   const handleCloseConfirmModal = () => {
-    setShowConfirmModal(false);
-    setConfirmAction(null);
+    if (!isPending) {
+      setShowConfirmModal(false);
+      setConfirmAction(null);
+    }
   };
 
   return (
@@ -252,7 +273,7 @@ export default function ClinicsManagement({
         isPending={isPending}
       />
 
-      <LoadingOverlay isPending={isPending} />
+      {/* <LoadingOverlay isPending={isPending} /> */}
 
       <FormsContainer
         showClinicForm={showClinicForm}

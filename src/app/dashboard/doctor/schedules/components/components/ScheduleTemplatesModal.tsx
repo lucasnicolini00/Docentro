@@ -1,9 +1,18 @@
 "use client";
 
 import { useTransition, useState } from "react";
-import { X, CheckCircle, AlertCircle, Loader2 } from "lucide-react";
+import {
+  X,
+  CheckCircle,
+  AlertCircle,
+  Loader2,
+  Clock,
+  Calendar,
+  MapPin,
+  Sparkles,
+} from "lucide-react";
 import { createBulkSchedules } from "@/lib/actions/schedules";
-import { SCHEDULE_TEMPLATES, Clinic } from "./types";
+import { SCHEDULE_TEMPLATES, Clinic, DAY_NAMES } from "./types";
 
 interface ScheduleTemplatesModalProps {
   isOpen: boolean;
@@ -19,6 +28,8 @@ export default function ScheduleTemplatesModal({
   onSchedulesUpdated,
 }: ScheduleTemplatesModalProps) {
   const [isPending, startTransition] = useTransition();
+  const [selectedTemplate, setSelectedTemplate] = useState<number | null>(null);
+  const [selectedClinic, setSelectedClinic] = useState<string>("");
   const [feedback, setFeedback] = useState<{
     type: "success" | "error";
     message: string;
@@ -46,7 +57,24 @@ export default function ScheduleTemplatesModal({
     existingDays: [],
   });
 
-  const handleApplyTemplate = (
+  // Helper function to format time
+  const formatTime = (time: string) => {
+    const [hours, minutes] = time.split(":");
+    const hour = parseInt(hours);
+    const ampm = hour >= 12 ? "PM" : "AM";
+    const hour12 = hour % 12 || 12;
+    return `${hour12}:${minutes} ${ampm}`;
+  };
+
+  const handleApplyTemplate = (templateIndex: number, clinicId: string) => {
+    setSelectedTemplate(templateIndex);
+    setSelectedClinic(clinicId);
+
+    const template = SCHEDULE_TEMPLATES[templateIndex];
+    handleApplyTemplateAction(template, clinicId);
+  };
+
+  const handleApplyTemplateAction = (
     template: (typeof SCHEDULE_TEMPLATES)[number],
     clinicId: string,
     event?: React.MouseEvent<HTMLButtonElement>,
@@ -186,7 +214,7 @@ export default function ScheduleTemplatesModal({
         clinicId: "",
         existingDays: [],
       });
-      handleApplyTemplate(
+      handleApplyTemplateAction(
         confirmationDialog.template,
         confirmationDialog.clinicId,
         undefined,
@@ -209,14 +237,26 @@ export default function ScheduleTemplatesModal({
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-xl shadow-xl max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col">
-        <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center flex-shrink-0">
-          <h2 className="text-xl font-semibold text-gray-900">
-            Plantillas de Horarios
-          </h2>
+        <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center flex-shrink-0 bg-gradient-to-r from-blue-600 to-blue-700">
+          <div className="flex items-center space-x-3">
+            <div className="flex-shrink-0">
+              <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                <Sparkles className="w-5 h-5 text-blue-600" />
+              </div>
+            </div>
+            <div>
+              <h2 className="text-xl font-semibold text-white">
+                Plantillas de Horarios
+              </h2>
+              <p className="text-sm text-blue-100">
+                Aplica horarios predefinidos a tus clínicas de forma rápida
+              </p>
+            </div>
+          </div>
           <button
             type="button"
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-600"
+            className="text-blue-100 hover:text-white"
           >
             <X className="w-6 h-6" />
           </button>
@@ -225,18 +265,26 @@ export default function ScheduleTemplatesModal({
           {/* Feedback Message */}
           {feedback && (
             <div
-              className={`mb-4 p-3 rounded-lg flex items-center space-x-2 ${
+              className={`mb-6 p-4 rounded-lg flex items-start space-x-3 ${
                 feedback.type === "success"
-                  ? "bg-green-50 text-green-800 border border-green-200"
-                  : "bg-red-50 text-red-800 border border-red-200"
+                  ? "bg-green-50 border border-green-200"
+                  : "bg-red-50 border border-red-200"
               }`}
             >
               {feedback.type === "success" ? (
-                <CheckCircle className="w-5 h-5" />
+                <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
               ) : (
-                <AlertCircle className="w-5 h-5" />
+                <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
               )}
-              <span className="text-sm font-medium">{feedback.message}</span>
+              <p
+                className={`text-sm ${
+                  feedback.type === "success"
+                    ? "text-green-800"
+                    : "text-red-800"
+                }`}
+              >
+                {feedback.message}
+              </p>
             </div>
           )}
 
@@ -269,48 +317,95 @@ export default function ScheduleTemplatesModal({
             </div>
           )}
 
-          <div className="space-y-6">
-            {SCHEDULE_TEMPLATES.map((template, index) => (
-              <div key={index} className="bg-gray-50 rounded-lg p-4">
-                <h3 className="font-medium text-gray-900 mb-2">
-                  {template.name}
-                </h3>
-                <p className="text-sm text-gray-600 mb-4">
-                  {template.description}
-                </p>
-                <div className="space-y-3">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {SCHEDULE_TEMPLATES.map((template, templateIndex) => (
+              <div
+                key={templateIndex}
+                className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl p-5 border border-gray-200 hover:shadow-md transition-all"
+              >
+                <div className="mb-4">
+                  <div className="flex items-start justify-between mb-2">
+                    <h3 className="font-semibold text-gray-900 text-lg">
+                      {template.name}
+                    </h3>
+                    <div className="flex items-center space-x-1 text-xs text-gray-500 bg-white px-2 py-1 rounded-full">
+                      <Calendar className="w-3 h-3" />
+                      <span>{template.schedules.length} días</span>
+                    </div>
+                  </div>
+                  <p className="text-sm text-gray-600 mb-3">
+                    {template.description}
+                  </p>
+
+                  {/* Template Schedule Preview */}
+                  <div className="bg-white rounded-lg p-3 mb-4">
+                    <h4 className="text-xs font-medium text-gray-700 mb-2 flex items-center">
+                      <Clock className="w-3 h-3 mr-1" />
+                      Vista previa del horario
+                    </h4>
+                    <div className="space-y-1">
+                      {template.schedules.slice(0, 3).map((schedule, idx) => (
+                        <div key={idx} className="flex justify-between text-xs">
+                          <span className="text-gray-600">
+                            {
+                              DAY_NAMES[
+                                schedule.dayOfWeek as keyof typeof DAY_NAMES
+                              ]
+                            }
+                          </span>
+                          <span className="text-gray-800 font-medium">
+                            {formatTime(schedule.startTime)} -{" "}
+                            {formatTime(schedule.endTime)}
+                          </span>
+                        </div>
+                      ))}
+                      {template.schedules.length > 3 && (
+                        <div className="text-xs text-gray-500 italic">
+                          +{template.schedules.length - 3} días más...
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Clinics */}
+                <div className="space-y-2">
+                  <h4 className="text-sm font-medium text-gray-700 mb-3 flex items-center">
+                    <MapPin className="w-4 h-4 mr-1" />
+                    Aplicar a clínica:
+                  </h4>
                   {clinics.map((clinic) => (
                     <div
                       key={clinic.id}
-                      className="flex items-center justify-between bg-white p-3 rounded border"
+                      className="flex items-center justify-between bg-white p-3 rounded-lg border border-gray-200 hover:border-blue-300 transition-colors"
                     >
-                      <div>
-                        <p className="font-medium text-gray-900">
+                      <div className="flex-1">
+                        <p className="font-medium text-gray-900 text-sm">
                           {clinic.name}
                         </p>
                         {clinic.address && (
-                          <p className="text-sm text-gray-500">
+                          <p className="text-xs text-gray-500 mt-1">
                             {clinic.address}
                           </p>
                         )}
                       </div>
                       <button
                         type="button"
-                        onClick={(e) =>
-                          handleApplyTemplate(template, clinic.id, e)
+                        onClick={() =>
+                          handleApplyTemplate(templateIndex, clinic.id)
                         }
                         disabled={isPending || loadingState.isLoading}
-                        className="bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white px-3 py-1 rounded text-sm disabled:opacity-50 flex items-center space-x-1 min-w-[120px] justify-center"
+                        className="bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white px-4 py-2 rounded-lg text-sm font-medium disabled:opacity-50 flex items-center space-x-2 min-w-[100px] justify-center transition-colors"
                       >
-                        {isPending || loadingState.isLoading ? (
+                        {(isPending || loadingState.isLoading) &&
+                        selectedTemplate === templateIndex &&
+                        selectedClinic === clinic.id ? (
                           <>
                             <Loader2 className="w-3 h-3 animate-spin" />
-                            <span className="text-xs">
-                              {loadingState.message || "Cargando..."}
-                            </span>
+                            <span>Aplicando...</span>
                           </>
                         ) : (
-                          "Aplicar"
+                          <span>Aplicar</span>
                         )}
                       </button>
                     </div>
@@ -320,11 +415,11 @@ export default function ScheduleTemplatesModal({
             ))}
           </div>
         </div>
-        <div className="px-6 py-4 border-t border-gray-200 flex justify-end flex-shrink-0">
+        <div className="px-6 py-4 border-t border-gray-200 bg-gray-50 flex justify-end flex-shrink-0">
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-2 text-gray-600 hover:text-gray-800"
+            className="px-4 py-2 text-gray-600 hover:text-gray-800 font-medium transition-colors"
           >
             Cerrar
           </button>

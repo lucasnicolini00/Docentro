@@ -3,6 +3,7 @@ import {
   updateClinic,
   createPricing,
   updatePricing,
+  deletePricing,
 } from "@/lib/actions/clinics";
 
 // Wrapper functions to convert data to expected object format
@@ -53,6 +54,10 @@ export async function updatePricingWrapper(pricingId: string, data: any) {
     isActive: data.isActive === true || data.isActive === "true",
   };
   return updatePricing(pricingId, pricingData);
+}
+
+export async function deletePricingWrapper(pricingId: string) {
+  return deletePricing(pricingId);
 }
 
 export const formatPrice = (price: number, currency: string) => {

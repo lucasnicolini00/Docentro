@@ -1,10 +1,11 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import toast from "react-hot-toast";
 import { createSchedule, getDoctorSchedules } from "@/lib/actions/schedules";
 import {
   ScheduleTemplatesModal,
-  ScheduleCreateForm,
+  ScheduleCreateModal,
   ScheduleList,
   ScheduleManagementProps,
   Schedule,
@@ -16,39 +17,119 @@ export default function EnhancedScheduleManagement({
 }: ScheduleManagementProps) {
   const [schedules, setSchedules] = useState<Schedule[]>(initialSchedules);
   const [showTemplates, setShowTemplates] = useState(false);
+  const [showCreateModal, setShowCreateModal] = useState(false);
   const [isPending, startTransition] = useTransition();
-  const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
+  const [optimisticSchedules, setOptimisticSchedules] = useState<Schedule[]>(
+    []
+  );
+
+  // Combine real schedules with optimistic schedules for display
+  const displaySchedules = [...schedules, ...optimisticSchedules];
 
   const handleCreateSchedule = async (formData: FormData) => {
-    startTransition(async () => {
-      setError(null);
-      setSuccess(null);
+    const selectedDaysString = formData.get("selectedDays") as string;
+    const selectedDays = JSON.parse(selectedDaysString) as string[];
 
-      const data = {
-        clinicId: formData.get("clinicId") as string,
-        dayOfWeek: formData.get("dayOfWeek") as string,
-        startTime: formData.get("startTime") as string,
-        endTime: formData.get("endTime") as string,
-        slotDuration: parseInt(formData.get("slotDuration") as string) || 30,
-      };
+    const loadingToast = toast.loading(
+      `Creando horarios para ${selectedDays.length} día${
+        selectedDays.length > 1 ? "s" : ""
+      }...`
+    );
 
-      const result = await createSchedule(data.clinicId, {
-        dayOfWeek: data.dayOfWeek as any,
+    const data = {
+      clinicId: formData.get("clinicId") as string,
+      selectedDays,
+      startTime: formData.get("startTime") as string,
+      endTime: formData.get("endTime") as string,
+      slotDuration: parseInt(formData.get("slotDuration") as string) || 30,
+    };
+
+    // Find the clinic for optimistic update
+    const clinic = clinics.find((c) => c.id === data.clinicId);
+
+    // Create optimistic schedules for all selected days
+    const optimisticSchedules = selectedDays.map((dayOfWeek, index) => {
+      const tempId = `temp-${Date.now()}-${Math.random()}-${index}`;
+      return {
+        id: tempId,
+        dayOfWeek: dayOfWeek as any,
         startTime: data.startTime,
         endTime: data.endTime,
-        slotDuration: data.slotDuration,
-      });
+        isActive: true,
+        clinic: clinic || { id: data.clinicId, name: "Clínica", address: null },
+        timeSlots: [
+          {
+            id: `temp-slot-${Date.now()}-${index}`,
+            startTime: data.startTime,
+            endTime: data.endTime,
+            isBooked: false,
+            isBlocked: false,
+          },
+        ],
+      };
+    });
 
-      if (result.success && result.data) {
-        setSchedules((prev) => [...prev, result.data!]);
-        setSuccess("Horario creado exitosamente");
-        // Clear success message after 3 seconds
-        setTimeout(() => setSuccess(null), 3000);
-      } else {
-        setError(result.error || "Error al crear el horario");
-        // Clear error message after 5 seconds
-        setTimeout(() => setError(null), 5000);
+    // Add optimistic schedules immediately
+    setOptimisticSchedules(optimisticSchedules);
+
+    // Close the modal
+    setShowCreateModal(false);
+
+    startTransition(async () => {
+      try {
+        const results = await Promise.all(
+          selectedDays.map((dayOfWeek) =>
+            createSchedule(data.clinicId, {
+              dayOfWeek: dayOfWeek as any,
+              startTime: data.startTime,
+              endTime: data.endTime,
+              slotDuration: data.slotDuration,
+            })
+          )
+        );
+
+        const successfulResults = results.filter(
+          (result) => result.success && result.data
+        );
+        const failedCount = results.length - successfulResults.length;
+
+        // Clear optimistic schedules
+        setOptimisticSchedules([]);
+
+        if (successfulResults.length > 0) {
+          // Add the real schedules
+          setSchedules((prev) => [
+            ...prev,
+            ...successfulResults.map((r) => r.data!),
+          ]);
+
+          if (failedCount === 0) {
+            toast.success(
+              `${successfulResults.length} horario${
+                successfulResults.length > 1 ? "s" : ""
+              } creado${successfulResults.length > 1 ? "s" : ""} exitosamente`,
+              { id: loadingToast }
+            );
+          } else {
+            toast.success(
+              `${successfulResults.length} horario${
+                successfulResults.length > 1 ? "s" : ""
+              } creado${
+                successfulResults.length > 1 ? "s" : ""
+              }, ${failedCount} falló${failedCount > 1 ? "n" : ""}`,
+              { id: loadingToast }
+            );
+          }
+        } else {
+          toast.error("Error al crear los horarios", { id: loadingToast });
+        }
+      } catch (error) {
+        // Clear optimistic schedules on error
+        setOptimisticSchedules([]);
+        console.error("Error creating schedules:", error);
+        toast.error("Error inesperado al crear los horarios", {
+          id: loadingToast,
+        });
       }
     });
   };
@@ -59,74 +140,71 @@ export default function EnhancedScheduleManagement({
       const result = await getDoctorSchedules();
       if (result.success && result.data) {
         setSchedules(result.data);
+        // Clear any remaining optimistic schedules
+        setOptimisticSchedules([]);
       }
-    } catch (error) {
-      console.error("Error refreshing schedules:", error);
+    } catch (err) {
+      console.error("Error refreshing schedules:", err);
     }
   };
 
   return (
     <div className="space-y-6">
-      {/* Error Message */}
-      {error && (
-        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-          <div className="flex">
-            <div className="flex-shrink-0">
-              <svg
-                className="h-5 w-5 text-red-400"
-                viewBox="0 0 20 20"
-                fill="currentColor"
-              >
-                <path
-                  fillRule="evenodd"
-                  d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.28 7.22a.75.75 0 00-1.06 1.06L8.94 10l-1.72 1.72a.75.75 0 101.06 1.06L10 11.06l1.72 1.72a.75.75 0 101.06-1.06L11.06 10l1.72-1.72a.75.75 0 00-1.06-1.06L10 8.94 8.28 7.22z"
-                  clipRule="evenodd"
-                />
-              </svg>
-            </div>
-            <div className="ml-3">
-              <p className="text-sm text-red-800">{error}</p>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Success Message */}
-      {success && (
-        <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-          <div className="flex">
-            <div className="flex-shrink-0">
-              <svg
-                className="h-5 w-5 text-green-400"
-                viewBox="0 0 20 20"
-                fill="currentColor"
-              >
-                <path
-                  fillRule="evenodd"
-                  d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.236 4.53L7.53 10.53a.75.75 0 00-1.06 1.06l2.5 2.5a.75.75 0 001.137-.089l4-5.5z"
-                  clipRule="evenodd"
-                />
-              </svg>
-            </div>
-            <div className="ml-3">
-              <p className="text-sm text-green-800">{success}</p>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Create Schedule Form */}
-      <ScheduleCreateForm
-        clinics={clinics}
-        onSubmit={handleCreateSchedule}
-        isPending={isPending}
-        onShowTemplates={() => setShowTemplates(true)}
-      />
+      {/* Create Schedule Actions */}
+      <div className="flex flex-col sm:flex-row gap-4">
+        <button
+          onClick={() => setShowCreateModal(true)}
+          className="flex-1 inline-flex items-center justify-center px-4 py-3 border border-transparent text-sm font-medium rounded-lg text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
+        >
+          <svg
+            className="w-5 h-5 mr-2"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+            />
+          </svg>
+          Crear Nuevo Horario
+        </button>
+        <button
+          onClick={() => setShowTemplates(true)}
+          className="flex-1 inline-flex items-center justify-center px-4 py-3 border border-gray-300 text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
+        >
+          <svg
+            className="w-5 h-5 mr-2"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
+            />
+          </svg>
+          Usar Plantilla
+        </button>
+      </div>
 
       {/* Schedule List */}
       <ScheduleList
-        schedules={schedules}
+        schedules={displaySchedules}
         onScheduleUpdated={handleSchedulesUpdated}
+      />
+
+      {/* Create Schedule Modal */}
+      <ScheduleCreateModal
+        isOpen={showCreateModal}
+        onClose={() => setShowCreateModal(false)}
+        clinics={clinics}
+        onSubmit={handleCreateSchedule}
+        isPending={isPending}
       />
 
       {/* Templates Modal */}
