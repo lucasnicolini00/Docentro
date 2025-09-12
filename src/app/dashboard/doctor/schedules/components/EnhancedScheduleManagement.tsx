@@ -9,7 +9,7 @@ import {
   ScheduleList,
   ScheduleManagementProps,
   Schedule,
-} from "./components";
+} from ".";
 
 export default function EnhancedScheduleManagement({
   initialSchedules,

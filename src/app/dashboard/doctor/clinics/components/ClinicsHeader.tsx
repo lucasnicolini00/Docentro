@@ -1,9 +1,5 @@
 import { Plus } from "lucide-react";
-
-interface ClinicsHeaderProps {
-  onAddClinic: () => void;
-  isPending: boolean;
-}
+import { ClinicsHeaderProps } from "./types";
 
 export default function ClinicsHeader({
   onAddClinic,

@@ -8,18 +8,8 @@ import {
   AlertCircle,
 } from "lucide-react";
 import { Tooltip } from "@/components/ui";
-import { Pricing } from "./types";
+import { PricingListProps } from "./types";
 import { formatPrice } from "./utils";
-
-interface PricingListProps {
-  pricings: Pricing[];
-  clinicId: string;
-  onAddPricing: (clinicId: string) => void;
-  onEditPricing: (pricing: Pricing, clinicId: string) => void;
-  onDeletePricing: (pricingId: string, clinicId: string) => void;
-  onTogglePricingStatus: (pricingId: string, clinicId: string) => void;
-  isPending: boolean;
-}
 
 export default function PricingList({
   pricings,

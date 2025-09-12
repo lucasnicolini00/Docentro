@@ -8,7 +8,6 @@ export { default as ClinicForm } from "./ClinicForm";
 export { default as PricingList } from "./PricingList";
 export { default as PricingForm } from "./PricingForm";
 export { default as EmptyState } from "./EmptyState";
-export { default as LoadingOverlay } from "./LoadingOverlay";
 export { default as FormsContainer } from "./FormsContainer";
 
 // Export types and utilities

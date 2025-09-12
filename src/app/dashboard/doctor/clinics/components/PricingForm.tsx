@@ -2,27 +2,7 @@
 
 import { useState } from "react";
 import { X, DollarSign, Clock } from "lucide-react";
-
-interface PricingFormProps {
-  isOpen: boolean;
-  onClose: () => void;
-  pricing?: {
-    id?: string;
-    title: string;
-    price: number;
-    currency: string;
-    durationMinutes: number;
-    description: string;
-    isActive: boolean;
-  };
-  clinics: Array<{
-    id: string;
-    name: string;
-    isVirtual: boolean;
-  }>;
-  selectedClinicId?: string;
-  onSubmit: (pricingData: any) => void;
-}
+import { PricingFormProps } from "./types";
 
 export default function PricingForm({
   isOpen,

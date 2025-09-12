@@ -1,22 +1,6 @@
 import ClinicForm from "./ClinicForm";
 import PricingForm from "./PricingForm";
-import { Clinic, Pricing } from "./types";
-
-interface FormsContainerProps {
-  // Clinic Form Props
-  showClinicForm: boolean;
-  editingClinic: Clinic | null;
-  onCloseClinicForm: () => void;
-  onSubmitClinic: (formData: FormData) => void;
-
-  // Pricing Form Props
-  showPricingForm: boolean;
-  editingPricing: Pricing | null;
-  clinics: Clinic[];
-  selectedClinicId?: string;
-  onClosePricingForm: () => void;
-  onSubmitPricing: (formData: FormData) => void;
-}
+import { FormsContainerProps } from "./types";
 
 export default function FormsContainer({
   showClinicForm,

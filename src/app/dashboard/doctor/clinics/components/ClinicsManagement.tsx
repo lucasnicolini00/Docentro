@@ -273,8 +273,6 @@ export default function ClinicsManagement({
         isPending={isPending}
       />
 
-      {/* <LoadingOverlay isPending={isPending} /> */}
-
       <FormsContainer
         showClinicForm={showClinicForm}
         editingClinic={editingClinic}

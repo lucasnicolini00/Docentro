@@ -1,19 +1,6 @@
-import { Clinic, Pricing } from "./types";
+import { ClinicCardProps } from "./types";
 import ClinicCardHeader from "./ClinicCardHeader";
 import PricingList from "./PricingList";
-
-interface ClinicCardProps {
-  clinic: Clinic;
-  isExpanded: boolean;
-  onToggleExpanded: (clinicId: string) => void;
-  onEdit: (clinic: Clinic) => void;
-  onDelete: (clinicId: string) => void;
-  onAddPricing: (clinicId: string) => void;
-  onEditPricing: (pricing: Pricing, clinicId: string) => void;
-  onDeletePricing: (pricingId: string, clinicId: string) => void;
-  onTogglePricingStatus: (pricingId: string, clinicId: string) => void;
-  isPending: boolean;
-}
 
 export default function ClinicCard({
   clinic,

@@ -2,21 +2,7 @@
 
 import { useState } from "react";
 import { X, Globe, Building2 } from "lucide-react";
-
-interface ClinicFormProps {
-  isOpen: boolean;
-  onClose: () => void;
-  clinic?: {
-    id?: string;
-    name: string;
-    address: string;
-    isVirtual: boolean;
-    country?: string;
-    city?: string;
-    neighborhood?: string;
-  };
-  onSubmit: (clinicData: any) => void;
-}
+import { ClinicFormProps } from "./types";
 
 export default function ClinicForm({
   isOpen,

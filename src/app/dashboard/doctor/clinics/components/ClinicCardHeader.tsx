@@ -7,16 +7,7 @@ import {
   Eye,
   EyeOff,
 } from "lucide-react";
-import { Clinic } from "./types";
-
-interface ClinicCardHeaderProps {
-  clinic: Clinic;
-  isExpanded: boolean;
-  onToggleExpanded: (clinicId: string) => void;
-  onEdit: (clinic: Clinic) => void;
-  onDelete: (clinicId: string) => void;
-  isPending: boolean;
-}
+import { ClinicCardHeaderProps } from "./types";
 
 export default function ClinicCardHeader({
   clinic,
