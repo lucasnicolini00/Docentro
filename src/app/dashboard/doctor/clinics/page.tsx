@@ -1,6 +1,7 @@
 import { requireDoctor } from "@/lib/auth-guards";
 import { getDoctorClinics } from "@/lib/actions/clinics";
 import ClinicsManagement from "./components/ClinicsManagement";
+import { Suspense } from "react";
 
 export default async function DoctorClinicsPage() {
   // Ensure user is authenticated as a doctor
@@ -26,7 +27,9 @@ export default async function DoctorClinicsPage() {
 
   return (
     <div className="p-6">
-      <ClinicsManagement initialClinics={clinics} />
+      <Suspense fallback={<div>Cargando gestión de clínicas...</div>}>
+        <ClinicsManagement initialClinics={clinics} />
+      </Suspense>
     </div>
   );
 }

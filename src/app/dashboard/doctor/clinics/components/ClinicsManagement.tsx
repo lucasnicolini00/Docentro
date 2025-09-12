@@ -17,7 +17,7 @@ import {
   createPricingWrapper,
   updatePricingWrapper,
   deletePricingWrapper,
-} from "./clinic-management";
+} from ".";
 
 export default function ClinicsManagement({
   initialClinics,
