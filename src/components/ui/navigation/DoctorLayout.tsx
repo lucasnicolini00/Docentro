@@ -17,14 +17,14 @@ interface DoctorLayoutProps {
   hideHeader?: boolean;
 }
 
-export default function DoctorLayout({ 
-  children, 
+export default function DoctorLayout({
+  children,
   headerTitle,
   headerSubtitle,
   showDate = true,
   showProfile = true,
   customHeaderContent,
-  hideHeader = false
+  hideHeader = false,
 }: DoctorLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const { data: session } = useSession();
@@ -52,7 +52,7 @@ export default function DoctorLayout({
     <div className="min-h-screen bg-gray-50">
       <Navbar />
 
-      <div className="flex h-[calc(100vh-64px)]">
+      <div className="flex h-[calc(100vh-65px)]">
         {/* Sidebar */}
         <DoctorSidebar
           isOpen={sidebarOpen}
@@ -60,7 +60,7 @@ export default function DoctorLayout({
         />
 
         {/* Main content */}
-        <div className="flex-1 lg:ml-0 flex flex-col h-full">
+        <div className="flex-1 lg:ml-0 flex flex-col h-full overflow-hidden">
           {/* Mobile menu button */}
           <div className="lg:hidden bg-white border-b border-gray-200 px-4 py-3">
             <button
@@ -73,19 +73,19 @@ export default function DoctorLayout({
           </div>
 
           {/* Page content */}
-          <main className="flex-1 p-6 overflow-auto">
-            {!hideHeader && (
-              <DoctorHeader
-                session={session}
-                title={headerTitle}
-                subtitle={headerSubtitle}
-                showDate={showDate}
-                showProfile={showProfile}
-                customContent={customHeaderContent}
-              />
-            )}
-            <div className="max-w-7xl mx-auto">
-              {children}
+          <main className="flex-1 overflow-y-auto">
+            <div className="p-6">
+              {!hideHeader && (
+                <DoctorHeader
+                  session={session}
+                  title={headerTitle}
+                  subtitle={headerSubtitle}
+                  showDate={showDate}
+                  showProfile={showProfile}
+                  customContent={customHeaderContent}
+                />
+              )}
+              <div className="max-w-7xl mx-auto">{children}</div>
             </div>
           </main>
         </div>

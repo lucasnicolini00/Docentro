@@ -82,7 +82,7 @@ export default function DoctorSidebar({ isOpen, onClose }: DoctorSidebarProps) {
         className={`
           fixed top-0 left-0 h-full w-64 bg-white shadow-xl transform transition-transform duration-300 ease-in-out z-50
           ${isOpen ? "translate-x-0" : "-translate-x-full"}
-          lg:translate-x-0 lg:static lg:z-auto lg:w-64 lg:h-full
+          lg:translate-x-0 lg:static lg:z-auto lg:w-64 lg:h-[calc(100vh-65px)] lg:top-auto
         `}
       >
         {/* Header */}
