@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { getScheduleAnalytics } from "@/lib/actions/analytics";
 
 interface ScheduleAnalytics {
@@ -21,38 +21,132 @@ interface ScheduleAnalyticsProps {
   doctorId?: string;
 }
 
+// Helper function to debounce API calls
+function useDebounce<T>(value: T, delay: number): T {
+  const [debouncedValue, setDebouncedValue] = useState(value);
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedValue(value);
+    }, delay);
+
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [value, delay]);
+
+  return debouncedValue;
+}
+
 export default function ScheduleAnalytics({
   doctorId,
 }: ScheduleAnalyticsProps) {
   const [analytics, setAnalytics] = useState<ScheduleAnalytics | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [timeRange, setTimeRange] = useState<"week" | "month" | "quarter">(
     "week"
   );
 
-  useEffect(() => {
-    const fetchAnalytics = async () => {
-      setLoading(true);
+  // Debounce time range changes to avoid excessive API calls
+  const debouncedTimeRange = useDebounce(timeRange, 300);
+
+  // Memoized calculations to avoid re-computing on every render
+  const analyticsInsights = useMemo(() => {
+    if (!analytics?.schedulesByDay) {
+      return { mostActiveDay: "N/A", leastActiveDay: "N/A" };
+    }
+
+    const entries = Object.entries(analytics.schedulesByDay);
+    const activeEntries = entries.filter(([, slots]) => slots > 0);
+
+    const mostActiveDay =
+      entries.reduce(
+        (max, [day, slots]) => (slots > max[1] ? [day, slots] : max),
+        ["", 0]
+      )[0] || "N/A";
+
+    const leastActiveDay =
+      activeEntries.length > 0
+        ? activeEntries.reduce(
+            (min, [day, slots]) => (slots < min[1] ? [day, slots] : min),
+            ["", Infinity]
+          )[0] || "N/A"
+        : "N/A";
+
+    return { mostActiveDay, leastActiveDay };
+  }, [analytics?.schedulesByDay]);
+
+  // Memoized max value for progress bars
+  const maxSchedulesPerDay = useMemo(() => {
+    if (!analytics?.schedulesByDay) return 1;
+    return Math.max(...Object.values(analytics.schedulesByDay));
+  }, [analytics?.schedulesByDay]);
+
+  // Optimized fetch function with error handling and cleanup
+  const fetchAnalytics = useCallback(
+    async (
+      range: "week" | "month" | "quarter",
+      doctorId?: string,
+      signal?: AbortSignal
+    ) => {
       try {
-        // Call real API endpoint
-        const result = await getScheduleAnalytics(timeRange, doctorId);
+        console.log("🔍 CLIENT: Fetching analytics with:", { range, doctorId });
+        setLoading(true);
+        setError(null);
+
+        const result = await getScheduleAnalytics(range, doctorId);
+        console.log("🔍 CLIENT: Analytics result:", result);
+
+        // Check if request was aborted
+        if (signal?.aborted) return;
 
         if (result.success && result.data) {
+          console.log(
+            "🔍 CLIENT: Setting analytics data:",
+            result.data.schedulesByDay
+          );
           setAnalytics(result.data);
         } else {
-          console.error("Failed to load analytics:", result.error);
-          // Keep null analytics on error
+          console.log("🔍 CLIENT: Analytics error:", result.error);
+          setError(result.error || "Error al cargar las estadísticas");
+          setAnalytics(null);
         }
-      } catch (error) {
-        console.error("Error loading analytics:", error);
-        // Keep null analytics on error
-      } finally {
-        setLoading(false);
-      }
-    };
+      } catch (err) {
+        // Check if request was aborted
+        if (signal?.aborted) return;
 
-    fetchAnalytics();
-  }, [doctorId, timeRange]);
+        console.error("🔍 CLIENT: Error loading analytics:", err);
+        setError("Error de conexión al cargar las estadísticas");
+        setAnalytics(null);
+      } finally {
+        if (!signal?.aborted) {
+          setLoading(false);
+        }
+      }
+    },
+    []
+  );
+
+  // Effect with cleanup and abort controller
+  useEffect(() => {
+    const abortController = new AbortController();
+
+    fetchAnalytics(debouncedTimeRange, doctorId, abortController.signal);
+
+    // Cleanup function to abort pending requests
+    return () => {
+      abortController.abort();
+    };
+  }, [fetchAnalytics, doctorId, debouncedTimeRange]);
+
+  // Optimized time range change handler
+  const handleTimeRangeChange = useCallback(
+    (e: React.ChangeEvent<HTMLSelectElement>) => {
+      setTimeRange(e.target.value as "week" | "month" | "quarter");
+    },
+    []
+  );
 
   if (loading) {
     return (
@@ -65,6 +159,23 @@ export default function ScheduleAnalytics({
             ))}
           </div>
           <div className="h-64 bg-gray-200 rounded"></div>
+        </div>
+      </div>
+    );
+  }
+
+  // Show error state
+  if (error) {
+    return (
+      <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+        <div className="text-center py-8">
+          <p className="text-red-600 mb-2">{error}</p>
+          <button
+            onClick={() => fetchAnalytics(timeRange, doctorId)}
+            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+          >
+            Reintentar
+          </button>
         </div>
       </div>
     );
@@ -88,9 +199,7 @@ export default function ScheduleAnalytics({
           </h2>
           <select
             value={timeRange}
-            onChange={(e) =>
-              setTimeRange(e.target.value as "week" | "month" | "quarter")
-            }
+            onChange={handleTimeRangeChange}
             className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
             <option value="week">Esta semana</option>
@@ -152,11 +261,7 @@ export default function ScheduleAnalytics({
                         style={{
                           width: `${Math.min(
                             100,
-                            (slots /
-                              Math.max(
-                                ...Object.values(analytics.schedulesByDay || {})
-                              )) *
-                              100
+                            (slots / maxSchedulesPerDay) * 100
                           )}%`,
                         }}
                       ></div>
@@ -170,7 +275,7 @@ export default function ScheduleAnalytics({
             )}
           </div>
 
-          {/* Insights Section */}
+          {/* Optimized Insights Section */}
           <div className="mt-6 pt-4 border-t border-gray-100">
             <div className="flex items-center justify-between mb-3">
               <h4 className="text-sm font-medium text-gray-700">Resumen</h4>
@@ -184,23 +289,13 @@ export default function ScheduleAnalytics({
               <div className="bg-blue-50 p-2 rounded">
                 <p className="text-blue-700 font-medium">Día más activo</p>
                 <p className="text-blue-900 font-semibold">
-                  {Object.entries(analytics.schedulesByDay || {}).reduce(
-                    (max, [day, slots]) =>
-                      slots > max[1] ? [day, slots] : max,
-                    ["", 0]
-                  )[0] || "N/A"}
+                  {analyticsInsights.mostActiveDay}
                 </p>
               </div>
               <div className="bg-gray-50 p-2 rounded">
                 <p className="text-gray-700 font-medium">Día menos activo</p>
                 <p className="text-gray-900 font-semibold">
-                  {Object.entries(analytics.schedulesByDay || {})
-                    .filter(([, slots]) => slots > 0)
-                    .reduce(
-                      (min, [day, slots]) =>
-                        slots < min[1] ? [day, slots] : min,
-                      ["", Infinity]
-                    )[0] || "N/A"}
+                  {analyticsInsights.leastActiveDay}
                 </p>
               </div>
             </div>

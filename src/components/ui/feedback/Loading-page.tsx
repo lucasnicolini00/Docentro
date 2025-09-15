@@ -5,7 +5,7 @@ export default function LoadingPage() {
     <div className="min-h-screen bg-gray-50">
       <Navbar />
 
-      <div className="flex items-center justify-center px-4 py-16 align-middle">
+      <div className="flex items-center justify-center min-h-[calc(100vh-64px)] px-4">
         <div className="text-center">
           {/* Medical-themed loading animation */}
           <div className="relative mb-8">
