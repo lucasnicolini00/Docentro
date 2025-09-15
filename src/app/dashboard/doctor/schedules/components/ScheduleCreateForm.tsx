@@ -57,20 +57,22 @@ export default function ScheduleCreateForm({
               Configura tus horarios de atención por clínica
             </p>
           </div>
-          <div className="flex space-x-3">
+          <div className="flex space-x-4">
             {onShowTemplates && (
               <button
                 onClick={onShowTemplates}
-                className="bg-white hover:bg-gray-50 text-gray-700 px-4 py-2 rounded-lg transition-colors border border-gray-300 hover:border-gray-400"
+                className="group relative overflow-hidden bg-white/80 backdrop-blur-sm hover:bg-blue-50 text-blue-700 px-6 py-3 rounded-2xl transition-all duration-200 border-2 border-blue-200 hover:border-blue-300 font-medium shadow-lg hover:shadow-xl transform hover:scale-105"
               >
-                Usar Plantillas
+                <div className="absolute inset-0 bg-blue-100/50 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left"></div>
+                <span className="relative z-10">Usar Plantillas</span>
               </button>
             )}
             <button
               onClick={() => setIsCreating(true)}
-              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors"
+              className="group relative overflow-hidden bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white px-6 py-3 rounded-2xl transition-all duration-200 font-bold shadow-lg hover:shadow-xl transform hover:scale-105"
             >
-              Crear Nuevo Horario
+              <div className="absolute inset-0 bg-white/20 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left"></div>
+              <span className="relative z-10">Crear Nuevo Horario</span>
             </button>
           </div>
         </div>

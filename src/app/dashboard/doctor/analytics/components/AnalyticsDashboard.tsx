@@ -7,7 +7,7 @@ import {
   getPatientAnalytics,
   getRevenueAnalytics,
 } from "@/lib/actions";
-import { AlertCircle, ChevronDown } from "lucide-react";
+import { AlertCircle, ChevronDown, BarChart3 } from "lucide-react";
 
 // Import smaller components - now local
 import MetricsCards from "./MetricsCards";
@@ -154,23 +154,21 @@ export default function AnalyticsDashboard() {
 
   if (loading) {
     return (
-      <div className="p-6">
-        <div className="animate-pulse">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            {[...Array(4)].map((_, i) => (
-              <div key={i} className="bg-white rounded-xl border p-6">
-                <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
-                <div className="h-8 bg-gray-200 rounded w-1/2"></div>
-              </div>
-            ))}
-          </div>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {[...Array(4)].map((_, i) => (
-              <div key={i} className="bg-white rounded-xl border p-6">
-                <div className="h-64 bg-gray-200 rounded"></div>
-              </div>
-            ))}
-          </div>
+      <div className="animate-pulse">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          {[...Array(4)].map((_, i) => (
+            <div key={i} className="bg-white rounded-lg border p-6 shadow-sm">
+              <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
+              <div className="h-8 bg-gray-200 rounded w-1/2"></div>
+            </div>
+          ))}
+        </div>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {[...Array(4)].map((_, i) => (
+            <div key={i} className="bg-white rounded-lg border p-6 shadow-sm">
+              <div className="h-64 bg-gray-200 rounded"></div>
+            </div>
+          ))}
         </div>
       </div>
     );
@@ -178,51 +176,58 @@ export default function AnalyticsDashboard() {
 
   if (error) {
     return (
-      <div className="p-6">
-        <div className="bg-red-50 border border-red-200 rounded-xl p-6 text-center">
-          <AlertCircle className="h-12 w-12 text-red-400 mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-red-900 mb-2">
-            Error al cargar datos
-          </h3>
-          <p className="text-red-700 mb-4">{error}</p>
-          <button
-            onClick={fetchAnalytics}
-            className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors"
-          >
-            Reintentar
-          </button>
-        </div>
+      <div className="bg-red-50 border border-red-200 rounded-lg p-6 text-center">
+        <AlertCircle className="h-8 w-8 text-red-400 mx-auto mb-4" />
+        <h3 className="text-lg font-medium text-red-900 mb-2">
+          Error al cargar datos
+        </h3>
+        <p className="text-red-700 mb-4">{error}</p>
+        <button
+          onClick={fetchAnalytics}
+          className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors"
+        >
+          Reintentar
+        </button>
       </div>
     );
   }
 
   return (
-    <div className="p-6 space-y-6">
-      {/* Header */}
-      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">
-            Analytics Dashboard
-          </h1>
-          <p className="text-gray-600 mt-1">
-            Insights y métricas de tu práctica médica
-          </p>
-        </div>
+    <div className="space-y-6">
+      {/* Simple Header */}
+      <div className="mb-6">
+        <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between">
+            <div className="flex items-center space-x-3">
+              <div className="bg-blue-100 p-2 rounded-lg">
+                <BarChart3 className="w-5 h-5 text-blue-600" />
+              </div>
+              <div>
+                <h1 className="text-2xl font-semibold text-gray-900">
+                  Analytics Dashboard
+                </h1>
+                <p className="text-gray-600 text-sm mt-1">
+                  Insights y métricas de tu práctica médica
+                </p>
+              </div>
+            </div>
 
-        {/* Time Range Selector */}
-        <div className="mt-4 lg:mt-0">
-          <div className="relative">
-            <select
-              value={timeRange}
-              onChange={(e) => setTimeRange(e.target.value as TimeRange)}
-              className="appearance-none bg-white border border-gray-300 rounded-lg px-4 py-2 pr-8 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            >
-              <option value="week">Esta semana</option>
-              <option value="month">Este mes</option>
-              <option value="quarter">Este trimestre</option>
-              <option value="year">Este año</option>
-            </select>
-            <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
+            {/* Time Range Selector */}
+            <div className="mt-4 lg:mt-0">
+              <div className="relative">
+                <select
+                  value={timeRange}
+                  onChange={(e) => setTimeRange(e.target.value as TimeRange)}
+                  className="appearance-none bg-white border border-gray-300 rounded-lg px-4 py-2 pr-8 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                >
+                  <option value="week">Esta semana</option>
+                  <option value="month">Este mes</option>
+                  <option value="quarter">Este trimestre</option>
+                  <option value="year">Este año</option>
+                </select>
+                <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
+              </div>
+            </div>
           </div>
         </div>
       </div>
