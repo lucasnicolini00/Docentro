@@ -1,6 +1,8 @@
 import { requirePatient } from "@/lib/auth-guards";
 import { getPatientProfile } from "@/lib/actions/patients";
 import { PatientProfileForm } from "@/components/ui/forms";
+import { User, ArrowLeft } from "lucide-react";
+import Link from "next/link";
 
 export default async function PatientProfilePage() {
   // Ensure user is authenticated as a patient
@@ -11,14 +13,24 @@ export default async function PatientProfilePage() {
 
   if (!result.success || !result.data) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="bg-white rounded-lg p-8 shadow-sm border border-gray-200">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-900 mb-4">
+          <div className="bg-red-100 p-3 rounded-lg w-fit mx-auto mb-4">
+            <User className="w-8 h-8 text-red-600" />
+          </div>
+          <h2 className="text-xl font-semibold text-gray-900 mb-2">
             Perfil no encontrado
-          </h1>
-          <p className="text-gray-600">
+          </h2>
+          <p className="text-gray-600 mb-4">
             No se pudo encontrar la información del paciente.
           </p>
+          <Link
+            href="/dashboard/patient"
+            className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+          >
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Volver al Dashboard
+          </Link>
         </div>
       </div>
     );
@@ -27,45 +39,34 @@ export default async function PatientProfilePage() {
   const patient = result.data;
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <>
       {/* Header */}
-      <div className="bg-white shadow-sm border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900">
-                Editar Perfil
-              </h1>
-              <p className="mt-1 text-sm text-gray-500">
-                Actualiza tu información personal y de contacto
-              </p>
+      <div className="mb-6">
+        <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
+          <div className="flex justify-between items-center">
+            <div className="flex items-center space-x-3">
+              <div className="bg-blue-100 p-2 rounded-lg">
+                <User className="w-5 h-5 text-blue-600" />
+              </div>
+              <div>
+                <h1 className="text-2xl font-semibold text-gray-900">
+                  Mi perfil
+                </h1>
+                <p className="text-gray-600 text-sm mt-1">
+                  Gestiona tu información personal y médica
+                </p>
+              </div>
             </div>
-            <a
-              href="/dashboard/patient"
-              className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg transition-colors"
-            >
-              ← Volver al Dashboard
-            </a>
           </div>
         </div>
       </div>
 
-      {/* Content */}
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="bg-white rounded-lg shadow-sm">
-          <div className="p-6 border-b border-gray-200">
-            <h2 className="text-lg font-semibold text-gray-900">
-              Información Personal
-            </h2>
-            <p className="text-sm text-gray-600 mt-1">
-              Mantén actualizada tu información para una mejor experiencia
-            </p>
-          </div>
-          <div className="p-6">
-            <PatientProfileForm patient={patient} />
-          </div>
+      {/* Profile Form */}
+      <div className="bg-white rounded-xl shadow-sm border border-gray-100">
+        <div className="p-6">
+          <PatientProfileForm patient={patient} />
         </div>
       </div>
-    </div>
+    </>
   );
 }

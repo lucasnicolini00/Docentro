@@ -190,14 +190,13 @@ export default function ScheduleCreateModal({
                         ? "bg-blue-600 text-white border-blue-600"
                         : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"
                     } ${isPending ? "cursor-not-allowed opacity-50" : ""}`}
-                    onClick={() => handleDayToggle(key)}
                   >
                     <input
                       type="checkbox"
                       name="dayOfWeek"
                       value={key}
                       checked={selectedDays.includes(key)}
-                      onChange={() => {}} // Handled by label click
+                      onChange={() => handleDayToggle(key)}
                       disabled={isPending}
                       className="sr-only"
                     />

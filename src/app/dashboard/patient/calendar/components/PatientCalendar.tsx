@@ -1,10 +1,11 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import listPlugin from "@fullcalendar/list";
+import { AppointmentDetailsModal } from "@/components";
 
 interface PatientAppointment {
   id: string;
@@ -28,23 +29,45 @@ interface PatientAppointment {
 
 interface PatientCalendarProps {
   initialAppointments?: PatientAppointment[];
-  onEventClick?: (clickInfo: any) => void;
   showUpcoming?: boolean;
 }
 
 export default function PatientCalendar({
   initialAppointments = [],
-  onEventClick,
   showUpcoming = true,
 }: PatientCalendarProps) {
   const [appointments, setAppointments] =
     useState<PatientAppointment[]>(initialAppointments);
   const [currentView, setCurrentView] = useState("listWeek");
+  const [selectedAppointment, setSelectedAppointment] = useState<{
+    id: string;
+    start: Date;
+    extendedProps: {
+      status: string;
+      doctorName: string;
+      specialty: string;
+      clinicName: string;
+      clinicAddress?: string;
+      notes?: string;
+      type: string;
+      meetingLink?: string;
+    };
+  } | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const calendarRef = useRef<FullCalendar>(null);
 
   // Update appointments when props change
   useEffect(() => {
     setAppointments(initialAppointments);
   }, [initialAppointments]);
+
+  // Sync calendar view when currentView changes
+  useEffect(() => {
+    if (calendarRef.current) {
+      const calendarApi = calendarRef.current.getApi();
+      calendarApi.changeView(currentView);
+    }
+  }, [currentView]);
 
   // Transform appointments to FullCalendar events
   const calendarEvents = appointments.map((appointment) => ({
@@ -111,53 +134,26 @@ export default function PatientCalendar({
 
   // Handle event click (for viewing appointment details)
   const handleEventClick = (clickInfo: any) => {
-    if (onEventClick) {
-      onEventClick(clickInfo);
-    } else {
-      // Default behavior - show appointment details
-      const event = clickInfo.event;
-      const details = `
-Doctor: ${event.extendedProps.doctorName}
-Especialidad: ${event.extendedProps.specialty}
-Clínica: ${event.extendedProps.clinicName}
-${
-  event.extendedProps.clinicAddress
-    ? `Dirección: ${event.extendedProps.clinicAddress}`
-    : ""
-}
-Estado: ${getStatusText(event.extendedProps.status)}
-Tipo: ${event.extendedProps.type === "ONLINE" ? "Virtual" : "Presencial"}
-${
-  event.extendedProps.meetingLink
-    ? `Link de reunión: ${event.extendedProps.meetingLink}`
-    : ""
-}
-Fecha: ${event.start.toLocaleDateString("es-ES")}
-Hora: ${event.start.toLocaleTimeString("es-ES", {
-        hour: "2-digit",
-        minute: "2-digit",
-      })}
-${event.extendedProps.notes ? `Notas: ${event.extendedProps.notes}` : ""}
-      `;
-      alert(details);
-    }
+    const event = clickInfo.event;
+    setSelectedAppointment({
+      id: event.id,
+      start: event.start,
+      extendedProps: event.extendedProps,
+    });
+    setIsModalOpen(true);
   };
 
-  // Get status text in Spanish
-  function getStatusText(status: string) {
-    switch (status) {
-      case "PENDING":
-        return "Pendiente";
-      case "CONFIRMED":
-        return "Confirmada";
-      case "COMPLETED":
-        return "Completada";
-      case "CANCELED":
-        return "Cancelada";
-      default:
-        return status;
-    }
-  }
+  // Handle modal close
+  const handleModalClose = () => {
+    setIsModalOpen(false);
+    setSelectedAppointment(null);
+  };
+
+  // Handle view change
+  const handleViewChange = (view: string) => {
+    setCurrentView(view);
+    // The useEffect will handle the actual calendar view change
+  };
 
   // Format date for display
   function formatDate(dateString: string) {
@@ -192,14 +188,12 @@ ${event.extendedProps.notes ? `Notas: ${event.extendedProps.notes}` : ""}
                 key={appointment.id}
                 className="flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-200 hover:bg-gray-100 transition-colors cursor-pointer"
                 onClick={() => {
-                  const event = {
-                    event: {
-                      ...appointment,
-                      start: new Date(appointment.start),
-                      extendedProps: appointment.extendedProps,
-                    },
-                  };
-                  handleEventClick(event);
+                  setSelectedAppointment({
+                    id: appointment.id,
+                    start: new Date(appointment.start),
+                    extendedProps: appointment.extendedProps,
+                  });
+                  setIsModalOpen(true);
                 }}
               >
                 <div className="flex items-center space-x-4">
@@ -246,34 +240,34 @@ ${event.extendedProps.notes ? `Notas: ${event.extendedProps.notes}` : ""}
           {/* View Toggle */}
           <div className="flex space-x-2">
             <button
-              onClick={() => setCurrentView("dayGridMonth")}
-              className={`px-3 py-1 rounded-lg text-sm font-medium transition-colors ${
+              onClick={() => handleViewChange("dayGridMonth")}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
                 currentView === "dayGridMonth"
-                  ? "bg-blue-600 text-white"
-                  : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                  ? "bg-blue-600 text-white shadow-md scale-105"
+                  : "bg-gray-100 text-gray-700 hover:bg-gray-200 hover:scale-105"
               }`}
             >
-              Mes
+              📅 Mes
             </button>
             <button
-              onClick={() => setCurrentView("listWeek")}
-              className={`px-3 py-1 rounded-lg text-sm font-medium transition-colors ${
+              onClick={() => handleViewChange("listWeek")}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
                 currentView === "listWeek"
-                  ? "bg-blue-600 text-white"
-                  : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                  ? "bg-blue-600 text-white shadow-md scale-105"
+                  : "bg-gray-100 text-gray-700 hover:bg-gray-200 hover:scale-105"
               }`}
             >
-              Lista
+              📋 Lista
             </button>
             <button
-              onClick={() => setCurrentView("listMonth")}
-              className={`px-3 py-1 rounded-lg text-sm font-medium transition-colors ${
+              onClick={() => handleViewChange("listMonth")}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
                 currentView === "listMonth"
-                  ? "bg-blue-600 text-white"
-                  : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                  ? "bg-blue-600 text-white shadow-md scale-105"
+                  : "bg-gray-100 text-gray-700 hover:bg-gray-200 hover:scale-105"
               }`}
             >
-              Lista Mensual
+              📑 Lista Mensual
             </button>
           </div>
         </div>
@@ -281,19 +275,19 @@ ${event.extendedProps.notes ? `Notas: ${event.extendedProps.notes}` : ""}
         {/* Legend */}
         <div className="flex flex-wrap gap-4 mb-6 p-4 bg-gray-50 rounded-lg">
           <div className="flex items-center space-x-2">
-            <div className="w-3 h-3 rounded bg-yellow-200 border border-yellow-500"></div>
+            <div className="w-3 h-3 rounded bg-yellow-100 border border-yellow-500"></div>
             <span className="text-sm text-gray-700">Pendiente</span>
           </div>
           <div className="flex items-center space-x-2">
-            <div className="w-3 h-3 rounded bg-green-200 border border-green-500"></div>
+            <div className="w-3 h-3 rounded bg-green-100 border border-green-500"></div>
             <span className="text-sm text-gray-700">Confirmada</span>
           </div>
           <div className="flex items-center space-x-2">
-            <div className="w-3 h-3 rounded bg-blue-200 border border-blue-500"></div>
+            <div className="w-3 h-3 rounded bg-blue-100 border border-blue-500"></div>
             <span className="text-sm text-gray-700">Completada</span>
           </div>
           <div className="flex items-center space-x-2">
-            <div className="w-3 h-3 rounded bg-red-200 border border-red-500"></div>
+            <div className="w-3 h-3 rounded bg-red-100 border border-red-500"></div>
             <span className="text-sm text-gray-700">Cancelada</span>
           </div>
         </div>
@@ -301,6 +295,7 @@ ${event.extendedProps.notes ? `Notas: ${event.extendedProps.notes}` : ""}
         {/* FullCalendar Component */}
         <div className="calendar-container">
           <FullCalendar
+            ref={calendarRef}
             plugins={[dayGridPlugin, timeGridPlugin, listPlugin]}
             headerToolbar={{
               left: "prev,next today",
@@ -359,7 +354,16 @@ ${event.extendedProps.notes ? `Notas: ${event.extendedProps.notes}` : ""}
               if (currentView.includes("list")) {
                 const statusBadge = document.createElement("span");
                 statusBadge.className = `ml-2 px-2 py-1 text-xs font-medium rounded-full`;
-                statusBadge.textContent = getStatusText(props.status);
+
+                // Get status text in Spanish
+                const statusTexts: Record<string, string> = {
+                  PENDING: "Pendiente",
+                  CONFIRMED: "Confirmada",
+                  COMPLETED: "Completada",
+                  CANCELED: "Cancelada",
+                };
+                statusBadge.textContent =
+                  statusTexts[props.status] || props.status;
 
                 const colors = getStatusColor(props.status);
                 statusBadge.style.backgroundColor = colors.bg;
@@ -420,6 +424,13 @@ ${event.extendedProps.notes ? `Notas: ${event.extendedProps.notes}` : ""}
           </div>
         )}
       </div>
+
+      {/* Appointment Details Modal */}
+      <AppointmentDetailsModal
+        isOpen={isModalOpen}
+        onClose={handleModalClose}
+        appointment={selectedAppointment}
+      />
 
       <style jsx global>{`
         .calendar-container .fc {

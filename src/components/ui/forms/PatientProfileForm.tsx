@@ -40,10 +40,6 @@ export default function PatientProfileForm({
     lastName: patient.user.lastName,
     email: patient.user.email,
     phone: patient.user.phone || "",
-    patientName: patient.name,
-    patientSurname: patient.surname,
-    patientEmail: patient.email,
-    patientPhone: patient.phone || "",
     birthdate: patient.birthdate
       ? patient.birthdate.toISOString().split("T")[0]
       : "",
@@ -105,6 +101,9 @@ export default function PatientProfileForm({
           <h2 className="text-lg font-semibold text-gray-900">
             Información Personal
           </h2>
+          <p className="text-sm text-gray-600 mt-1">
+            Información básica de contacto
+          </p>
         </div>
         <div className="p-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -117,7 +116,7 @@ export default function PatientProfileForm({
                 name="firstName"
                 value={formData.firstName}
                 onChange={handleInputChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 required
               />
             </div>
@@ -130,7 +129,7 @@ export default function PatientProfileForm({
                 name="lastName"
                 value={formData.lastName}
                 onChange={handleInputChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 required
               />
             </div>
@@ -143,7 +142,7 @@ export default function PatientProfileForm({
                 name="email"
                 value={formData.email}
                 onChange={handleInputChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 required
               />
             </div>
@@ -156,73 +155,26 @@ export default function PatientProfileForm({
                 name="phone"
                 value={formData.phone}
                 onChange={handleInputChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                placeholder="+591 70123456"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
             </div>
           </div>
         </div>
       </div>
 
-      {/* Patient Specific Information */}
+      {/* Medical Information */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-100">
         <div className="px-6 py-4 border-b border-gray-100">
           <h2 className="text-lg font-semibold text-gray-900">
-            Información del Paciente
+            Información Médica
           </h2>
+          <p className="text-sm text-gray-600 mt-1">
+            Información adicional para mejorar la atención médica
+          </p>
         </div>
         <div className="p-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Nombre del Paciente
-              </label>
-              <input
-                type="text"
-                name="patientName"
-                value={formData.patientName}
-                onChange={handleInputChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                required
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Apellido del Paciente
-              </label>
-              <input
-                type="text"
-                name="patientSurname"
-                value={formData.patientSurname}
-                onChange={handleInputChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                required
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Email del Paciente
-              </label>
-              <input
-                type="email"
-                name="patientEmail"
-                value={formData.patientEmail}
-                onChange={handleInputChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                required
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Teléfono del Paciente
-              </label>
-              <input
-                type="tel"
-                name="patientPhone"
-                value={formData.patientPhone}
-                onChange={handleInputChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-              />
-            </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Fecha de Nacimiento
@@ -232,7 +184,7 @@ export default function PatientProfileForm({
                 name="birthdate"
                 value={formData.birthdate}
                 onChange={handleInputChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
             </div>
             <div>
@@ -243,7 +195,7 @@ export default function PatientProfileForm({
                 name="gender"
                 value={formData.gender}
                 onChange={handleInputChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
                 <option value="">Seleccionar género</option>
                 <option value="masculino">Masculino</option>
@@ -270,8 +222,9 @@ export default function PatientProfileForm({
           loadingText="Guardando..."
           variant="success"
           size="lg"
+          className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-8 py-3 rounded-xl flex items-center space-x-2 font-medium shadow-lg hover:shadow-xl transition-all duration-200"
         >
-          Guardar Cambios
+          <span>Guardar Cambios</span>
         </LoadingButton>
       </div>
     </form>
