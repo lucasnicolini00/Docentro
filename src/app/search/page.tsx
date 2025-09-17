@@ -63,6 +63,15 @@ export default async function Search({ searchParams }: SearchProps) {
 
   const doctors: DoctorWithRelations[] = result.data || [];
 
+  // Transform doctors data to convert Decimal to number for Client Component compatibility
+  const transformedDoctors = doctors.map((doctor) => ({
+    ...doctor,
+    pricings: doctor.pricings.map((pricing) => ({
+      ...pricing,
+      price: Number(pricing.price), // Convert Decimal to number
+    })),
+  }));
+
   return (
     <div className="min-h-screen bg-gray-50">
       <Navbar />
@@ -77,7 +86,7 @@ export default async function Search({ searchParams }: SearchProps) {
               </h1>
               <div className="flex items-center gap-2 mt-1">
                 <p className="text-gray-600">
-                  {doctors.length} profesionales encontrados
+                  {transformedDoctors.length} profesionales encontrados
                 </p>
                 {(specialty || location) && (
                   <div className="flex items-center gap-2 ml-4">
@@ -126,13 +135,13 @@ export default async function Search({ searchParams }: SearchProps) {
             </div>
 
             {/* Doctors Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {doctors.map((doctor) => (
+            <div className="space-y-6">
+              {transformedDoctors.map((doctor) => (
                 <DoctorCard key={doctor.id} doctor={doctor} />
               ))}
             </div>
 
-            {doctors.length === 0 && (
+            {transformedDoctors.length === 0 && (
               <div className="text-center py-12">
                 <div className="text-6xl mb-4">👨‍⚕️</div>
                 <h3 className="text-xl font-semibold text-gray-900 mb-2">

@@ -1,5 +1,19 @@
-import { Decimal } from "@prisma/client/runtime/library";
+"use client";
+
 import Link from "next/link";
+import { useState, useEffect, useCallback } from "react";
+import {
+  Calendar,
+  Clock,
+  MapPin,
+  Star,
+  Phone,
+  User,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
+import { getDoctorAvailability } from "@/lib/actions/appointments";
+import BookingModal from "./BookingModal";
 
 interface Doctor {
   id: string;
@@ -23,7 +37,7 @@ interface Doctor {
     };
   }[];
   pricings: {
-    price: Decimal;
+    price: number; // Changed from Decimal to number
     currency: string;
     title: string;
     clinic: {
@@ -32,11 +46,38 @@ interface Doctor {
   }[];
 }
 
+interface DayInfo {
+  date: string;
+  dayName: string;
+  dayNumber: number;
+  monthName: string;
+  fullDate: Date;
+  hasAvailableSlots?: boolean;
+  isLoading?: boolean;
+}
+
 interface DoctorCardProps {
   doctor: Doctor;
 }
 
 export default function DoctorCard({ doctor }: DoctorCardProps) {
+  const [selectedDate, setSelectedDate] = useState<string>("");
+  const [availableSlots, setAvailableSlots] = useState<
+    Array<{ datetime: string; time: string }>
+  >([]);
+  const [isLoadingSlots, setIsLoadingSlots] = useState(false);
+  const [allDays, setAllDays] = useState<DayInfo[]>([]);
+  const [currentStartIndex, setCurrentStartIndex] = useState(0);
+  const [daysToShow] = useState(4); // Show 4 days at a time
+  const [loadedDays, setLoadedDays] = useState(7); // Start with 7 days, load more as needed
+
+  // Modal states
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [modalMode, setModalMode] = useState<
+    "time-selection" | "all-times" | "quick-book"
+  >("time-selection");
+  const [modalSelectedTime, setModalSelectedTime] = useState<string>("");
+
   const avgRating =
     doctor.opinions.length > 0
       ? doctor.opinions.reduce((sum, opinion) => sum + opinion.rating, 0) /
@@ -55,100 +96,496 @@ export default function DoctorCard({ doctor }: DoctorCardProps) {
       ? Math.min(...doctor.pricings.map((p) => Number(p.price)))
       : null;
 
+  // Generate days starting from today
+  const generateDays = (numDays: number): DayInfo[] => {
+    const days: DayInfo[] = [];
+    const today = new Date();
+
+    for (let i = 0; i < numDays; i++) {
+      const date = new Date(today);
+      date.setDate(today.getDate() + i);
+
+      const dayNames = ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"];
+      const monthNames = [
+        "Ene",
+        "Feb",
+        "Mar",
+        "Abr",
+        "May",
+        "Jun",
+        "Jul",
+        "Ago",
+        "Sep",
+        "Oct",
+        "Nov",
+        "Dic",
+      ];
+
+      days.push({
+        date: date.toISOString().split("T")[0],
+        dayName: i === 0 ? "Hoy" : i === 1 ? "Mañana" : dayNames[date.getDay()],
+        dayNumber: date.getDate(),
+        monthName: monthNames[date.getMonth()],
+        fullDate: date,
+        isLoading: false,
+      });
+    }
+
+    return days;
+  };
+
+  // Check availability for a specific day
+  const checkDayAvailability = useCallback(
+    async (day: DayInfo): Promise<DayInfo> => {
+      try {
+        const result = await getDoctorAvailability(doctor.id, day.date);
+        return {
+          ...day,
+          hasAvailableSlots:
+            result.success && result.data && result.data.length > 0,
+          isLoading: false,
+        };
+      } catch (error) {
+        console.error("Error checking day availability:", error);
+        return {
+          ...day,
+          hasAvailableSlots: false,
+          isLoading: false,
+        };
+      }
+    },
+    [doctor.id]
+  );
+
+  // Initialize days and check availability for visible ones
+  const initializeDays = useCallback(async () => {
+    const initialDays = generateDays(loadedDays);
+    setAllDays(initialDays);
+
+    // Check availability for first 4 days (initially visible)
+    const visibleDays = initialDays.slice(0, daysToShow);
+    const checkedDays = await Promise.all(
+      visibleDays.map((day) => checkDayAvailability(day))
+    );
+
+    // Update the days with availability info
+    setAllDays((prevDays) => {
+      const updatedDays = [...prevDays];
+      checkedDays.forEach((checkedDay, index) => {
+        updatedDays[index] = checkedDay;
+      });
+      return updatedDays;
+    });
+
+    // Auto-select first available day
+    const firstAvailable = checkedDays.find((day) => day.hasAvailableSlots);
+    if (firstAvailable && !selectedDate) {
+      setSelectedDate(firstAvailable.date);
+    }
+  }, [loadedDays, daysToShow, checkDayAvailability, selectedDate]);
+
+  // Navigate carousel
+  const navigateCarousel = useCallback(
+    async (direction: "prev" | "next") => {
+      if (direction === "prev" && currentStartIndex > 0) {
+        setCurrentStartIndex(currentStartIndex - 1);
+      } else if (direction === "next") {
+        const newStartIndex = currentStartIndex + 1;
+        setCurrentStartIndex(newStartIndex);
+
+        // Load more days if approaching the end
+        if (newStartIndex + daysToShow >= loadedDays - 2) {
+          const newLoadedDays = loadedDays + 7;
+          setLoadedDays(newLoadedDays);
+          const newDays = generateDays(newLoadedDays);
+          setAllDays(newDays);
+
+          // Check availability for newly visible days
+          const startCheck = Math.max(loadedDays - 7, newStartIndex);
+          const endCheck = Math.min(newStartIndex + daysToShow, newLoadedDays);
+          const daysToCheck = newDays.slice(startCheck, endCheck);
+
+          const checkedNewDays = await Promise.all(
+            daysToCheck.map((day) => checkDayAvailability(day))
+          );
+
+          setAllDays((prevDays) => {
+            const updatedDays = [...prevDays];
+            checkedNewDays.forEach((checkedDay, index) => {
+              updatedDays[startCheck + index] = checkedDay;
+            });
+            return updatedDays;
+          });
+        } else {
+          // Check availability for newly visible days
+          const visibleDays = allDays.slice(
+            newStartIndex,
+            newStartIndex + daysToShow
+          );
+          const uncheckedDays = visibleDays.filter(
+            (day) => day.hasAvailableSlots === undefined
+          );
+
+          if (uncheckedDays.length > 0) {
+            const checkedDays = await Promise.all(
+              uncheckedDays.map((day) => checkDayAvailability(day))
+            );
+
+            setAllDays((prevDays) => {
+              const updatedDays = [...prevDays];
+              checkedDays.forEach((checkedDay) => {
+                const index = updatedDays.findIndex(
+                  (d) => d.date === checkedDay.date
+                );
+                if (index !== -1) {
+                  updatedDays[index] = checkedDay;
+                }
+              });
+              return updatedDays;
+            });
+          }
+        }
+      }
+    },
+    [currentStartIndex, daysToShow, loadedDays, allDays, checkDayAvailability]
+  );
+
+  // Modal handlers
+  const openModal = (
+    mode: "time-selection" | "all-times" | "quick-book",
+    time?: string
+  ) => {
+    setModalMode(mode);
+    setModalSelectedTime(time || "");
+    setIsModalOpen(true);
+  };
+
+  const closeModal = () => {
+    setIsModalOpen(false);
+    setModalSelectedTime("");
+  };
+
+  // Load available slots when date is selected
+  const loadAvailableSlots = useCallback(
+    async (date: string) => {
+      setIsLoadingSlots(true);
+      try {
+        const result = await getDoctorAvailability(doctor.id, date);
+        if (result.success) {
+          setAvailableSlots(result.data || []);
+        } else {
+          setAvailableSlots([]);
+        }
+      } catch (error) {
+        console.error("Error loading slots:", error);
+        setAvailableSlots([]);
+      } finally {
+        setIsLoadingSlots(false);
+      }
+    },
+    [doctor.id]
+  );
+
+  // Load available days on component mount
+  useEffect(() => {
+    initializeDays();
+  }, [initializeDays]);
+
+  useEffect(() => {
+    if (selectedDate) {
+      loadAvailableSlots(selectedDate);
+    }
+  }, [selectedDate, loadAvailableSlots]);
+
+  // Get currently visible days
+  const visibleDays = allDays.slice(
+    currentStartIndex,
+    currentStartIndex + daysToShow
+  );
+  const canGoPrev = currentStartIndex > 0;
+  const canGoNext =
+    currentStartIndex + daysToShow < allDays.length ||
+    currentStartIndex + daysToShow < 30; // Allow up to 30 days
+
   return (
-    <div className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-100">
-      <div className="p-6">
-        {/* Doctor Header */}
-        <div className="flex items-start gap-4 mb-4">
-          <div className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center text-2xl text-white font-bold">
-            {doctor.name.charAt(0)}
-            {doctor.surname.charAt(0)}
-          </div>
-          <div className="flex-1">
-            <div className="flex items-center gap-2 mb-1">
-              <h3 className="text-lg font-bold text-gray-900">
-                Dr. {doctor.name} {doctor.surname}
-              </h3>
-              <span className="text-green-500 text-sm">✔️</span>
+    <div className="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-100 overflow-hidden">
+      <div className="flex flex-col lg:flex-row">
+        {/* Left Panel - Doctor Info */}
+        <div className="flex-1 p-6 flex flex-col min-h-[400px]">
+          {/* Doctor Header */}
+          <div className="flex items-start gap-4 mb-6">
+            <div className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-xl text-white font-bold shadow-lg">
+              <User className="w-8 h-8" />
             </div>
-            <p className="text-sm text-gray-600 mb-2">{primarySpeciality}</p>
-            <div className="flex items-center gap-2 mb-2">
-              <div className="flex text-yellow-400 text-sm">
-                {"★".repeat(Math.round(avgRating))}
-                {"☆".repeat(5 - Math.round(avgRating))}
+            <div className="flex-1">
+              <div className="flex items-center gap-2 mb-2">
+                <h3 className="text-xl font-bold text-gray-900">
+                  Dr. {doctor.name} {doctor.surname}
+                </h3>
+                <span className="text-green-500 text-sm bg-green-50 px-2 py-1 rounded-full">
+                  ✓ Verificado
+                </span>
               </div>
-              <span className="text-gray-600 text-sm">
-                {avgRating > 0 ? avgRating.toFixed(1) : "N/A"}
-              </span>
-              <span className="text-gray-500 text-sm">
-                ({doctor.opinions.length} opiniones)
-              </span>
+              <p className="text-gray-600 mb-3 font-medium">
+                {primarySpeciality}
+              </p>
+              <div className="flex items-center gap-2">
+                <div className="flex text-yellow-400">
+                  {[...Array(5)].map((_, i) => (
+                    <Star
+                      key={i}
+                      className={`w-4 h-4 ${
+                        i < Math.round(avgRating)
+                          ? "fill-current"
+                          : "stroke-current fill-transparent"
+                      }`}
+                    />
+                  ))}
+                </div>
+                <span className="text-gray-600 text-sm font-medium">
+                  {avgRating > 0 ? avgRating.toFixed(1) : "N/A"}
+                </span>
+                <span className="text-gray-500 text-sm">
+                  ({doctor.opinions.length} opiniones)
+                </span>
+              </div>
             </div>
           </div>
-        </div>
 
-        {/* Location Info */}
-        <div className="mb-4 pb-4 border-b border-gray-200">
-          <h4 className="font-semibold text-gray-900 mb-2">Ubicación</h4>
-          <div className="space-y-1">
-            <p className="text-sm text-gray-600 flex items-center gap-2">
-              <span>🏥</span>
-              {clinicName}
-            </p>
-            <p className="text-sm text-gray-600 flex items-center gap-2">
-              <span>📍</span>
-              {location} {address && `· ${address}`}
-            </p>
-            <button className="text-blue-600 text-sm hover:text-blue-800 transition-colors cursor-pointer">
-              Ver en mapa →
-            </button>
-          </div>
-        </div>
-
-        {/* Pricing */}
-        {lowestPrice && (
-          <div className="mb-4 pb-4 border-b border-gray-200">
-            <h4 className="font-semibold text-gray-900 mb-2">Consulta</h4>
-            <div className="flex justify-between items-center">
-              <span className="text-sm text-gray-600">Desde</span>
-              <span className="font-bold text-lg text-green-600">
-                ${lowestPrice.toLocaleString()}{" "}
-                {doctor.pricings[0]?.currency || "ARS"}
+          {/* Location Info */}
+          <div className="mb-6 p-4 bg-gray-50 rounded-xl">
+            <div className="flex items-center gap-2 mb-3">
+              <MapPin className="w-4 h-4 text-blue-600" />
+              <span className="font-semibold text-gray-900">
+                {doctor.clinics.length > 1 ? "Ubicaciones" : "Ubicación"}
               </span>
             </div>
+            {doctor.clinics.length > 1 ? (
+              <div className="space-y-2">
+                {doctor.clinics.slice(0, 2).map((doctorClinic, index) => (
+                  <div key={index} className="text-sm">
+                    <p className="text-gray-700 font-medium">
+                      {doctorClinic.clinic.name}
+                    </p>
+                    <p className="text-gray-600">
+                      {doctorClinic.clinic.city}
+                      {doctorClinic.clinic.address &&
+                        ` • ${doctorClinic.clinic.address}`}
+                    </p>
+                  </div>
+                ))}
+                {doctor.clinics.length > 2 && (
+                  <p className="text-xs text-blue-600 font-medium">
+                    +{doctor.clinics.length - 2} ubicación
+                    {doctor.clinics.length - 2 > 1 ? "es" : ""} más
+                  </p>
+                )}
+              </div>
+            ) : (
+              <div>
+                <p className="text-sm text-gray-700 mb-1">{clinicName}</p>
+                <p className="text-sm text-gray-600">
+                  {location} {address && `• ${address}`}
+                </p>
+              </div>
+            )}
           </div>
-        )}
 
-        {/* Action Buttons */}
-        <div className="space-y-3">
-          <Link
-            href={`/doctor/${doctor.id}`}
-            className="block w-full bg-blue-600 hover:bg-blue-700 text-white py-3 px-4 rounded-xl transition-colors font-medium text-center"
-          >
-            Ver Perfil Completo
-          </Link>
-          <Link
-            href={`/doctor/${doctor.id}#booking`}
-            className="block w-full border border-blue-600 text-blue-600 hover:bg-blue-50 py-3 px-4 rounded-xl transition-colors font-medium text-center"
-          >
-            Agendar Cita
-          </Link>
-        </div>
+          {/* Pricing */}
+          {lowestPrice && (
+            <div className="mb-6">
+              <div className="flex justify-between items-center p-4 bg-green-50 rounded-xl">
+                <span className="text-gray-700 font-medium">
+                  Consulta desde:
+                </span>
+                <span className="font-bold text-xl text-green-600">
+                  ${lowestPrice.toLocaleString()}{" "}
+                  {doctor.pricings[0]?.currency || "ARS"}
+                </span>
+              </div>
+            </div>
+          )}
 
-        {/* Contact Options */}
-        <div className="mt-4 pt-4 border-t border-gray-200">
-          <div className="flex justify-between text-sm">
+          {/* Spacer to push buttons to bottom */}
+          <div className="flex-1"></div>
+
+          {/* Action Buttons - Fixed at bottom */}
+          <div className="space-y-3 mt-auto">
+            <Link
+              href={`/doctor/${doctor.id}`}
+              className="block w-full bg-blue-600 hover:bg-blue-700 text-white py-3 px-4 rounded-xl transition-colors font-medium text-center"
+            >
+              Ver Perfil Completo
+            </Link>
+
             {doctor.phone && (
-              <button className="text-gray-600 hover:text-gray-800 transition-colors cursor-pointer">
-                📞 Llamar
+              <button className="flex items-center justify-center gap-2 w-full text-gray-600 hover:text-gray-800 py-2 px-3 border border-gray-300 rounded-lg transition-colors">
+                <Phone className="w-4 h-4" />
+                <span className="text-sm font-medium">Llamar</span>
               </button>
             )}
-            <button className="text-blue-600 hover:text-blue-800 transition-colors cursor-pointer">
-              💬 Consulta Online
-            </button>
+          </div>
+        </div>
+
+        {/* Right Panel - Availability */}
+        <div className="lg:w-80 bg-gray-50 p-6 border-l border-gray-200 flex flex-col min-h-[400px]">
+          <div className="flex items-center gap-2 mb-4">
+            <Calendar className="w-5 h-5 text-blue-600" />
+            <h4 className="font-semibold text-gray-900">Disponibilidad</h4>
+          </div>
+
+          {/* Date Selection Carousel */}
+          <div className="mb-4">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-sm text-gray-600">Fechas disponibles</span>
+              <div className="flex gap-1">
+                <button
+                  onClick={() => navigateCarousel("prev")}
+                  disabled={!canGoPrev}
+                  className={`p-1 rounded ${
+                    canGoPrev
+                      ? "text-blue-600 hover:bg-blue-50"
+                      : "text-gray-300 cursor-not-allowed"
+                  }`}
+                >
+                  <ChevronLeft className="w-4 h-4" />
+                </button>
+                <button
+                  onClick={() => navigateCarousel("next")}
+                  disabled={!canGoNext}
+                  className={`p-1 rounded ${
+                    canGoNext
+                      ? "text-blue-600 hover:bg-blue-50"
+                      : "text-gray-300 cursor-not-allowed"
+                  }`}
+                >
+                  <ChevronRight className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-4 gap-2">
+              {visibleDays.map((day) => (
+                <button
+                  key={day.date}
+                  onClick={() => setSelectedDate(day.date)}
+                  disabled={day.isLoading || day.hasAvailableSlots === false}
+                  className={`p-2 rounded-lg border text-center transition-all relative ${
+                    selectedDate === day.date
+                      ? "bg-blue-600 text-white border-blue-600 shadow-md"
+                      : day.hasAvailableSlots === false
+                      ? "bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed"
+                      : day.hasAvailableSlots === true
+                      ? "bg-white text-gray-700 border-green-200 hover:border-green-400 hover:bg-green-50"
+                      : "bg-white text-gray-700 border-gray-200 hover:border-blue-300 hover:bg-blue-50"
+                  }`}
+                >
+                  <div className="text-xs font-medium">{day.dayName}</div>
+                  <div className="text-sm font-bold">{day.dayNumber}</div>
+                  <div className="text-xs text-gray-500">{day.monthName}</div>
+
+                  {/* Availability indicator */}
+                  {day.isLoading ? (
+                    <div className="absolute top-1 right-1">
+                      <div className="w-2 h-2 rounded-full bg-blue-400 animate-pulse"></div>
+                    </div>
+                  ) : day.hasAvailableSlots === true ? (
+                    <div className="absolute top-1 right-1">
+                      <div className="w-2 h-2 rounded-full bg-green-400"></div>
+                    </div>
+                  ) : day.hasAvailableSlots === false ? (
+                    <div className="absolute top-1 right-1">
+                      <div className="w-2 h-2 rounded-full bg-red-400"></div>
+                    </div>
+                  ) : null}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Time Slots - Flexible content area */}
+          <div className="flex-1 flex flex-col">
+            <div className="flex-1">
+              {!selectedDate ? (
+                <div className="text-center py-8">
+                  <Clock className="w-8 h-8 text-gray-400 mx-auto mb-2" />
+                  <p className="text-sm text-gray-500">
+                    Selecciona una fecha para ver los horarios disponibles
+                  </p>
+                </div>
+              ) : isLoadingSlots ? (
+                <div className="text-center py-8">
+                  <div className="inline-block animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600 mb-2"></div>
+                  <p className="text-sm text-gray-500">Cargando horarios...</p>
+                </div>
+              ) : availableSlots.length > 0 ? (
+                <div>
+                  <p className="text-sm text-gray-600 mb-3">
+                    Horarios disponibles para{" "}
+                    {allDays.find((d) => d.date === selectedDate)?.dayName}:
+                  </p>
+                  <div className="grid grid-cols-2 gap-2 max-h-32 overflow-y-auto">
+                    {availableSlots.slice(0, 8).map((slot, index) => (
+                      <button
+                        key={index}
+                        onClick={() => openModal("time-selection", slot.time)}
+                        className="bg-white border border-blue-200 text-blue-700 hover:bg-blue-50 hover:border-blue-400 py-2 px-3 rounded-lg text-center text-sm font-medium transition-colors"
+                      >
+                        {slot.time}
+                      </button>
+                    ))}
+                  </div>
+                  {availableSlots.length > 8 && (
+                    <button
+                      onClick={() => openModal("all-times")}
+                      className="block w-full text-center text-sm text-blue-600 hover:text-blue-800 mt-3 font-medium"
+                    >
+                      Ver todos los horarios ({availableSlots.length})
+                    </button>
+                  )}
+                </div>
+              ) : (
+                <div className="text-center py-8">
+                  <Clock className="w-8 h-8 text-gray-400 mx-auto mb-2" />
+                  <p className="text-sm text-gray-500 mb-2">
+                    No hay horarios disponibles para esta fecha
+                  </p>
+                  <Link
+                    href={`/doctor/${doctor.id}`}
+                    className="text-sm text-blue-600 hover:text-blue-800 font-medium"
+                  >
+                    Ver otras fechas →
+                  </Link>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Quick Book Button - Fixed at bottom, aligned with Ver Perfil Completo */}
+          <div className="mt-auto pt-4">
+            {selectedDate && availableSlots.length > 0 ? (
+              <button
+                onClick={() => openModal("quick-book")}
+                className="block w-full bg-green-600 hover:bg-green-700 text-white py-3 px-4 rounded-xl transition-colors font-medium text-center"
+              >
+                Agendar Cita Rápida
+              </button>
+            ) : (
+              <div className="h-[52px]"></div>
+            )}
           </div>
         </div>
       </div>
+
+      {/* Booking Modal */}
+      <BookingModal
+        isOpen={isModalOpen}
+        onClose={closeModal}
+        doctor={doctor}
+        selectedDate={selectedDate}
+        selectedTime={modalSelectedTime}
+        mode={modalMode}
+      />
     </div>
   );
 }

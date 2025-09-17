@@ -5,6 +5,7 @@ import {
   FeaturedDoctorsSection,
   HowItWorksSection,
   TestimonialsSection,
+  DisclaimerSection,
   Footer,
 } from "@/components/sections";
 
@@ -17,6 +18,7 @@ export default async function Home() {
       <FeaturedDoctorsSection />
       <HowItWorksSection />
       <TestimonialsSection />
+      <DisclaimerSection />
       <Footer />
     </div>
   );
