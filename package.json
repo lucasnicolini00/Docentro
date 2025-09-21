@@ -25,6 +25,7 @@
     "@fullcalendar/timegrid": "6.1.19",
     "@prisma/client": "6.15.0",
     "@prisma/extension-accelerate": "2.0.2",
+    "@react-google-maps/api": "^2.20.7",
     "@types/bcryptjs": "2.4.6",
     "bcryptjs": "3.0.2",
     "lucide-react": "0.542.0",

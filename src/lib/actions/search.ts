@@ -134,9 +134,20 @@ export async function searchDoctors(
       },
     });
 
+    // Transform Decimal to number for client compatibility using JSON serialization
+    const serializedDoctors = JSON.parse(
+      JSON.stringify(doctors, (key, value) =>
+        typeof value === "object" &&
+        value !== null &&
+        value.constructor?.name === "Decimal"
+          ? Number(value)
+          : value
+      )
+    );
+
     return {
       success: true,
-      data: doctors,
+      data: serializedDoctors,
     };
   } catch (error) {
     console.error("Error searching doctors:", error);
@@ -173,9 +184,20 @@ export async function getAllDoctors(): Promise<ActionResult> {
       },
     });
 
+    // Transform Decimal to number for client compatibility using JSON serialization
+    const serializedDoctors = JSON.parse(
+      JSON.stringify(doctors, (key, value) =>
+        typeof value === "object" &&
+        value !== null &&
+        value.constructor?.name === "Decimal"
+          ? Number(value)
+          : value
+      )
+    );
+
     return {
       success: true,
-      data: doctors,
+      data: serializedDoctors,
     };
   } catch (error) {
     console.error("Error fetching all doctors:", error);

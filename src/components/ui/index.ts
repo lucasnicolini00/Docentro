@@ -7,3 +7,7 @@ export * from "./modals";
 
 // Tooltip component
 export * from "./Tooltip";
+
+// Map component
+export { default as Map } from "./Map";
+export { default as MapModal } from "./MapModal";
