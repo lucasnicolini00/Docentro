@@ -1,12 +1,42 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { AutocompleteInput } from "@/components/ui/forms";
+import { getAllSpecialities, getAllCities } from "@/lib/actions/search";
 
 export default function HeroSection() {
   const [specialty, setSpecialty] = useState("");
   const [location, setLocation] = useState("");
+  const [specialties, setSpecialties] = useState<string[]>([]);
+  const [cities, setCities] = useState<string[]>([]);
   const router = useRouter();
+
+  // Fetch specialties and cities for autocomplete
+  useEffect(() => {
+    async function fetchAutocompleteData() {
+      try {
+        const [specialtiesResult, citiesResult] = await Promise.all([
+          getAllSpecialities(),
+          getAllCities(),
+        ]);
+
+        if (specialtiesResult.success) {
+          setSpecialties(
+            specialtiesResult.data.map((spec: { name: string }) => spec.name)
+          );
+        }
+
+        if (citiesResult.success) {
+          setCities(citiesResult.data);
+        }
+      } catch (error) {
+        console.error("Error fetching autocomplete data:", error);
+      }
+    }
+
+    fetchAutocompleteData();
+  }, []);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -52,24 +82,26 @@ export default function HeroSection() {
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Especialidad o síntoma
                   </label>
-                  <input
-                    type="text"
+                  <AutocompleteInput
                     value={specialty}
-                    onChange={(e) => setSpecialty(e.target.value)}
+                    onChange={setSpecialty}
+                    options={specialties}
                     placeholder="Ej: Cardiología, dolor de cabeza..."
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                    variant="hero"
+                    className="w-full"
                   />
                 </div>
                 <div className="relative">
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Ciudad o ubicación
                   </label>
-                  <input
-                    type="text"
+                  <AutocompleteInput
                     value={location}
-                    onChange={(e) => setLocation(e.target.value)}
+                    onChange={setLocation}
+                    options={cities}
                     placeholder="Ej: La Paz, Santa Cruz..."
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                    variant="hero"
+                    className="w-full"
                   />
                 </div>
                 <div className="flex items-end">

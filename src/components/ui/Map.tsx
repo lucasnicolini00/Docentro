@@ -47,6 +47,8 @@ interface Clinic {
   name: string;
   city: string | null;
   address: string | null;
+  latitude: number | null;
+  longitude: number | null;
 }
 
 interface Doctor {
@@ -69,30 +71,57 @@ interface MapProps {
   onOpenModal?: () => void;
 }
 
-// Mock coordinates for demonstration (in real app, you'd get these from a geocoding service)
-const getMockCoordinates = (city: string | null) => {
-  const locations: { [key: string]: { lat: number; lng: number } } = {
-    "La Paz": { lat: -16.5, lng: -68.1193 },
-    "Santa Cruz": { lat: -17.7834, lng: -63.1821 },
-    Cochabamba: { lat: -17.3935, lng: -66.157 },
-    Sucre: { lat: -19.0332, lng: -65.2627 },
-    Potosí: { lat: -19.5836, lng: -65.7531 },
-    Oruro: { lat: -17.9647, lng: -67.1093 },
-    Tarija: { lat: -21.5355, lng: -64.7296 },
-    Trinidad: { lat: -14.8333, lng: -64.9 },
-    Cobija: { lat: -11.0267, lng: -68.7692 },
-  };
+// Helper function to build city coordinates from database clinics
+const buildCityCoordinatesMap = (
+  doctors: Doctor[]
+): { [key: string]: { lat: number; lng: number } } => {
+  const cityCoordinates: { [key: string]: { lat: number; lng: number } } = {};
 
-  if (city && locations[city]) {
+  doctors.forEach((doctor) => {
+    doctor.clinics.forEach((doctorClinic) => {
+      const clinic = doctorClinic.clinic;
+      // If clinic has coordinates and city, use it as reference for that city
+      if (
+        clinic.latitude &&
+        clinic.longitude &&
+        clinic.city &&
+        !cityCoordinates[clinic.city]
+      ) {
+        cityCoordinates[clinic.city] = {
+          lat: clinic.latitude,
+          lng: clinic.longitude,
+        };
+      }
+    });
+  });
+
+  return cityCoordinates;
+};
+
+// Get coordinates from clinic data (latitude/longitude from database)
+const getClinicCoordinates = (
+  clinic: Clinic,
+  cityCoordinatesMap?: { [key: string]: { lat: number; lng: number } }
+) => {
+  // If clinic has saved coordinates, use them
+  if (clinic.latitude && clinic.longitude) {
+    return {
+      lat: clinic.latitude,
+      lng: clinic.longitude,
+    };
+  }
+
+  // Use real city coordinates from database if available
+  if (clinic.city && cityCoordinatesMap && cityCoordinatesMap[clinic.city]) {
+    const baseLocation = cityCoordinatesMap[clinic.city];
     // Add some random offset for different clinics in the same city
-    const baseLocation = locations[city];
     return {
       lat: baseLocation.lat + (Math.random() - 0.5) * 0.02,
       lng: baseLocation.lng + (Math.random() - 0.5) * 0.02,
     };
   }
 
-  // Default to La Paz with random offset
+  // Final fallback to default center if no location data available
   return {
     lat: defaultCenter.lat + (Math.random() - 0.5) * 0.02,
     lng: defaultCenter.lng + (Math.random() - 0.5) * 0.02,
@@ -147,10 +176,13 @@ export default function Map({
       type: string;
     }> = [];
 
+    // Build city coordinates map from database clinics
+    const cityCoordinatesMap = buildCityCoordinatesMap(doctors);
+
     doctors.forEach((doctor) => {
       doctor.clinics.forEach((doctorClinic, index) => {
         const clinic = doctorClinic.clinic;
-        const coordinates = getMockCoordinates(clinic.city);
+        const coordinates = getClinicCoordinates(clinic, cityCoordinatesMap);
 
         // Determine clinic type based on name or other criteria
         let type = "clinic";

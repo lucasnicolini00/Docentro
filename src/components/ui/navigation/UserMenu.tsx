@@ -9,6 +9,8 @@ import {
   Calendar,
   Activity,
   BarChart3,
+  CalendarDays,
+  Home,
 } from "lucide-react";
 
 export default function UserMenu() {
@@ -83,14 +85,24 @@ export default function UserMenu() {
         ]
       : [
           {
-            label: "Mi Perfil",
-            href: "/dashboard/patient/profile",
-            icon: User,
+            label: "Dashboard",
+            href: "/dashboard/patient",
+            icon: Home,
           },
           {
             label: "Mis Citas",
-            href: "/dashboard/patient",
+            href: "/dashboard/patient/appointments",
+            icon: CalendarDays,
+          },
+          {
+            label: "Calendario",
+            href: "/dashboard/patient/calendar",
             icon: Calendar,
+          },
+          {
+            label: "Mi Perfil",
+            href: "/dashboard/patient/profile",
+            icon: User,
           },
         ];
 

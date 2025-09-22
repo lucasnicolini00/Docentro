@@ -11,3 +11,8 @@ export * from "./Tooltip";
 // Map component
 export { default as Map } from "./Map";
 export { default as MapModal } from "./MapModal";
+export { default as LocationPicker } from "./LocationPicker";
+
+// Filters Modal
+export { default as FiltersModal } from "./FiltersModal";
+export type { FilterState } from "./FiltersModal";

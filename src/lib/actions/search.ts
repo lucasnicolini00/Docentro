@@ -4,6 +4,70 @@ import prisma from "@/lib/prisma";
 import type { ActionResult } from "./utils";
 
 /**
+ * Server action for getting all available specialities for autocomplete
+ */
+export async function getAllSpecialities(): Promise<ActionResult> {
+  try {
+    const specialities = await prisma.speciality.findMany({
+      orderBy: { name: "asc" },
+      select: {
+        id: true,
+        name: true,
+      },
+    });
+
+    return {
+      success: true,
+      data: specialities,
+    };
+  } catch (error) {
+    console.error("Error fetching all specialities:", error);
+    return {
+      success: false,
+      error: "Error al obtener especialidades",
+    };
+  }
+}
+
+/**
+ * Server action for getting all available cities for autocomplete
+ */
+export async function getAllCities(): Promise<ActionResult> {
+  try {
+    const cities = await prisma.clinic.findMany({
+      where: {
+        city: {
+          not: null,
+        },
+      },
+      select: {
+        city: true,
+      },
+      distinct: ["city"],
+      orderBy: {
+        city: "asc",
+      },
+    });
+
+    // Filter out null values and map to simple string array
+    const cityNames = cities
+      .filter((clinic) => clinic.city)
+      .map((clinic) => clinic.city as string);
+
+    return {
+      success: true,
+      data: cityNames,
+    };
+  } catch (error) {
+    console.error("Error fetching all cities:", error);
+    return {
+      success: false,
+      error: "Error al obtener ciudades",
+    };
+  }
+}
+
+/**
  * Server action for getting popular specialities
  */
 export async function getPopularSpecialities(): Promise<ActionResult> {
@@ -117,7 +181,14 @@ export async function searchDoctors(
             speciality: true,
           },
         },
-        opinions: true,
+        opinions: {
+          select: {
+            id: true,
+            rating: true,
+            title: true,
+            description: true,
+          },
+        },
         clinics: {
           include: {
             clinic: true,
@@ -125,10 +196,24 @@ export async function searchDoctors(
         },
         pricings: {
           include: {
-            clinic: true,
+            clinic: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
           },
           where: {
             isActive: true,
+          },
+        },
+        experiences: {
+          select: {
+            id: true,
+            title: true,
+            institution: true,
+            startDate: true,
+            endDate: true,
           },
         },
       },
@@ -167,7 +252,14 @@ export async function getAllDoctors(): Promise<ActionResult> {
             speciality: true,
           },
         },
-        opinions: true,
+        opinions: {
+          select: {
+            id: true,
+            rating: true,
+            title: true,
+            description: true,
+          },
+        },
         clinics: {
           include: {
             clinic: true,
@@ -175,10 +267,24 @@ export async function getAllDoctors(): Promise<ActionResult> {
         },
         pricings: {
           include: {
-            clinic: true,
+            clinic: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
           },
           where: {
             isActive: true,
+          },
+        },
+        experiences: {
+          select: {
+            id: true,
+            title: true,
+            institution: true,
+            startDate: true,
+            endDate: true,
           },
         },
       },

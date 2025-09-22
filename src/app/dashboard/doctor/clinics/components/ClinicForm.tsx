@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { X, Globe, Building2 } from "lucide-react";
 import { ClinicFormProps } from "./types";
+import { LocationPicker } from "@/components/ui";
 
 export default function ClinicForm({
   isOpen,
@@ -17,6 +18,8 @@ export default function ClinicForm({
     country: clinic?.country || "",
     city: clinic?.city || "",
     neighborhood: clinic?.neighborhood || "",
+    latitude: clinic?.latitude || null,
+    longitude: clinic?.longitude || null,
   });
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -33,6 +36,18 @@ export default function ClinicForm({
       ...prev,
       [name]:
         type === "checkbox" ? (e.target as HTMLInputElement).checked : value,
+    }));
+  };
+
+  const handleLocationSelect = (location: {
+    lat: number;
+    lng: number;
+    address?: string;
+  }) => {
+    setFormData((prev) => ({
+      ...prev,
+      latitude: location.lat,
+      longitude: location.lng,
     }));
   };
 
@@ -205,6 +220,21 @@ export default function ClinicForm({
                   placeholder="La Palmas"
                 />
               </div>
+            </div>
+          )}
+
+          {/* Location Picker - Only for physical clinics */}
+          {!formData.isVirtual && (
+            <div className="mt-6">
+              <LocationPicker
+                onLocationSelect={handleLocationSelect}
+                initialLocation={
+                  formData.latitude && formData.longitude
+                    ? { lat: formData.latitude, lng: formData.longitude }
+                    : undefined
+                }
+                address={formData.address}
+              />
             </div>
           )}
 

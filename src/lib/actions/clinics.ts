@@ -71,6 +71,8 @@ export async function createClinic(data: {
   country?: string;
   city?: string;
   neighborhood?: string;
+  latitude?: number | null;
+  longitude?: number | null;
 }) {
   try {
     const session = await requireDoctor();
@@ -92,6 +94,8 @@ export async function createClinic(data: {
         country: data.country,
         city: data.city,
         neighborhood: data.neighborhood,
+        latitude: data.latitude,
+        longitude: data.longitude,
       },
     });
 
@@ -129,6 +133,8 @@ export async function updateClinic(
     country?: string;
     city?: string;
     neighborhood?: string;
+    latitude?: number | null;
+    longitude?: number | null;
   }
 ) {
   try {
@@ -166,6 +172,8 @@ export async function updateClinic(
         country: data.country,
         city: data.city,
         neighborhood: data.neighborhood,
+        latitude: data.latitude,
+        longitude: data.longitude,
       },
     });
 

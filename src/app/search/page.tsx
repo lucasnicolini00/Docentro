@@ -6,7 +6,6 @@ import { Map, MapModal } from "@/components/ui";
 import { Navbar } from "@/components/ui/navigation";
 import SearchFilters from "./components/SearchFilters";
 import { useState, useEffect } from "react";
-import { ChevronDown, ChevronUp, Filter } from "lucide-react";
 import type {
   Doctor,
   DoctorSpeciality,
@@ -15,26 +14,45 @@ import type {
   DoctorClinic,
   Clinic,
   Pricing,
+  Experience,
 } from "@prisma/client";
 
 type DoctorWithRelations = Doctor & {
   specialities: (DoctorSpeciality & {
     speciality: Speciality;
   })[];
-  opinions: Opinion[];
+  opinions: (Opinion & {
+    id: string;
+    rating: number;
+    title?: string | null;
+    description?: string | null;
+  })[];
   clinics: (DoctorClinic & {
     clinic: Clinic;
   })[];
   pricings: (Pricing & {
-    clinic: Clinic;
+    clinic: {
+      id: string;
+      name: string;
+    };
+  })[];
+  experiences: (Experience & {
+    id: string;
+    title: string;
+    institution?: string | null;
+    startDate?: Date | null;
+    endDate?: Date | null;
   })[];
 };
 
 // Serialized version with Decimal converted to number
 type SerializedDoctorWithRelations = Omit<DoctorWithRelations, "pricings"> & {
-  pricings: (Omit<Pricing, "price"> & {
-    price: number;
-    clinic: Clinic;
+  pricings: (Omit<Pricing, "amount"> & {
+    amount: number;
+    clinic: {
+      id: string;
+      name: string;
+    };
   })[];
 };
 
@@ -43,60 +61,82 @@ interface SearchProps {
 }
 
 export default function Search({ searchParams }: SearchProps) {
-  const [isFiltersOpen, setIsFiltersOpen] = useState(false);
   const [isMapModalOpen, setIsMapModalOpen] = useState(false);
   const [doctors, setDoctors] = useState<SerializedDoctorWithRelations[]>([]);
   const [specialty, setSpecialty] = useState("");
   const [location, setLocation] = useState("");
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Load search parameters and doctors on mount
+  // Parse search parameters
   useEffect(() => {
-    const loadData = async () => {
+    async function parseParams() {
+      const params = await searchParams;
+      const specialtyParam = Array.isArray(params.specialty)
+        ? params.specialty[0]
+        : params.specialty || "";
+      const locationParam = Array.isArray(params.location)
+        ? params.location[0]
+        : params.location || "";
+
+      setSpecialty(specialtyParam);
+      setLocation(locationParam);
+    }
+    parseParams();
+  }, [searchParams]);
+
+  // Fetch doctors based on search criteria
+  useEffect(() => {
+    async function fetchDoctors() {
+      setLoading(true);
+      setError(null);
+
       try {
-        setError(null);
-
-        // Await search parameters
-        const params = (await searchParams) || {};
-
-        // Get search parameters
-        const specialtyParam =
-          typeof params.specialty === "string" ? params.specialty : "";
-        const locationParam =
-          typeof params.location === "string" ? params.location : "";
-
-        setSpecialty(specialtyParam);
-        setLocation(locationParam);
-
-        // Fetch doctors based on search parameters
         let result;
-        if (specialtyParam || locationParam) {
-          result = await searchDoctors(specialtyParam, locationParam);
+        if (specialty || location) {
+          result = await searchDoctors(specialty, location);
         } else {
           result = await getAllDoctors();
         }
 
-        if (result.success && result.data) {
-          setDoctors(result.data as SerializedDoctorWithRelations[]);
+        if (result.success) {
+          setDoctors(result.data);
         } else {
           setError(result.error || "Error al cargar los doctores");
         }
-      } catch (error) {
-        console.error("Error loading search data:", error);
-        setError("Error al cargar los datos");
+      } catch {
+        setError("Error al cargar los doctores");
+      } finally {
+        setLoading(false);
       }
-    };
+    }
 
-    loadData();
-  }, [searchParams]);
+    fetchDoctors();
+  }, [specialty, location]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Navbar />
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+            <h2 className="text-xl font-semibold text-gray-900">
+              Buscando profesionales...
+            </h2>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (error) {
     return (
       <div className="min-h-screen bg-gray-50">
         <Navbar />
-        <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <div className="text-center">
-            <h1 className="text-2xl font-bold text-gray-900">
+            <h1 className="text-2xl font-bold text-red-600 mb-4">
               Error al buscar doctores
             </h1>
             <p className="text-gray-600">{error}</p>
@@ -148,158 +188,26 @@ export default function Search({ searchParams }: SearchProps) {
         </div>
       </div>
 
-      {/* Quick Filters Section - Floating */}
-      <div className="relative">
-        {/* Backdrop when filters are open */}
-        {isFiltersOpen && (
-          <div
-            className="fixed inset-0 bg-black bg-opacity-25 z-10 transition-opacity"
-            onClick={() => setIsFiltersOpen(false)}
-          />
-        )}
-
-        <div className="absolute top-0 left-0 right-0 z-20 bg-gray-50 border-b border-gray-200 shadow-lg">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200">
-              {/* Filter Header - Always Visible */}
-              <div
-                className="p-4 cursor-pointer hover:bg-gray-50 transition-colors"
-                onClick={() => setIsFiltersOpen(!isFiltersOpen)}
-              >
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <Filter className="w-5 h-5 text-blue-600" />
-                    <h3 className="text-lg font-semibold text-gray-900">
-                      Filtros Rápidos
-                    </h3>
-                    <span className="text-sm text-gray-500">
-                      (Click para {isFiltersOpen ? "ocultar" : "mostrar"})
-                    </span>
-                  </div>
-                  {isFiltersOpen ? (
-                    <ChevronUp className="w-5 h-5 text-gray-600" />
-                  ) : (
-                    <ChevronDown className="w-5 h-5 text-gray-600" />
-                  )}
-                </div>
-              </div>
-
-              {/* Filter Content - Collapsible */}
-              {isFiltersOpen && (
-                <div className="px-6 pb-6 border-t border-gray-100 animate-in slide-in-from-top duration-300">
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-3">
-                        Especialidades
-                      </label>
-                      <div className="space-y-2">
-                        {[
-                          "Cardiología",
-                          "Dermatología",
-                          "Pediatría",
-                          "Neurología",
-                        ].map((specialtyOption) => (
-                          <label
-                            key={specialtyOption}
-                            className="flex items-center"
-                          >
-                            <input
-                              type="checkbox"
-                              className="rounded border-gray-300 text-blue-600 mr-2"
-                            />
-                            <span className="text-sm text-gray-700">
-                              {specialtyOption}
-                            </span>
-                          </label>
-                        ))}
-                      </div>
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-3">
-                        Rango de Precio
-                      </label>
-                      <div className="space-y-2">
-                        {[
-                          "Hasta $10,000",
-                          "$10,000 - $20,000",
-                          "$20,000 - $50,000",
-                          "Más de $50,000",
-                        ].map((range) => (
-                          <label key={range} className="flex items-center">
-                            <input
-                              type="checkbox"
-                              className="rounded border-gray-300 text-blue-600 mr-2"
-                            />
-                            <span className="text-sm text-gray-700">
-                              {range}
-                            </span>
-                          </label>
-                        ))}
-                      </div>
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-3">
-                        Disponibilidad
-                      </label>
-                      <div className="space-y-2">
-                        {[
-                          "Hoy",
-                          "Esta semana",
-                          "Este mes",
-                          "Consulta online",
-                        ].map((availability) => (
-                          <label
-                            key={availability}
-                            className="flex items-center"
-                          >
-                            <input
-                              type="checkbox"
-                              className="rounded border-gray-300 text-blue-600 mr-2"
-                            />
-                            <span className="text-sm text-gray-700">
-                              {availability}
-                            </span>
-                          </label>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="mt-6 flex justify-end">
-                    <button className="bg-gray-100 hover:bg-gray-200 text-gray-700 py-2 px-6 rounded-lg transition-colors text-sm font-medium cursor-pointer">
-                      Limpiar Filtros
-                    </button>
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      </div>
-
       {/* Main Content */}
-      <div
-        className={`max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 transition-all duration-300 ${
-          isFiltersOpen ? "pt-80" : "pt-24"
-        }`}
-      >
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Doctors List Section */}
+          {/* Center Column - Doctors List */}
           <div className="lg:col-span-2">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-semibold text-gray-900">
-                Profesionales Disponibles
-              </h2>
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-gray-600">Ordenar por:</span>
-                <select className="border border-gray-300 rounded-lg px-3 py-1 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                  <option>Más relevantes</option>
-                  <option>Mejor calificados</option>
-                  <option>Menor precio</option>
-                  <option>Más cercanos</option>
-                </select>
+            {/* Sort Options */}
+            <div className="mb-6">
+              <div className="flex items-center justify-between">
+                <h2 className="text-lg font-semibold text-gray-900">
+                  Profesionales Disponibles
+                </h2>
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-gray-600">Ordenar por:</span>
+                  <select className="bg-white border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    <option>Más relevantes</option>
+                    <option>Mejor valorados</option>
+                    <option>Menor precio</option>
+                    <option>Más cercanos</option>
+                  </select>
+                </div>
               </div>
             </div>
 
@@ -323,18 +231,17 @@ export default function Search({ searchParams }: SearchProps) {
             )}
           </div>
 
-          {/* Map Section */}
-          {/* Map Section */}
+          {/* Right Column - Map */}
           <div className="lg:col-span-1">
             <div className="sticky top-24">
               <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
                 <div className="p-6">
                   <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                    Ubicaciones en el Mapa
+                    Ubicaciones
                   </h3>
 
-                  {/* Map Component - Made even taller */}
-                  <div className="h-[500px] lg:h-[600px] xl:h-[700px]">
+                  {/* Map Component - Adjusted size for 3-column layout */}
+                  <div className="h-[400px] lg:h-[500px]">
                     <Map
                       doctors={doctors}
                       onOpenModal={() => setIsMapModalOpen(true)}
@@ -357,7 +264,7 @@ export default function Search({ searchParams }: SearchProps) {
                       </div>
                       <div className="flex items-center gap-2">
                         <div className="w-3 h-3 bg-purple-500 rounded-full"></div>
-                        <span className="text-gray-600">Atención Online</span>
+                        <span className="text-gray-600">Online</span>
                       </div>
                     </div>
                   </div>

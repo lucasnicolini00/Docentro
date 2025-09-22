@@ -5,6 +5,8 @@ export interface Clinic {
   country: string | null;
   city: string | null;
   neighborhood: string | null;
+  latitude: number | null;
+  longitude: number | null;
   isVirtual: boolean;
   pricings: Pricing[];
   _count?: {
@@ -59,6 +61,8 @@ export interface ClinicFormProps {
     country?: string;
     city?: string;
     neighborhood?: string;
+    latitude?: number;
+    longitude?: number;
   };
   onSubmit: (clinicData: any) => void;
 }

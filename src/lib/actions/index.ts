@@ -40,13 +40,14 @@ export {
   updateDoctorProfile,
   getDoctorSpecialities,
   getDoctorProfile,
-  getAllSpecialities,
   getDoctorDashboard,
 } from "./doctors";
 
 // Search and general data actions
 export {
   getPopularSpecialities,
+  getAllSpecialities,
+  getAllCities,
   getFeaturedDoctors,
   searchDoctors,
   getAllDoctors,
