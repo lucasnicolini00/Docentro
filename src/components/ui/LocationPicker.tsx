@@ -9,6 +9,9 @@ interface LocationPickerProps {
     lat: number;
     lng: number;
     address?: string;
+    country?: string;
+    city?: string;
+    neighborhood?: string;
   }) => void;
   initialLocation?: { lat: number; lng: number };
   address?: string;
@@ -33,6 +36,44 @@ const mapOptions = {
   streetViewControl: false,
   mapTypeControl: false,
   fullscreenControl: false,
+};
+
+// Helper function to extract address components from Google geocoding results
+const extractAddressComponents = (result: google.maps.GeocoderResult) => {
+  const components = result.address_components;
+  let country = "";
+  let city = "";
+  let neighborhood = "";
+
+  components.forEach((component) => {
+    const types = component.types;
+
+    // Country
+    if (types.includes("country")) {
+      country = component.long_name;
+    }
+
+    // City - can be locality, administrative_area_level_2, or sublocality
+    if (types.includes("locality")) {
+      city = component.long_name;
+    } else if (types.includes("administrative_area_level_2") && !city) {
+      city = component.long_name;
+    }
+
+    // Neighborhood/Comuna - can be sublocality, neighborhood, or administrative_area_level_3
+    if (
+      types.includes("sublocality") ||
+      types.includes("sublocality_level_1")
+    ) {
+      neighborhood = component.long_name;
+    } else if (types.includes("neighborhood")) {
+      neighborhood = component.long_name;
+    } else if (types.includes("administrative_area_level_3") && !neighborhood) {
+      neighborhood = component.long_name;
+    }
+  });
+
+  return { country, city, neighborhood };
 };
 
 export default function LocationPicker({
@@ -64,7 +105,7 @@ export default function LocationPicker({
 
   // Geocode address when it changes
   useEffect(() => {
-    if (address && address.trim() && isLoaded && !initialLocation) {
+    if (address && address.trim() && isLoaded && !selectedLocation) {
       setIsGeocodingAddress(true);
 
       const geocoder = new google.maps.Geocoder();
@@ -79,10 +120,13 @@ export default function LocationPicker({
             lng: results[0].geometry.location.lng(),
           };
 
+          const addressComponents = extractAddressComponents(results[0]);
+
           setSelectedLocation(location);
           onLocationSelect({
             ...location,
             address: results[0].formatted_address,
+            ...addressComponents,
           });
 
           // Center map on the geocoded location
@@ -90,10 +134,12 @@ export default function LocationPicker({
             map.setCenter(location);
             map.setZoom(15);
           }
+        } else {
+          console.warn("Geocoding failed:", status);
         }
       });
     }
-  }, [address, isLoaded, initialLocation, map, onLocationSelect]);
+  }, [address, isLoaded, selectedLocation, map, onLocationSelect]);
 
   const handleMapClick = useCallback(
     (event: google.maps.MapMouseEvent) => {
@@ -108,15 +154,20 @@ export default function LocationPicker({
         // Reverse geocode to get address
         const geocoder = new google.maps.Geocoder();
         geocoder.geocode({ location }, (results, status) => {
-          const address =
-            status === "OK" && results && results[0]
-              ? results[0].formatted_address
-              : undefined;
+          if (status === "OK" && results && results[0]) {
+            const addressComponents = extractAddressComponents(results[0]);
 
-          onLocationSelect({
-            ...location,
-            address,
-          });
+            onLocationSelect({
+              ...location,
+              address: results[0].formatted_address,
+              ...addressComponents,
+            });
+          } else {
+            // If reverse geocoding fails, just send coordinates
+            onLocationSelect({
+              ...location,
+            });
+          }
         });
       }
     },
@@ -213,17 +264,17 @@ export default function LocationPicker({
         </GoogleMap>
       </div>
 
-      {selectedLocation && (
-        <div className="mt-3 p-3 bg-green-50 border border-green-200 rounded-lg">
+      {!selectedLocation && address && !isGeocodingAddress && (
+        <div className="mt-3 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
           <div className="flex items-start">
-            <MapPin className="h-4 w-4 text-green-600 mt-0.5 mr-2 flex-shrink-0" />
+            <MapPin className="h-4 w-4 text-yellow-600 mt-0.5 mr-2 flex-shrink-0" />
             <div className="text-sm">
-              <p className="font-medium text-green-900">
-                Ubicación seleccionada
+              <p className="font-medium text-yellow-900">
+                📍 Ubicación pendiente
               </p>
-              <p className="text-green-700">
-                Latitud: {selectedLocation.lat.toFixed(6)}, Longitud:{" "}
-                {selectedLocation.lng.toFixed(6)}
+              <p className="text-yellow-700">
+                Haz clic en el mapa para confirmar la ubicación exacta o ajusta
+                la dirección para búsqueda automática
               </p>
             </div>
           </div>

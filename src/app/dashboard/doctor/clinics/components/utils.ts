@@ -15,6 +15,8 @@ export async function createClinicWrapper(data: any) {
     country: data.country || undefined,
     city: data.city || undefined,
     neighborhood: data.neighborhood || undefined,
+    latitude: data.latitude || null,
+    longitude: data.longitude || null,
   };
   return createClinic(clinicData);
 }
@@ -27,6 +29,8 @@ export async function updateClinicWrapper(clinicId: string, data: any) {
     country: data.country || undefined,
     city: data.city || undefined,
     neighborhood: data.neighborhood || undefined,
+    latitude: data.latitude || null,
+    longitude: data.longitude || null,
   };
   return updateClinic(clinicId, clinicData);
 }

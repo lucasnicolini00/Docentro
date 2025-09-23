@@ -64,7 +64,8 @@ export interface ClinicFormProps {
     latitude?: number;
     longitude?: number;
   };
-  onSubmit: (clinicData: any) => void;
+  onSubmit: (clinicData: any) => Promise<void>;
+  isPending?: boolean;
 }
 
 export interface ClinicsHeaderProps {
@@ -91,7 +92,7 @@ export interface FormsContainerProps {
   showClinicForm: boolean;
   editingClinic: Clinic | null;
   onCloseClinicForm: () => void;
-  onSubmitClinic: (formData: FormData) => void;
+  onSubmitClinic: (formData: any) => Promise<void>;
 
   // Pricing Form Props
   showPricingForm: boolean;

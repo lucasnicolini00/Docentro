@@ -186,6 +186,7 @@ export default function Map({
     doctors.forEach((doctor) => {
       doctor.clinics.forEach((doctorClinic, index) => {
         const clinic = doctorClinic.clinic;
+
         const coordinates = getClinicCoordinates(clinic, cityCoordinatesMap);
 
         // Only add markers for clinics with real coordinates

@@ -1,9 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { X, Globe, Building2 } from "lucide-react";
+import { X, Globe, Building2, Loader2 } from "lucide-react";
 import { ClinicFormProps } from "./types";
 import { LocationPicker } from "@/components/ui";
+import toast from "react-hot-toast";
 
 export default function ClinicForm({
   isOpen,
@@ -22,10 +23,29 @@ export default function ClinicForm({
     longitude: clinic?.longitude || null,
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    onSubmit(formData);
-    onClose();
+    if (isSubmitting) return;
+
+    setIsSubmitting(true);
+    try {
+      await onSubmit(formData);
+      toast.success(
+        clinic?.id
+          ? "Clínica actualizada exitosamente"
+          : "Clínica creada exitosamente"
+      );
+      onClose();
+    } catch (error) {
+      console.error("Error submitting clinic:", error);
+      toast.error(
+        "Error al guardar la clínica. Por favor, intenta nuevamente."
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleInputChange = (
@@ -43,11 +63,36 @@ export default function ClinicForm({
     lat: number;
     lng: number;
     address?: string;
+    country?: string;
+    city?: string;
+    neighborhood?: string;
   }) => {
     setFormData((prev) => ({
       ...prev,
       latitude: location.lat,
       longitude: location.lng,
+      // Update address and location fields from geocoding
+      ...(location.address && { address: location.address }),
+      ...(location.country && { country: location.country }),
+      ...(location.city && { city: location.city }),
+      ...(location.neighborhood && { neighborhood: location.neighborhood }),
+    }));
+  };
+
+  const handleAddressChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+      // Clear coordinates and location fields when address is manually changed
+      // The LocationPicker will geocode the new address and fill these automatically
+      ...(name === "address" && {
+        latitude: null,
+        longitude: null,
+        country: "",
+        city: "",
+        neighborhood: "",
+      }),
     }));
   };
 
@@ -118,14 +163,14 @@ export default function ClinicForm({
           {/* Clinic Name */}
           <div>
             <label
-              htmlFor="name"
+              htmlFor="clinic-name"
               className="block text-sm font-medium text-gray-700 mb-2"
             >
               Nombre de la Clínica *
             </label>
             <input
               type="text"
-              id="name"
+              id="clinic-name"
               name="name"
               value={formData.name}
               onChange={handleInputChange}
@@ -135,21 +180,30 @@ export default function ClinicForm({
               placeholder="Ej: Clínica Central, Consultas Online"
             />
           </div>
+          {!formData.isVirtual && (
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+              <p className="text-sm text-blue-800">
+                🗺️ <strong>Auto-completado inteligente: </strong>
+                Escribe una dirección o haz clic en el mapa para obtenerla.
+                País, Ciudad y Barrio se completarán automáticamente.
+              </p>
+            </div>
+          )}
 
           {/* Address */}
           <div>
             <label
-              htmlFor="address"
+              htmlFor="clinic-address"
               className="block text-sm font-medium text-gray-700 mb-2"
             >
               {formData.isVirtual ? "Descripción" : "Dirección"} *
             </label>
             <input
               type="text"
-              id="address"
+              id="clinic-address"
               name="address"
               value={formData.address}
-              onChange={handleInputChange}
+              onChange={handleAddressChange}
               autoComplete="off"
               required
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
@@ -163,64 +217,66 @@ export default function ClinicForm({
 
           {/* Location Details (only for physical clinics) */}
           {!formData.isVirtual && (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div>
-                <label
-                  htmlFor="country"
-                  className="block text-sm font-medium text-gray-700 mb-2"
-                >
-                  País
-                </label>
-                <input
-                  type="text"
-                  id="country"
-                  name="country"
-                  value={formData.country}
-                  onChange={handleInputChange}
-                  autoComplete="off"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="Bolivia"
-                />
-              </div>
+            <>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <label
+                    htmlFor="clinic-country"
+                    className="block text-sm font-medium text-gray-700 mb-2"
+                  >
+                    País
+                  </label>
+                  <input
+                    type="text"
+                    id="clinic-country"
+                    name="country"
+                    value={formData.country}
+                    onChange={handleInputChange}
+                    autoComplete="off"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    placeholder="Bolivia"
+                  />
+                </div>
 
-              <div>
-                <label
-                  htmlFor="city"
-                  className="block text-sm font-medium text-gray-700 mb-2"
-                >
-                  Ciudad
-                </label>
-                <input
-                  type="text"
-                  id="city"
-                  name="city"
-                  value={formData.city}
-                  onChange={handleInputChange}
-                  autoComplete="off"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="Santa Cruz"
-                />
-              </div>
+                <div>
+                  <label
+                    htmlFor="clinic-city"
+                    className="block text-sm font-medium text-gray-700 mb-2"
+                  >
+                    Ciudad
+                  </label>
+                  <input
+                    type="text"
+                    id="clinic-city"
+                    name="city"
+                    value={formData.city}
+                    onChange={handleInputChange}
+                    autoComplete="off"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    placeholder="Santa Cruz"
+                  />
+                </div>
 
-              <div>
-                <label
-                  htmlFor="neighborhood"
-                  className="block text-sm font-medium text-gray-700 mb-2"
-                >
-                  Barrio/Comuna
-                </label>
-                <input
-                  type="text"
-                  id="neighborhood"
-                  name="neighborhood"
-                  value={formData.neighborhood}
-                  onChange={handleInputChange}
-                  autoComplete="off"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="La Palmas"
-                />
+                <div>
+                  <label
+                    htmlFor="clinic-neighborhood"
+                    className="block text-sm font-medium text-gray-700 mb-2"
+                  >
+                    Barrio/Comuna
+                  </label>
+                  <input
+                    type="text"
+                    id="clinic-neighborhood"
+                    name="neighborhood"
+                    value={formData.neighborhood}
+                    onChange={handleInputChange}
+                    autoComplete="off"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    placeholder="La Palmas"
+                  />
+                </div>
               </div>
-            </div>
+            </>
           )}
 
           {/* Location Picker - Only for physical clinics */}
@@ -243,15 +299,22 @@ export default function ClinicForm({
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+              disabled={isSubmitting}
+              className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Cancelar
             </button>
             <button
               type="submit"
-              className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              disabled={isSubmitting}
+              className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-75 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
-              {clinic?.id ? "Actualizar" : "Crear"} Clínica
+              {isSubmitting && <Loader2 className="w-4 h-4 animate-spin" />}
+              {isSubmitting
+                ? clinic?.id
+                  ? "Actualizando..."
+                  : "Creando..."
+                : (clinic?.id ? "Actualizar" : "Crear") + " Clínica"}
             </button>
           </div>
         </form>

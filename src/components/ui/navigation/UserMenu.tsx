@@ -44,16 +44,16 @@ export default function UserMenu() {
     return (
       <div className="flex items-center space-x-4">
         <Link
-          href="/login"
+          href="/register"
           className="text-gray-700 hover:text-blue-600 font-medium cursor-pointer transition-colors"
         >
-          Iniciar Sesión
+          Registrarse
         </Link>
         <Link
-          href="/register"
+          href="/login"
           className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-full transition-colors font-medium cursor-pointer shadow-sm hover:shadow-md"
         >
-          Registrarse
+          Iniciar Sesión
         </Link>
       </div>
     );

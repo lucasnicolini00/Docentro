@@ -56,12 +56,20 @@ export default function ClinicsManagement({
   };
 
   const handleCreateClinic = async (data: any) => {
-    startTransition(async () => {
-      const result = await createClinicWrapper(data);
-      if (result.success && result.data) {
-        setClinics((prev) => [...prev, { ...result.data, pricings: [] }]);
-        setShowClinicForm(false);
-      }
+    return new Promise<void>((resolve, reject) => {
+      startTransition(async () => {
+        try {
+          const result = await createClinicWrapper(data);
+          if (result.success && result.data) {
+            setClinics((prev) => [...prev, { ...result.data, pricings: [] }]);
+            resolve();
+          } else {
+            reject(new Error(result.error || "Error al crear la clínica"));
+          }
+        } catch (error) {
+          reject(error);
+        }
+      });
     });
   };
 
@@ -73,19 +81,27 @@ export default function ClinicsManagement({
   const handleUpdateClinic = async (data: any) => {
     if (!editingClinic) return;
 
-    startTransition(async () => {
-      const result = await updateClinicWrapper(editingClinic.id, data);
-      if (result.success && result.data) {
-        setClinics((prev) =>
-          prev.map((clinic) =>
-            clinic.id === editingClinic.id
-              ? { ...clinic, ...result.data }
-              : clinic
-          )
-        );
-        setEditingClinic(null);
-        setShowClinicForm(false);
-      }
+    return new Promise<void>((resolve, reject) => {
+      startTransition(async () => {
+        try {
+          const result = await updateClinicWrapper(editingClinic.id, data);
+          if (result.success && result.data) {
+            setClinics((prev) =>
+              prev.map((clinic) =>
+                clinic.id === editingClinic.id
+                  ? { ...clinic, ...result.data }
+                  : clinic
+              )
+            );
+            setEditingClinic(null);
+            resolve();
+          } else {
+            reject(new Error(result.error || "Error al actualizar la clínica"));
+          }
+        } catch (error) {
+          reject(error);
+        }
+      });
     });
   };
 

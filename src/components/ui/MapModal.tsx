@@ -515,6 +515,15 @@ export default function MapModal({
                   doctorClinic.clinic,
                   cityCoordinatesMap
                 );
+
+                // Only render marker if coordinates exist
+                if (!coordinates) {
+                  console.warn(
+                    `❌ MapModal: No coordinates for clinic "${doctorClinic.clinic.name}"`
+                  );
+                  return null;
+                }
+
                 return (
                   <Marker
                     key={`${doctor.id}-${doctorClinic.clinic.id}`}

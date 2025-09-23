@@ -556,7 +556,7 @@ export default function DoctorSettingsPanel() {
 
       {/* Enhanced loading overlay */}
       {isPending && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 backdrop-blur-sm">
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
           <div className="bg-white rounded-xl p-8 shadow-2xl border border-gray-200 max-w-sm mx-4">
             <div className="flex flex-col items-center space-y-4">
               <LoadingSpinner size="lg" />

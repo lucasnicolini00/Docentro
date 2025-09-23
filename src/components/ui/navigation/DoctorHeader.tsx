@@ -42,8 +42,8 @@ export default function DoctorHeader({
     : "Panel de control médico";
 
   return (
-    <div className="bg-gradient-to-r from-blue-600 to-blue-900 text-white -m-6 mb-6">
-      <div className="px-3 py-5 max-w-7xl mx-auto">
+    <div className="mb-6">
+      <div className="bg-gradient-to-r from-blue-600 to-blue-900 text-white rounded-xl p-6 shadow-lg">
         <div className="flex items-center justify-between">
           <div className="flex-1">
             <h1 className="text-3xl font-bold mb-2">
