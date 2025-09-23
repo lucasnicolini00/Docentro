@@ -253,17 +253,17 @@ export default function Search({ searchParams }: SearchProps) {
                     <h4 className="font-medium text-gray-900 text-sm">
                       Leyenda:
                     </h4>
-                    <div className="space-y-1 text-xs">
-                      <div className="flex items-center gap-2">
-                        <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
+                    <div className="space-y-1 text-xs flex flex-row flex-wrap gap-2">
+                      <div className="flex items-center ">
+                        <div className="w-2 h-2 mr-1 bg-blue-500 rounded-full"></div>
                         <span className="text-gray-600">Clínicas</span>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                      <div className="flex items-center ">
+                        <div className="w-2 h-2 mr-1 bg-green-500 rounded-full"></div>
                         <span className="text-gray-600">Consultorios</span>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <div className="w-3 h-3 bg-purple-500 rounded-full"></div>
+                      <div className="flex items-center ">
+                        <div className="w-2 h-2 mr-1 bg-purple-500 rounded-full"></div>
                         <span className="text-gray-600">Online</span>
                       </div>
                     </div>

@@ -79,8 +79,17 @@ const mapOptions = {
 // Helper function to calculate average rating from real opinions
 const calculateAverageRating = (opinions: Doctor["opinions"]): number => {
   if (!opinions || opinions.length === 0) return 0;
-  const sum = opinions.reduce((acc, opinion) => acc + opinion.rating, 0);
-  return Math.round((sum / opinions.length) * 10) / 10; // Round to 1 decimal place
+
+  // Filter out invalid ratings and convert to numbers
+  const validRatings = opinions
+    .map((opinion) => opinion.rating)
+    .filter((rating) => rating != null && !isNaN(Number(rating)))
+    .map((rating) => Number(rating));
+
+  if (validRatings.length === 0) return 0;
+
+  const sum = validRatings.reduce((acc, rating) => acc + rating, 0);
+  return Math.round((sum / validRatings.length) * 10) / 10; // Round to 1 decimal place
 };
 
 // Helper function to get years of experience
@@ -109,18 +118,25 @@ const calculateYearsOfExperience = (
 // Helper function to get price range for a doctor
 const getPriceRange = (doctor: Doctor): string => {
   if (doctor.pricings && doctor.pricings.length > 0) {
-    const prices = doctor.pricings.map((p) => p.amount);
-    const minPrice = Math.min(...prices);
-    const maxPrice = Math.max(...prices);
+    // Filter out invalid prices and convert to numbers
+    const validPrices = doctor.pricings
+      .map((p) => p.amount)
+      .filter((price) => price != null && !isNaN(Number(price)))
+      .map((price) => Number(price));
 
-    if (minPrice === maxPrice) {
-      return `Bs. ${minPrice.toLocaleString()}`;
+    if (validPrices.length > 0) {
+      const minPrice = Math.min(...validPrices);
+      const maxPrice = Math.max(...validPrices);
+
+      if (minPrice === maxPrice) {
+        return `Bs. ${minPrice.toLocaleString()}`;
+      }
+      return `Bs. ${minPrice.toLocaleString()} - ${maxPrice.toLocaleString()}`;
     }
-    return `Bs. ${minPrice.toLocaleString()} - ${maxPrice.toLocaleString()}`;
   }
 
-  if (doctor.consultationPrice) {
-    return `Bs. ${doctor.consultationPrice.toLocaleString()}`;
+  if (doctor.consultationPrice && !isNaN(Number(doctor.consultationPrice))) {
+    return `Bs. ${Number(doctor.consultationPrice).toLocaleString()}`;
   }
 
   return "Precio a consultar";
@@ -323,8 +339,22 @@ export default function MapModal({
   }
 
   return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm bg-opacity-50 z-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-xl shadow-2xl max-w-7xl w-full max-h-[90vh] overflow-hidden flex">
+    <div
+      className="fixed inset-0 bg-black/50 backdrop-blur-sm bg-opacity-50 z-50 flex items-center justify-center p-4"
+      onClick={onClose}
+    >
+      <div
+        className="bg-white rounded-xl shadow-2xl max-w-7xl w-full max-h-[90vh] overflow-hidden flex relative"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Close Button - Top Right of Modal */}
+        <button
+          onClick={onClose}
+          className="absolute top-4 right-4 z-10 bg-white rounded-full p-2 shadow-md hover:shadow-lg transition-all text-gray-500 hover:text-gray-700"
+        >
+          <X className="h-5 w-5" />
+        </button>
+
         {/* Doctor List Sidebar */}
         <div className="w-80 bg-gray-50 h-full overflow-y-auto shadow-lg">
           <div className="p-4 border-b border-gray-200 bg-white">
@@ -332,12 +362,6 @@ export default function MapModal({
               <h2 className="text-lg font-semibold text-gray-900">
                 Doctores en el Área
               </h2>
-              <button
-                onClick={onClose}
-                className="text-gray-500 hover:text-gray-700 transition-colors"
-              >
-                <X className="h-6 w-6" />
-              </button>
             </div>
             <p className="text-sm text-gray-600 mt-1">
               {visibleDoctors.length} doctores encontrados
@@ -480,7 +504,7 @@ export default function MapModal({
           <GoogleMap
             mapContainerStyle={mapContainerStyle}
             center={mapCenter}
-            zoom={13}
+            zoom={10}
             onLoad={onLoad}
             onUnmount={onUnmount}
             options={mapOptions}

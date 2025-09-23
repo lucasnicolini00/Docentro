@@ -80,13 +80,13 @@ export default function HeroSection() {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="relative">
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Especialidad o síntoma
+                    Especialidad
                   </label>
                   <AutocompleteInput
                     value={specialty}
                     onChange={setSpecialty}
                     options={specialties}
-                    placeholder="Ej: Cardiología, dolor de cabeza..."
+                    placeholder="Ej: Psicología, Dermatología..."
                     variant="hero"
                     className="w-full"
                   />

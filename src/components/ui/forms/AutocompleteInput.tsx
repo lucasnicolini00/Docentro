@@ -94,7 +94,10 @@ export default function AutocompleteInput({
       ? "w-full text-left px-4 py-3 hover:bg-blue-50 hover:text-blue-700 focus:bg-blue-50 focus:text-blue-700 focus:outline-none transition-colors first:rounded-t-xl last:rounded-b-xl"
       : "w-full text-left px-4 py-2 hover:bg-blue-50 hover:text-blue-700 focus:bg-blue-50 focus:text-blue-700 focus:outline-none transition-colors";
 
-  const iconPosition = variant === "hero" ? "top-3.5" : "top-2.5";
+  const iconPosition =
+    variant === "hero"
+      ? "top-1/2 -translate-y-1/2"
+      : "top-1/2 -translate-y-1/2";
 
   return (
     <div className={`relative ${className}`} ref={dropdownRef}>
@@ -111,9 +114,14 @@ export default function AutocompleteInput({
           autoComplete="off"
         />
         <div
-          className={`absolute right-3 ${iconPosition} flex items-center gap-1`}
+          className={`absolute right-3 ${iconPosition} flex items-center gap-1 cursor-pointer hover:text-gray-600 transition-colors`}
+          onClick={() => setIsOpen(!isOpen)}
         >
-          {icon && <span className="text-gray-400">{icon}</span>}
+          {icon && (
+            <span className="text-gray-400 flex items-center select-none text-sm">
+              {icon}
+            </span>
+          )}
           <ChevronDown
             className={`w-4 h-4 text-gray-400 transition-transform ${
               isOpen ? "rotate-180" : ""

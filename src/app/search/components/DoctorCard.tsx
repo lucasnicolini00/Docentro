@@ -80,8 +80,15 @@ export default function DoctorCard({ doctor }: DoctorCardProps) {
 
   const avgRating =
     doctor.opinions.length > 0
-      ? doctor.opinions.reduce((sum, opinion) => sum + opinion.rating, 0) /
-        doctor.opinions.length
+      ? (() => {
+          const validRatings = doctor.opinions
+            .map((opinion) => opinion.rating)
+            .filter((rating) => !isNaN(Number(rating)) && rating > 0);
+          return validRatings.length > 0
+            ? validRatings.reduce((sum, rating) => sum + Number(rating), 0) /
+                validRatings.length
+            : 0;
+        })()
       : 0;
 
   const primarySpeciality =
@@ -93,7 +100,12 @@ export default function DoctorCard({ doctor }: DoctorCardProps) {
 
   const lowestPrice =
     doctor.pricings.length > 0
-      ? Math.min(...doctor.pricings.map((p) => Number(p.price)))
+      ? (() => {
+          const validPrices = doctor.pricings
+            .map((p) => Number(p.price))
+            .filter((price) => !isNaN(price) && price > 0);
+          return validPrices.length > 0 ? Math.min(...validPrices) : null;
+        })()
       : null;
 
   // Generate days starting from today
