@@ -102,8 +102,8 @@ const buildCityCoordinatesMap = (
 const getClinicCoordinates = (
   clinic: Clinic,
   cityCoordinatesMap?: { [key: string]: { lat: number; lng: number } }
-) => {
-  // If clinic has saved coordinates, use them
+): { lat: number; lng: number } | null => {
+  // If clinic has saved coordinates, use them (REAL DATA)
   if (clinic.latitude && clinic.longitude) {
     return {
       lat: clinic.latitude,
@@ -114,18 +114,22 @@ const getClinicCoordinates = (
   // Use real city coordinates from database if available
   if (clinic.city && cityCoordinatesMap && cityCoordinatesMap[clinic.city]) {
     const baseLocation = cityCoordinatesMap[clinic.city];
-    // Add some random offset for different clinics in the same city
+    // Add small random offset for different clinics in the same city
     return {
-      lat: baseLocation.lat + (Math.random() - 0.5) * 0.02,
-      lng: baseLocation.lng + (Math.random() - 0.5) * 0.02,
+      lat: baseLocation.lat + (Math.random() - 0.5) * 0.01,
+      lng: baseLocation.lng + (Math.random() - 0.5) * 0.01,
     };
   }
 
-  // Final fallback to default center if no location data available
-  return {
-    lat: defaultCenter.lat + (Math.random() - 0.5) * 0.02,
-    lng: defaultCenter.lng + (Math.random() - 0.5) * 0.02,
-  };
+  // Log missing coordinates for debugging
+  console.warn(
+    `Missing coordinates for clinic: ${clinic.name} in ${
+      clinic.city || "unknown city"
+    }`
+  );
+
+  // Return null instead of mock coordinates - we'll filter these out
+  return null;
 };
 
 const getMarkerIcon = (type: string) => {
@@ -184,21 +188,24 @@ export default function Map({
         const clinic = doctorClinic.clinic;
         const coordinates = getClinicCoordinates(clinic, cityCoordinatesMap);
 
-        // Determine clinic type based on name or other criteria
-        let type = "clinic";
-        if (clinic.name?.toLowerCase().includes("consultorio")) {
-          type = "office";
-        } else if (clinic.name?.toLowerCase().includes("online")) {
-          type = "online";
-        }
+        // Only add markers for clinics with real coordinates
+        if (coordinates) {
+          // Determine clinic type based on name or other criteria
+          let type = "clinic";
+          if (clinic.name?.toLowerCase().includes("consultorio")) {
+            type = "office";
+          } else if (clinic.name?.toLowerCase().includes("online")) {
+            type = "online";
+          }
 
-        newMarkers.push({
-          id: `${doctor.id}-${clinic.id}-${index}`,
-          position: coordinates,
-          clinic,
-          doctor,
-          type,
-        });
+          newMarkers.push({
+            id: `${doctor.id}-${clinic.id}-${index}`,
+            position: coordinates,
+            clinic,
+            doctor,
+            type,
+          });
+        }
       });
     });
 
