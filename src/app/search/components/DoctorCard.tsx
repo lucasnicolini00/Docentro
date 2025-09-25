@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import {
   Calendar,
   Clock,
@@ -31,6 +31,7 @@ interface Doctor {
   }[];
   clinics: {
     clinic: {
+      id: string;
       name: string;
       city: string | null;
       address: string | null;
@@ -61,9 +62,42 @@ interface DoctorCardProps {
 }
 
 export default function DoctorCard({ doctor }: DoctorCardProps) {
+  // Clinic Tabs scroll logic
+  const clinicTabsRef = useRef<HTMLDivElement>(null);
+  const [clinicTabScrollPos, setClinicTabScrollPos] = useState(0);
+  const [clinicTabScrollEnd, setClinicTabScrollEnd] = useState(false);
+
+  const scrollClinicTabs = (direction: "left" | "right") => {
+    const ref = clinicTabsRef.current;
+    if (!ref) return;
+    const scrollAmount = 120;
+    if (direction === "left") {
+      ref.scrollLeft -= scrollAmount;
+    } else {
+      ref.scrollLeft += scrollAmount;
+    }
+    setClinicTabScrollPos(ref.scrollLeft);
+    setClinicTabScrollEnd(
+      ref.scrollLeft + ref.offsetWidth >= ref.scrollWidth - 1
+    );
+  };
+
+  useEffect(() => {
+    const ref = clinicTabsRef.current;
+    if (!ref) return;
+    const handleScroll = () => {
+      setClinicTabScrollPos(ref.scrollLeft);
+      setClinicTabScrollEnd(
+        ref.scrollLeft + ref.offsetWidth >= ref.scrollWidth - 1
+      );
+    };
+    ref.addEventListener("scroll", handleScroll);
+    handleScroll();
+    return () => ref.removeEventListener("scroll", handleScroll);
+  }, [doctor.clinics.length]);
   const [selectedDate, setSelectedDate] = useState<string>("");
   const [availableSlots, setAvailableSlots] = useState<
-    Array<{ datetime: string; time: string }>
+    Array<{ datetime: string; time: string; clinicId: string }>
   >([]);
   const [isLoadingSlots, setIsLoadingSlots] = useState(false);
   const [allDays, setAllDays] = useState<DayInfo[]>([]);
@@ -71,12 +105,23 @@ export default function DoctorCard({ doctor }: DoctorCardProps) {
   const [daysToShow] = useState(4); // Show 4 days at a time
   const [loadedDays, setLoadedDays] = useState(7); // Start with 7 days, load more as needed
 
+  // Clinic tab state
+  const [selectedClinicId, setSelectedClinicId] = useState<string>(
+    doctor.clinics[0]?.clinic.id || ""
+  );
+
   // Modal states
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalMode, setModalMode] = useState<
     "time-selection" | "all-times" | "quick-book"
   >("time-selection");
   const [modalSelectedTime, setModalSelectedTime] = useState<string>("");
+  const [modalSelectedClinic, setModalSelectedClinic] = useState<{
+    id: string;
+    name: string;
+    city: string | null;
+    address: string | null;
+  } | null>(doctor.clinics[0]?.clinic || null);
 
   const avgRating =
     doctor.opinions.length > 0
@@ -112,26 +157,24 @@ export default function DoctorCard({ doctor }: DoctorCardProps) {
   const generateDays = (numDays: number): DayInfo[] => {
     const days: DayInfo[] = [];
     const today = new Date();
-
+    const dayNames = ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"];
+    const monthNames = [
+      "Ene",
+      "Feb",
+      "Mar",
+      "Abr",
+      "May",
+      "Jun",
+      "Jul",
+      "Ago",
+      "Sep",
+      "Oct",
+      "Nov",
+      "Dic",
+    ];
     for (let i = 0; i < numDays; i++) {
       const date = new Date(today);
       date.setDate(today.getDate() + i);
-
-      const dayNames = ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"];
-      const monthNames = [
-        "Ene",
-        "Feb",
-        "Mar",
-        "Abr",
-        "May",
-        "Jun",
-        "Jul",
-        "Ago",
-        "Sep",
-        "Oct",
-        "Nov",
-        "Dic",
-      ];
 
       days.push({
         date: date.toISOString().split("T")[0],
@@ -277,11 +320,12 @@ export default function DoctorCard({ doctor }: DoctorCardProps) {
     setModalSelectedTime("");
   };
 
-  // Load available slots when date is selected
+  // Load available slots when date or clinic is selected
   const loadAvailableSlots = useCallback(
     async (date: string) => {
       setIsLoadingSlots(true);
       try {
+        // Only pass doctorId and date, store all slots
         const result = await getDoctorAvailability(doctor.id, date);
         if (result.success) {
           setAvailableSlots(result.data || []);
@@ -304,10 +348,14 @@ export default function DoctorCard({ doctor }: DoctorCardProps) {
   }, [initializeDays]);
 
   useEffect(() => {
-    if (selectedDate) {
+    if (selectedDate && selectedClinicId) {
       loadAvailableSlots(selectedDate);
+      const clinicObj = doctor.clinics.find(
+        (c) => c.clinic.id === selectedClinicId
+      )?.clinic;
+      setModalSelectedClinic(clinicObj || null);
     }
-  }, [selectedDate, loadAvailableSlots]);
+  }, [selectedDate, selectedClinicId, loadAvailableSlots, doctor.clinics]);
 
   // Get currently visible days
   const visibleDays = allDays.slice(
@@ -441,9 +489,61 @@ export default function DoctorCard({ doctor }: DoctorCardProps) {
 
         {/* Right Panel - Availability */}
         <div className="lg:w-80 bg-gray-50 p-6 border-l border-gray-200 flex flex-col min-h-[400px]">
-          <div className="flex items-center gap-2 mb-4">
-            <Calendar className="w-5 h-5 text-blue-600" />
-            <h4 className="font-semibold text-gray-900">Disponibilidad</h4>
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <Calendar className="w-5 h-5 text-blue-600" />
+              <h4 className="font-semibold text-gray-900">Disponibilidad</h4>
+            </div>
+            <div className="flex gap-1">
+              <button
+                type="button"
+                className="p-1 bg-white rounded-full shadow border border-gray-200 text-blue-600 hover:bg-blue-50 disabled:opacity-40"
+                onClick={() => scrollClinicTabs("left")}
+                aria-label="Scroll left"
+                disabled={clinicTabScrollPos === 0}
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </button>
+              <button
+                type="button"
+                className="p-1 bg-white rounded-full shadow border border-gray-200 text-blue-600 hover:bg-blue-50 disabled:opacity-40"
+                onClick={() => scrollClinicTabs("right")}
+                aria-label="Scroll right"
+                disabled={clinicTabScrollEnd}
+              >
+                <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+
+          {/* Clinic Tabs - Scrollable, scrollbar hidden */}
+          <div className="mb-4">
+            <div
+              className="flex gap-2  overflow-hidden px-1"
+              ref={clinicTabsRef}
+              style={{ scrollBehavior: "smooth" }}
+            >
+              {doctor.clinics.map(({ clinic }) => (
+                <button
+                  key={clinic.id}
+                  onClick={() => setSelectedClinicId(clinic.id)}
+                  className={`px-3 py-1 rounded-full border text-sm font-medium transition-colors whitespace-nowrap ${
+                    selectedClinicId === clinic.id
+                      ? "bg-blue-600 text-white border-blue-600 shadow"
+                      : "bg-white text-blue-600 border-blue-200 hover:bg-blue-50"
+                  }`}
+                >
+                  {clinic.name}
+                </button>
+              ))}
+            </div>
+            <div className="mt-1 text-xs text-gray-500">
+              <label className="font-medium">Direccion: </label>
+              {
+                doctor.clinics.find((c) => c.clinic.id === selectedClinicId)
+                  ?.clinic.address
+              }
+            </div>
           </div>
 
           {/* Date Selection Carousel */}
@@ -494,7 +594,7 @@ export default function DoctorCard({ doctor }: DoctorCardProps) {
                 >
                   <div className="text-xs font-medium">{day.dayName}</div>
                   <div className="text-sm font-bold">{day.dayNumber}</div>
-                  <div className="text-xs text-gray-500">{day.monthName}</div>
+                  <div className="text-xs font-medium">{day.monthName}</div>
 
                   {/* Availability indicator */}
                   {day.isLoading ? (
@@ -530,45 +630,61 @@ export default function DoctorCard({ doctor }: DoctorCardProps) {
                   <div className="inline-block animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600 mb-2"></div>
                   <p className="text-sm text-gray-500">Cargando horarios...</p>
                 </div>
-              ) : availableSlots.length > 0 ? (
-                <div>
-                  <p className="text-sm text-gray-600 mb-3">
-                    Horarios disponibles para{" "}
-                    {allDays.find((d) => d.date === selectedDate)?.dayName}:
-                  </p>
-                  <div className="grid grid-cols-2 gap-2 max-h-32 overflow-y-auto">
-                    {availableSlots.slice(0, 8).map((slot, index) => (
-                      <button
-                        key={index}
-                        onClick={() => openModal("time-selection", slot.time)}
-                        className="bg-white border border-blue-200 text-blue-700 hover:bg-blue-50 hover:border-blue-400 py-2 px-3 rounded-lg text-center text-sm font-medium transition-colors"
-                      >
-                        {slot.time}
-                      </button>
-                    ))}
-                  </div>
-                  {availableSlots.length > 8 && (
-                    <button
-                      onClick={() => openModal("all-times")}
-                      className="block w-full text-center text-sm text-blue-600 hover:text-blue-800 mt-3 font-medium"
-                    >
-                      Ver todos los horarios ({availableSlots.length})
-                    </button>
-                  )}
-                </div>
               ) : (
-                <div className="text-center py-8">
-                  <Clock className="w-8 h-8 text-gray-400 mx-auto mb-2" />
-                  <p className="text-sm text-gray-500 mb-2">
-                    No hay horarios disponibles para esta fecha
-                  </p>
-                  <Link
-                    href={`/doctor/${doctor.id}`}
-                    className="text-sm text-blue-600 hover:text-blue-800 font-medium"
-                  >
-                    Ver otras fechas →
-                  </Link>
-                </div>
+                (() => {
+                  // Filter slots by selected clinic
+                  const slotsForClinic = availableSlots.filter(
+                    (slot) => slot.clinicId === selectedClinicId
+                  );
+                  const slotsToShow =
+                    slotsForClinic.length > 0 ? slotsForClinic : availableSlots;
+                  return slotsToShow.length > 0 ? (
+                    <div>
+                      <p className="text-sm text-gray-600 mb-3">
+                        Horarios disponibles para{" "}
+                        {allDays.find((d) => d.date === selectedDate)?.dayName}{" "}
+                        en{" "}
+                        {
+                          doctor.clinics.find(
+                            (c) => c.clinic.id === selectedClinicId
+                          )?.clinic.name
+                        }
+                        :
+                      </p>
+                      <div className="grid grid-cols-2 gap-2 max-h-36 rounded-lg border border-gray-200 overflow-y-auto p-2">
+                        {slotsToShow.map((slot, index) => (
+                          <button
+                            key={index}
+                            onClick={() =>
+                              openModal("time-selection", slot.time)
+                            }
+                            className="bg-white border border-blue-200 text-blue-700 hover:bg-blue-50 hover:border-blue-400 py-2 px-3 rounded-lg text-center text-sm font-medium transition-colors"
+                          >
+                            {slot.time}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="text-center py-8">
+                      <Clock className="w-8 h-8 text-gray-400 mx-auto mb-2" />
+                      <p className="text-sm text-gray-500 mb-2">
+                        No hay horarios disponibles para esta fecha en{" "}
+                        {
+                          doctor.clinics.find(
+                            (c) => c.clinic.id === selectedClinicId
+                          )?.clinic.name
+                        }
+                      </p>
+                      <Link
+                        href={`/doctor/${doctor.id}`}
+                        className="text-sm text-blue-600 hover:text-blue-800 font-medium"
+                      >
+                        Ver otras fechas →
+                      </Link>
+                    </div>
+                  );
+                })()
               )}
             </div>
           </div>
@@ -596,7 +712,11 @@ export default function DoctorCard({ doctor }: DoctorCardProps) {
         doctor={doctor}
         selectedDate={selectedDate}
         selectedTime={modalSelectedTime}
+        selectedClinic={modalSelectedClinic}
         mode={modalMode}
+        onBookingConfirmed={() => {
+          if (selectedDate) loadAvailableSlots(selectedDate);
+        }}
       />
     </div>
   );

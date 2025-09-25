@@ -1,7 +1,8 @@
 import { requireDoctor } from "@/lib/auth-guards";
 import { getDoctorAppointments } from "@/lib/actions/appointments";
-import DoctorAppointmentList from "./components/DoctorAppointmentList";
 import { validateDoctor } from "@/lib/actions/utils";
+import DoctorAppointmentList from "./components/DoctorAppointmentList";
+import CollapsibleHistorySection from "./components/CollapsibleHistorySection";
 
 export default async function DoctorAppointments() {
   await requireDoctor();
@@ -27,19 +28,48 @@ export default async function DoctorAppointments() {
   const appointments = await getDoctorAppointments(validation.doctor.id);
 
   // Organize appointments by status
+  const today = new Date();
+  today.setHours(0, 0, 0, 0); // Start of today
+
+  const now = new Date();
+  now.setSeconds(0, 0); // Ignore seconds/milliseconds for comparison
+
+  // Appointments whose time has passed (today or before) are considered historical
+
   const organizedAppointments = {
-    pending: appointments.filter((apt) => apt.status === "PENDING"),
-    today: appointments.filter((apt) => {
-      const today = new Date();
+    pending: appointments.filter((apt) => {
       const aptDate = new Date(apt.datetime);
-      return aptDate.toDateString() === today.toDateString();
+      return apt.status === "PENDING" && aptDate >= today && aptDate >= now;
+    }),
+    today: appointments.filter((apt) => {
+      const aptDate = new Date(apt.datetime);
+      return (
+        aptDate.toDateString() === today.toDateString() &&
+        apt.status !== "CANCELED" &&
+        aptDate >= now
+      );
     }),
     upcoming: appointments.filter((apt) => {
-      const today = new Date();
       const aptDate = new Date(apt.datetime);
       return aptDate > today && apt.status === "CONFIRMED";
     }),
-    completed: appointments.filter((apt) => apt.status === "COMPLETED"),
+    completed: appointments.filter((apt) => {
+      const aptDate = new Date(apt.datetime);
+      return apt.status === "COMPLETED" || aptDate < today;
+    }),
+    past: appointments.filter((apt) => {
+      const aptDate = new Date(apt.datetime);
+      return (
+        aptDate < today &&
+        apt.status !== "COMPLETED" &&
+        apt.status !== "CANCELED"
+      );
+    }),
+    // All historical appointments: any appointment in the past (including today if hour passed)
+    historical: appointments.filter((apt) => {
+      const aptDate = new Date(apt.datetime);
+      return aptDate < now || apt.status === "CANCELED";
+    }),
   };
 
   return (
@@ -53,9 +83,6 @@ export default async function DoctorAppointments() {
               Gestiona todas tus citas médicas en un solo lugar.
             </p>
           </div>
-          <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors">
-            Nueva Cita
-          </button>
         </div>
       </div>
 
@@ -91,21 +118,7 @@ export default async function DoctorAppointments() {
 
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
           <div className="flex items-center">
-            <div className="h-12 w-12 bg-green-500 rounded-lg flex items-center justify-center">
-              <span className="text-white text-xl">✅</span>
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Completadas</p>
-              <p className="text-2xl font-bold text-gray-900">
-                {organizedAppointments.completed.length}
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-          <div className="flex items-center">
-            <div className="h-12 w-12 bg-red-500 rounded-lg flex items-center justify-center">
+            <div className="h-12 w-12 bg-indigo-500 rounded-lg flex items-center justify-center">
               <span className="text-white text-xl">📋</span>
             </div>
             <div className="ml-4">
@@ -116,44 +129,64 @@ export default async function DoctorAppointments() {
             </div>
           </div>
         </div>
+
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+          <div className="flex items-center">
+            <div className="h-12 w-12 bg-green-500 rounded-lg flex items-center justify-center">
+              <span className="text-white text-xl">✅</span>
+            </div>
+            <div className="ml-4">
+              <p className="text-sm font-medium text-gray-600">Historial</p>
+              <p className="text-2xl font-bold text-gray-900">
+                {organizedAppointments.historical.length}
+              </p>
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Appointment Lists */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="space-y-6">
-          <DoctorAppointmentList
-            appointments={organizedAppointments.pending}
-            title="Citas Pendientes de Confirmación"
-          />
+      <div className="space-y-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="space-y-6">
+            <DoctorAppointmentList
+              appointments={organizedAppointments.today}
+              title="Citas de Hoy"
+            />
+            <DoctorAppointmentList
+              appointments={organizedAppointments.pending}
+              title="Citas Pendientes de Confirmación"
+            />
+          </div>
 
-          <DoctorAppointmentList
-            appointments={organizedAppointments.today}
-            title="Citas de Hoy"
-          />
-        </div>
-
-        <div className="space-y-6">
-          <DoctorAppointmentList
-            appointments={organizedAppointments.upcoming}
-            title="Próximas Citas"
-          />
-        </div>
-      </div>
-
-      {/* Coming Soon Message */}
-      <div className="bg-blue-50 border border-blue-200 rounded-xl p-6">
-        <div className="flex items-center space-x-3">
-          <div className="text-blue-600">ℹ️</div>
-          <div>
-            <h3 className="text-sm font-medium text-blue-800">
-              Vista completa de citas
-            </h3>
-            <p className="text-sm text-blue-700 mt-1">
-              La vista completa con filtros y gestión avanzada estará disponible
-              próximamente.
-            </p>
+          <div className="space-y-6">
+            {organizedAppointments.upcoming.length > 0 ? (
+              <DoctorAppointmentList
+                appointments={organizedAppointments.upcoming}
+                title="Próximas Citas Confirmadas"
+              />
+            ) : (
+              <div className="bg-white rounded-lg shadow">
+                <div className="p-6 border-b border-gray-200">
+                  <h3 className="text-lg font-semibold text-gray-900">
+                    Próximas Citas Confirmadas
+                  </h3>
+                  <p className="text-sm text-gray-600">0 citas</p>
+                </div>
+                <div className="text-center py-8">
+                  <div className="text-4xl mb-4">📅</div>
+                  <p className="text-gray-500">
+                    No hay próximas citas confirmadas
+                  </p>
+                </div>
+              </div>
+            )}
           </div>
         </div>
+
+        <CollapsibleHistorySection
+          historicalAppointments={organizedAppointments.historical}
+        />
       </div>
     </div>
   );

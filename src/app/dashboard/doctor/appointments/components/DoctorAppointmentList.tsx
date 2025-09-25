@@ -3,6 +3,19 @@
 import { useState, useTransition } from "react";
 import { updateAppointmentStatus } from "@/lib/actions/appointments";
 import { AppointmentStatus, AppointmentType } from "@prisma/client";
+import {
+  Calendar,
+  Clock,
+  MapPin,
+  Phone,
+  Mail,
+  User,
+  CheckCircle,
+  XCircle,
+  MessageSquare,
+  X,
+  Loader2,
+} from "lucide-react";
 
 interface Appointment {
   id: string;
@@ -27,33 +40,55 @@ interface Appointment {
 interface DoctorAppointmentListProps {
   appointments: Appointment[];
   title: string;
+  showState?: boolean;
 }
 
 export default function DoctorAppointmentList({
   appointments,
   title,
+  showState = true,
 }: DoctorAppointmentListProps) {
   const [isPending, startTransition] = useTransition();
   const [processingId, setProcessingId] = useState<string | null>(null);
+  const [selectedAppointment, setSelectedAppointment] =
+    useState<Appointment | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [actionType, setActionType] = useState<"confirm" | "cancel" | null>(
+    null
+  );
 
-  const handleStatusUpdate = async (
-    appointmentId: string,
-    newStatus: AppointmentStatus
+  const openModal = (
+    appointment: Appointment,
+    action: "confirm" | "cancel"
   ) => {
-    const confirmMessage =
-      newStatus === AppointmentStatus.CONFIRMED
-        ? "¿Confirmar esta cita?"
-        : "¿Cancelar esta cita?";
+    setSelectedAppointment(appointment);
+    setActionType(action);
+    setIsModalOpen(true);
+  };
 
-    if (!confirm(confirmMessage)) {
-      return;
-    }
+  const closeModal = () => {
+    setIsModalOpen(false);
+    setSelectedAppointment(null);
+    setActionType(null);
+  };
 
-    setProcessingId(appointmentId);
+  const handleStatusUpdate = async () => {
+    if (!selectedAppointment || !actionType) return;
+
+    const newStatus =
+      actionType === "confirm"
+        ? AppointmentStatus.CONFIRMED
+        : AppointmentStatus.CANCELED;
+
+    setProcessingId(selectedAppointment.id);
     startTransition(async () => {
       try {
-        const result = await updateAppointmentStatus(appointmentId, newStatus);
+        const result = await updateAppointmentStatus(
+          selectedAppointment.id,
+          newStatus
+        );
         if (result.success) {
+          closeModal();
           window.location.reload();
         } else {
           alert(result.error || "Error al actualizar la cita");
@@ -143,106 +178,131 @@ export default function DoctorAppointmentList({
             new Date(appointment.datetime) > new Date();
 
           return (
-            <div key={appointment.id} className="p-6">
-              <div className="flex items-start justify-between">
-                <div className="flex-1">
-                  {/* Patient Info */}
-                  <div className="flex items-center space-x-3 mb-3">
-                    <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
-                      <span className="text-sm font-semibold text-green-600">
-                        {appointment.patient.name[0]}
-                        {appointment.patient.surname[0]}
-                      </span>
-                    </div>
+            <div
+              key={appointment.id}
+              className="p-6 hover:bg-gray-50 transition-colors"
+            >
+              <div className="flex items-start gap-4">
+                {/* Patient Avatar */}
+                <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center flex-shrink-0">
+                  <User className="w-6 h-6 text-white" />
+                </div>
+
+                {/* Main Content */}
+                <div className="flex-1 min-w-0">
+                  {/* Patient Info Header */}
+                  <div className="flex items-start justify-between mb-4">
                     <div>
-                      <h4 className="font-semibold text-gray-900">
+                      <h4 className="text-lg font-semibold text-gray-900 mb-1">
                         {appointment.patient.name} {appointment.patient.surname}
                       </h4>
-                      <p className="text-sm text-gray-600">
-                        {appointment.patient.email}
-                      </p>
-                      {appointment.patient.phone && (
-                        <p className="text-sm text-gray-600">
-                          {appointment.patient.phone}
-                        </p>
-                      )}
+                      <div className="flex flex-wrap gap-4 text-sm text-gray-600">
+                        <div className="flex items-center gap-1">
+                          <Mail className="w-4 h-4" />
+                          {appointment.patient.email}
+                        </div>
+                        {appointment.patient.phone && (
+                          <div className="flex items-center gap-1">
+                            <Phone className="w-4 h-4" />
+                            {appointment.patient.phone}
+                          </div>
+                        )}
+                      </div>
                     </div>
+
+                    {/* Status Badge */}
+                    {showState && (
+                      <span
+                        className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(
+                          appointment.status
+                        )}`}
+                      >
+                        {getStatusText(appointment.status)}
+                      </span>
+                    )}
                   </div>
 
-                  {/* Appointment Details */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-3">
-                    <div>
-                      <p className="text-sm text-gray-600">Fecha</p>
-                      <p className="font-medium text-gray-900 capitalize">
+                  {/* Appointment Details Grid */}
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                    <div className="bg-gray-50 rounded-lg p-3">
+                      <div className="flex items-center gap-2 mb-1">
+                        <Calendar className="w-4 h-4 text-gray-500" />
+                        <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">
+                          Fecha
+                        </span>
+                      </div>
+                      <p className="font-medium text-gray-900 capitalize text-sm">
                         {date}
                       </p>
                     </div>
-                    <div>
-                      <p className="text-sm text-gray-600">Hora</p>
-                      <p className="font-medium text-gray-900">{time}</p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-gray-600">Modalidad</p>
-                      <p className="font-medium text-gray-900">
-                        {getTypeText(appointment.type)}
+
+                    <div className="bg-gray-50 rounded-lg p-3">
+                      <div className="flex items-center gap-2 mb-1">
+                        <Clock className="w-4 h-4 text-gray-500" />
+                        <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">
+                          Hora
+                        </span>
+                      </div>
+                      <p className="font-medium text-gray-900 text-sm">
+                        {time}
                       </p>
                     </div>
-                    <div>
-                      <p className="text-sm text-gray-600">Clínica</p>
+
+                    <div className="bg-gray-50 rounded-lg p-3">
+                      <div className="flex items-center gap-2 mb-1">
+                        <MapPin className="w-4 h-4 text-gray-500" />
+                        <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">
+                          Clínica
+                        </span>
+                      </div>
                       <p className="font-medium text-gray-900 text-sm">
                         {appointment.clinic.name}
+                      </p>
+                      <p className="text-xs text-gray-500">
+                        {getTypeText(appointment.type)}
                       </p>
                     </div>
                   </div>
 
                   {/* Notes */}
                   {appointment.notes && (
-                    <div className="mb-3">
-                      <p className="text-sm text-gray-600">
-                        Notas del paciente
-                      </p>
-                      <p className="text-sm text-gray-900 bg-gray-50 p-2 rounded">
-                        {appointment.notes}
-                      </p>
+                    <div className="mb-4">
+                      <div className="flex items-center gap-2 mb-2">
+                        <MessageSquare className="w-4 h-4 text-gray-500" />
+                        <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">
+                          Notas del paciente
+                        </span>
+                      </div>
+                      <div className="bg-blue-50 border border-blue-100 rounded-lg p-3">
+                        <p className="text-sm text-gray-900">
+                          {appointment.notes}
+                        </p>
+                      </div>
                     </div>
                   )}
-                </div>
 
-                {/* Status and Actions */}
-                <div className="flex flex-col items-end space-y-3">
-                  <span
-                    className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(
-                      appointment.status
-                    )}`}
-                  >
-                    {getStatusText(appointment.status)}
-                  </span>
-
+                  {/* Actions */}
                   {canManage && (
-                    <div className="flex space-x-2">
+                    <div className="flex gap-3 pt-4 border-t border-gray-100">
                       <button
-                        onClick={() =>
-                          handleStatusUpdate(
-                            appointment.id,
-                            AppointmentStatus.CONFIRMED
-                          )
-                        }
+                        onClick={() => openModal(appointment, "confirm")}
                         disabled={processingId === appointment.id || isPending}
-                        className="text-green-600 hover:text-green-800 text-sm font-medium disabled:opacity-50 bg-green-50 px-3 py-1 rounded"
+                        className="flex items-center gap-2 bg-green-600 hover:bg-green-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white px-4 py-2 rounded-lg font-medium transition-colors text-sm"
                       >
-                        {processingId === appointment.id ? "..." : "Confirmar"}
+                        <CheckCircle className="w-4 h-4" />
+                        {processingId === appointment.id
+                          ? "Procesando..."
+                          : "Confirmar Cita"}
                       </button>
                       <button
-                        onClick={() =>
-                          handleStatusUpdate(
-                            appointment.id,
-                            AppointmentStatus.CANCELED
-                          )
-                        }
+                        onClick={() => openModal(appointment, "cancel")}
                         disabled={processingId === appointment.id || isPending}
-                        className="text-red-600 hover:text-red-800 text-sm font-medium disabled:opacity-50 bg-red-50 px-3 py-1 rounded"
+                        className="flex items-center gap-2 bg-red-600 hover:bg-red-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white px-4 py-2 rounded-lg font-medium transition-colors text-sm"
                       >
-                        {processingId === appointment.id ? "..." : "Cancelar"}
+                        <XCircle className="w-4 h-4" />
+                        {processingId === appointment.id
+                          ? "Procesando..."
+                          : "Cancelar Cita"}
                       </button>
                     </div>
                   )}
@@ -252,6 +312,130 @@ export default function DoctorAppointmentList({
           );
         })}
       </div>
+
+      {/* Confirmation Modal */}
+      {isModalOpen && selectedAppointment && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl shadow-xl max-w-lg w-full">
+            {/* Modal Header */}
+            <div className="flex items-center justify-between p-6 border-b border-gray-200">
+              <div className="flex items-center gap-3">
+                <div
+                  className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                    actionType === "confirm" ? "bg-green-100" : "bg-red-100"
+                  }`}
+                >
+                  {actionType === "confirm" ? (
+                    <CheckCircle className={`w-5 h-5 text-green-600`} />
+                  ) : (
+                    <XCircle className={`w-5 h-5 text-red-600`} />
+                  )}
+                </div>
+                <h2 className="text-xl font-bold text-gray-900">
+                  {actionType === "confirm"
+                    ? "Confirmar Cita"
+                    : "Cancelar Cita"}
+                </h2>
+              </div>
+              <button
+                onClick={closeModal}
+                className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+              >
+                <X className="w-5 h-5 text-gray-500" />
+              </button>
+            </div>
+
+            {/* Modal Content */}
+            <div className="p-6">
+              <div className="mb-6">
+                <p className="text-gray-600 mb-4">
+                  {actionType === "confirm"
+                    ? "¿Estás seguro de que deseas confirmar esta cita? El paciente será notificado."
+                    : "¿Estás seguro de que deseas cancelar esta cita? El paciente será notificado de la cancelación."}
+                </p>
+
+                {/* Appointment Details */}
+                <div className="bg-gray-50 rounded-lg p-4">
+                  <div className="flex items-start gap-3">
+                    <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
+                      <User className="w-5 h-5 text-blue-600" />
+                    </div>
+                    <div className="flex-1">
+                      <h4 className="font-semibold text-gray-900 mb-2">
+                        {selectedAppointment.patient.name}{" "}
+                        {selectedAppointment.patient.surname}
+                      </h4>
+                      <div className="grid grid-cols-2 gap-3 text-sm">
+                        <div>
+                          <span className="text-gray-500">Fecha:</span>
+                          <p className="font-medium text-gray-900">
+                            {formatDateTime(selectedAppointment.datetime).date}
+                          </p>
+                        </div>
+                        <div>
+                          <span className="text-gray-500">Hora:</span>
+                          <p className="font-medium text-gray-900">
+                            {formatDateTime(selectedAppointment.datetime).time}
+                          </p>
+                        </div>
+                        <div>
+                          <span className="text-gray-500">Clínica:</span>
+                          <p className="font-medium text-gray-900">
+                            {selectedAppointment.clinic.name}
+                          </p>
+                        </div>
+                        <div>
+                          <span className="text-gray-500">Tipo:</span>
+                          <p className="font-medium text-gray-900">
+                            {getTypeText(selectedAppointment.type)}
+                          </p>
+                        </div>
+                      </div>
+                      {selectedAppointment.notes && (
+                        <div className="mt-3">
+                          <span className="text-gray-500 text-sm">Notas:</span>
+                          <p className="text-sm text-gray-900 bg-white p-2 rounded border mt-1">
+                            {selectedAppointment.notes}
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Modal Actions */}
+              <div className="flex gap-3">
+                <button
+                  onClick={closeModal}
+                  disabled={processingId !== null}
+                  className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg font-medium transition-colors"
+                >
+                  Cancelar
+                </button>
+                <button
+                  onClick={handleStatusUpdate}
+                  disabled={processingId !== null}
+                  className={`flex-1 px-4 py-2 text-white rounded-lg font-medium transition-colors flex items-center justify-center gap-2 ${
+                    actionType === "confirm"
+                      ? "bg-green-600 hover:bg-green-700 disabled:bg-gray-300"
+                      : "bg-red-600 hover:bg-red-700 disabled:bg-gray-300"
+                  } disabled:cursor-not-allowed`}
+                >
+                  {processingId !== null && (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  )}
+                  {processingId !== null
+                    ? "Procesando..."
+                    : actionType === "confirm"
+                    ? "Confirmar Cita"
+                    : "Cancelar Cita"}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

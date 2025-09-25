@@ -47,6 +47,11 @@ const sidebarItems = [
     href: "/dashboard/doctor/analytics",
     icon: BarChart3,
   },
+  {
+    label: "Calendario",
+    href: "/dashboard/doctor/calendar",
+    icon: CalendarDays,
+  },
   // {
   //   label: "Historial Médico",
   //   href: "/dashboard/doctor/medical-records",

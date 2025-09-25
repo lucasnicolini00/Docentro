@@ -20,12 +20,14 @@ export interface CalendarAppointment {
 export function transformAppointmentToCalendarEvent(
   appointment: any
 ): CalendarAppointment {
-  const startDate = new Date(appointment.dateTime);
+  const startDate = new Date(appointment.datetime);
   const endDate = new Date(startDate.getTime() + 60 * 60 * 1000); // 1 hour
 
   return {
     id: appointment.id,
-    title: `${appointment.patient?.firstName} ${appointment.patient?.lastName}`,
+    title: `${appointment.patient?.name || ""} ${
+      appointment.patient?.surname || ""
+    }`.trim(),
     start: startDate.toISOString(),
     end: endDate.toISOString(),
     backgroundColor: appointment.status === "CONFIRMED" ? "#10b981" : "#f59e0b",
@@ -33,7 +35,9 @@ export function transformAppointmentToCalendarEvent(
     textColor: "#ffffff",
     extendedProps: {
       status: appointment.status,
-      patientName: `${appointment.patient?.firstName} ${appointment.patient?.lastName}`,
+      patientName: `${appointment.patient?.name || ""} ${
+        appointment.patient?.surname || ""
+      }`.trim(),
       clinicName: appointment.clinic?.name || "Clínica",
       notes: appointment.notes || "",
       phone: appointment.patient?.phone || "",

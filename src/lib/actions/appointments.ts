@@ -130,15 +130,11 @@ export async function getDoctorAppointments(
 ) {
   try {
     const whereClause: any = {
-      timeSlot: {
-        schedule: {
-          doctorId: doctorId,
-        },
-      },
+      doctorId: doctorId,
     };
 
     if (options?.startDate && options?.endDate) {
-      whereClause.timeSlot.startTime = {
+      whereClause.datetime = {
         gte: options.startDate,
         lte: options.endDate,
       };
@@ -167,29 +163,27 @@ export async function getDoctorAppointments(
             id: true,
             name: true,
             address: true,
-          },
-        },
-        timeSlot: {
-          select: {
-            id: true,
-            startTime: true,
-            endTime: true,
-            schedule: {
-              select: {
-                clinic: {
-                  select: {
-                    name: true,
-                    address: true,
-                  },
-                },
-              },
-            },
+            city: true,
           },
         },
         pricing: {
           select: {
+            id: true,
             title: true,
             price: true,
+            currency: true,
+          },
+        },
+        doctor: {
+          select: {
+            id: true,
+            user: {
+              select: {
+                firstName: true,
+                lastName: true,
+                email: true,
+              },
+            },
           },
         },
       },
@@ -469,7 +463,7 @@ export async function createAppointment(
 
     // Revalidate related pages
     revalidatePath("/dashboard/patient");
-    revalidatePath("/dashboard/doctor");
+    revalidatePath("/dashboard/doctor/appointments");
 
     return {
       success: true,

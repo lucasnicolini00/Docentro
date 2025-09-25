@@ -82,6 +82,11 @@ export default function UserMenu() {
             href: "/dashboard/doctor/analytics",
             icon: BarChart3,
           },
+          {
+            label: "Calendario",
+            href: "/dashboard/doctor/calendar",
+            icon: CalendarDays,
+          },
         ]
       : [
           {
