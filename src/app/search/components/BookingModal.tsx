@@ -6,6 +6,7 @@ import { X, Calendar, Clock, User, MapPin, Loader2 } from "lucide-react";
 import { ConfirmationModal } from "@/components/ui";
 import { getPatientProfile } from "@/lib/actions/patients";
 import { createAppointment } from "@/lib/actions/appointments";
+import { sendDoctorNewAppointmentEmail } from "@/lib/actions/emails";
 
 interface Doctor {
   id: string;
@@ -178,6 +179,46 @@ export default function BookingModal({
         setCurrentStep("booking-confirmed");
         if (onBookingConfirmed) {
           onBookingConfirmed();
+        }
+        // Notify doctor by email (do not block UI)
+        try {
+          const doctorEmail = doctor.email;
+          if (doctorEmail) {
+            const clinicFound = doctor.clinics.find(
+              (dc) => dc.clinic.id === bookingData.selectedClinicId
+            );
+            const clinicName =
+              clinicFound?.clinic?.name || primaryClinic?.name || "Clínica";
+
+            const payload = {
+              doctorName: `${doctor.name} ${doctor.surname}`,
+              patientName: `${patientData.name} ${patientData.surname}`,
+              clinicName,
+              date: formatDate(selectedDate!),
+              time: bookingData.selectedTime,
+              notes: bookingData.notes,
+              actionUrl:
+                typeof window !== "undefined"
+                  ? `${window.location.origin}/dashboard/doctor/appointments`
+                  : "/dashboard/doctor/appointments",
+            };
+
+            // fire-and-forget, log if fails
+            sendDoctorNewAppointmentEmail(doctorEmail, payload)
+              .then((res) => {
+                if (!res.success) {
+                  console.error(
+                    "Failed to send doctor notification email:",
+                    res.error
+                  );
+                }
+              })
+              .catch((err) =>
+                console.error("Error sending doctor email:", err)
+              );
+          }
+        } catch (err) {
+          console.error("Error preparing doctor notification:", err);
         }
       } else {
         setErrorModal({

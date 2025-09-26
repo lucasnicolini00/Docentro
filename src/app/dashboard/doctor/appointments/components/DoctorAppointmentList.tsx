@@ -1,7 +1,9 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { updateAppointmentStatus } from "@/lib/actions/appointments";
+import { sendAppointmentStatusUpdateEmail } from "@/lib/actions/emails";
 import { AppointmentStatus, AppointmentType } from "@prisma/client";
 import {
   Calendar,
@@ -16,6 +18,7 @@ import {
   X,
   Loader2,
 } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
 
 interface Appointment {
   id: string;
@@ -48,6 +51,8 @@ export default function DoctorAppointmentList({
   title,
   showState = true,
 }: DoctorAppointmentListProps) {
+  const { user } = useAuth();
+  const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [processingId, setProcessingId] = useState<string | null>(null);
   const [selectedAppointment, setSelectedAppointment] =
@@ -87,9 +92,34 @@ export default function DoctorAppointmentList({
           selectedAppointment.id,
           newStatus
         );
+        console.log("updateAppointmentStatus result:", result);
         if (result.success) {
+          // Notify patient via server action
+          const { date: formattedDate, time: formattedTime } = formatDateTime(
+            selectedAppointment.datetime
+          );
+
+          // Fire-and-forget server action to send the email. Log failures.
+          sendAppointmentStatusUpdateEmail(selectedAppointment.patient.email, {
+            patientName: `${selectedAppointment.patient.name} ${selectedAppointment.patient.surname}`,
+            doctorName: user?.name || "",
+            clinicName: selectedAppointment.clinic.name,
+            date: formattedDate,
+            time: formattedTime,
+            notes: selectedAppointment.notes || undefined,
+            status:
+              newStatus === AppointmentStatus.CONFIRMED
+                ? "CONFIRMED"
+                : "CANCELED",
+          }).catch((emailErr) => {
+            console.error(
+              "Error sending patient notification email:",
+              emailErr
+            );
+          });
+
           closeModal();
-          window.location.reload();
+          router.refresh();
         } else {
           alert(result.error || "Error al actualizar la cita");
         }
@@ -428,8 +458,8 @@ export default function DoctorAppointmentList({
                   {processingId !== null
                     ? "Procesando..."
                     : actionType === "confirm"
-                    ? "Confirmar Cita"
-                    : "Cancelar Cita"}
+                      ? "Confirmar Cita"
+                      : "Cancelar Cita"}
                 </button>
               </div>
             </div>
