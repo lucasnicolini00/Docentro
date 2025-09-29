@@ -1,4 +1,4 @@
-import { Calendar, Users, DollarSign, Activity } from "lucide-react";
+import { Calendar, Users, Activity } from "lucide-react";
 
 interface DashboardStats {
   todayAppointments: number;
@@ -29,13 +29,7 @@ export default function MetricsCards({ stats }: MetricsCardsProps) {
       bgColor: "bg-green-100",
       iconColor: "text-green-600",
     },
-    {
-      label: "Ingresos del Mes",
-      value: `$${stats.monthlyRevenue.toLocaleString()}`,
-      icon: DollarSign,
-      bgColor: "bg-yellow-100",
-      iconColor: "text-yellow-600",
-    },
+
     {
       label: "Utilización",
       value: `${stats.utilizationRate}%`,

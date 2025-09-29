@@ -78,7 +78,7 @@ export default function UserMenu() {
             icon: Calendar,
           },
           {
-            label: "Analytics",
+            label: "Analisis",
             href: "/dashboard/doctor/analytics",
             icon: BarChart3,
           },

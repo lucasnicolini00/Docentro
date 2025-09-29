@@ -49,24 +49,6 @@ export default function StatisticsGrid({
         loading={loading}
       />
       <StatCard
-        title="Ingresos del Mes"
-        value={
-          loading ? "" : `$${currentStats.monthlyRevenue.toLocaleString()}`
-        }
-        change={currentStats.changes?.revenue.text}
-        changeType={currentStats.changes?.revenue.type}
-        icon={BarChart3}
-        loading={loading}
-      />
-      <StatCard
-        title="Tasa de Utilización"
-        value={loading ? "" : `${currentStats.utilizationRate}%`}
-        change={currentStats.changes?.utilization.text}
-        changeType={currentStats.changes?.utilization.type}
-        icon={BarChart3}
-        loading={loading}
-      />
-      <StatCard
         title="Citas Pendientes"
         value={currentStats.pendingBookings}
         icon={Clock}

@@ -1,7 +1,6 @@
 import { requireDoctor } from "@/lib/auth-guards";
 import { getDoctorProfile, getAllSpecialities } from "@/lib/actions/doctors";
 import { DoctorProfileForm } from "@/components/ui/forms";
-import DoctorSettingsPanel from "./components/DoctorSettingsPanel";
 import { User, Settings, ArrowLeft, CheckCircle } from "lucide-react";
 
 export default async function DoctorProfilePage() {
@@ -46,7 +45,7 @@ export default async function DoctorProfilePage() {
   const allSpecialities = specialitiesResult.data;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50">
+    <div className="min-h-screen ">
       {/* Enhanced Header */}
       <div className="bg-white shadow-sm border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
@@ -67,13 +66,6 @@ export default async function DoctorProfilePage() {
                 </p>
               </div>
             </div>
-            <a
-              href="/dashboard/doctor"
-              className="group flex items-center space-x-2 bg-gray-100 hover:bg-gray-200 text-gray-700 px-6 py-3 rounded-xl transition-all duration-200 hover:shadow-md"
-            >
-              <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
-              <span className="font-medium">Volver al Dashboard</span>
-            </a>
           </div>
         </div>
       </div>
@@ -151,7 +143,7 @@ export default async function DoctorProfilePage() {
           </div>
 
           {/* Settings Card */}
-          <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
+          {/* <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
             <div className="bg-gradient-to-r from-indigo-600 to-purple-600 px-8 py-6">
               <div className="flex items-center space-x-4">
                 <div className="p-3 bg-white/20 rounded-xl backdrop-blur-sm">
@@ -167,10 +159,10 @@ export default async function DoctorProfilePage() {
                 </div>
               </div>
             </div>
-            <div className="p-8">
+            {/* <div className="p-8">
               <DoctorSettingsPanel />
-            </div>
-          </div>
+            </div> */}
+          {/* </div> */}
         </div>
       </div>
     </div>

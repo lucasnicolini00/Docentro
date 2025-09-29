@@ -11,11 +11,6 @@ import {
   Phone,
   Briefcase,
   GraduationCap,
-  Calendar,
-  Building,
-  FileText,
-  Plus,
-  Trash2,
   Save,
   X,
   CheckCircle,
@@ -71,7 +66,6 @@ export default function DoctorProfileForm({
 }: DoctorProfileFormProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
-  const [isAddingExperience, setIsAddingExperience] = useState(false);
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
 
@@ -89,18 +83,6 @@ export default function DoctorProfileForm({
 
   const [selectedSpecialities, setSelectedSpecialities] = useState<string[]>(
     doctor.specialities.map((ds) => ds.specialityId)
-  );
-
-  const [experiences, setExperiences] = useState(
-    doctor.experiences.map((exp) => ({
-      id: exp.id,
-      title: exp.title,
-      institution: exp.institution || "",
-      startDate: exp.startDate ? exp.startDate.toISOString().split("T")[0] : "",
-      endDate: exp.endDate ? exp.endDate.toISOString().split("T")[0] : "",
-      description: exp.description || "",
-      isNew: false,
-    }))
   );
 
   const handleInputChange = (
@@ -123,48 +105,12 @@ export default function DoctorProfileForm({
     });
   };
 
-  const addExperience = async () => {
-    setIsAddingExperience(true);
-    // Simulate a small delay for better UX
-    await new Promise((resolve) => setTimeout(resolve, 300));
-
-    setExperiences((prev) => [
-      ...prev,
-      {
-        id: `new-${Date.now()}`,
-        title: "",
-        institution: "",
-        startDate: "",
-        endDate: "",
-        description: "",
-        isNew: true,
-      },
-    ]);
-    setIsAddingExperience(false);
-    toast.success("📝 Nueva experiencia agregada");
-  };
-
-  const removeExperience = (id: string) => {
-    setExperiences((prev) => prev.filter((exp) => exp.id !== id));
-    toast.success("🗑️ Experiencia eliminada");
-  };
-
-  const updateExperience = (id: string, field: string, value: string) => {
-    setExperiences((prev) =>
-      prev.map((exp) => (exp.id === id ? { ...exp, [field]: value } : exp))
-    );
-  };
-
   const handleSubmit = async (formDataSubmit: FormData) => {
     setError("");
     setSuccessMessage("");
 
     // Add specialities and experiences to FormData
     formDataSubmit.append("specialities", selectedSpecialities.join(","));
-    formDataSubmit.append(
-      "experiences",
-      JSON.stringify(experiences.filter((exp) => exp.institution && exp.title))
-    );
 
     startTransition(async () => {
       try {
@@ -450,186 +396,6 @@ export default function DoctorProfileForm({
                   )}
                 </label>
               ))}
-            </div>
-          </div>
-        </div>
-
-        {/* Experience - Enhanced */}
-        <div className="bg-gradient-to-br from-orange-50 to-amber-50 rounded-2xl border border-orange-100 overflow-hidden">
-          <div className="bg-gradient-to-r from-orange-100 to-amber-100 px-8 py-6 border-b border-orange-200">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-4">
-                <div className="p-3 bg-orange-600 rounded-xl">
-                  <Briefcase className="w-6 h-6 text-white" />
-                </div>
-                <div>
-                  <h2 className="text-xl font-bold text-orange-900">
-                    Experiencia Profesional
-                  </h2>
-                  <p className="text-orange-700 text-sm">
-                    Agrega tu historial profesional ({experiences.length}{" "}
-                    experiencias)
-                  </p>
-                </div>
-              </div>
-              <LoadingButton
-                type="button"
-                onClick={addExperience}
-                isLoading={isAddingExperience}
-                loadingText="Agregando..."
-                variant="primary"
-                size="md"
-                className="bg-orange-600 hover:bg-orange-700 text-white px-6 py-3 rounded-xl flex items-center space-x-2 font-medium transition-all duration-200"
-              >
-                <Plus className="w-5 h-5" />
-                <span>Agregar Experiencia</span>
-              </LoadingButton>
-            </div>
-          </div>
-          <div className="p-8">
-            <div className="space-y-6">
-              {experiences.map((experience, index) => (
-                <div
-                  key={experience.id}
-                  className="bg-white border-2 border-orange-200 rounded-xl p-6 shadow-sm hover:shadow-lg transition-all duration-200"
-                >
-                  <div className="flex justify-between items-start mb-6">
-                    <div className="flex items-center space-x-3">
-                      <div className="p-2 bg-orange-100 rounded-lg">
-                        <Building className="w-5 h-5 text-orange-600" />
-                      </div>
-                      <h3 className="text-lg font-bold text-orange-900">
-                        Experiencia {index + 1}
-                      </h3>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => removeExperience(experience.id)}
-                      className="p-2 text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition-all duration-200 flex items-center space-x-2"
-                    >
-                      <Trash2 className="w-5 h-5" />
-                      <span className="text-sm font-medium">Eliminar</span>
-                    </button>
-                  </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="space-y-2">
-                      <label className="flex items-center space-x-2 text-sm font-medium text-gray-700">
-                        <Building className="w-4 h-4 text-orange-600" />
-                        <span>Institución</span>
-                      </label>
-                      <input
-                        type="text"
-                        value={experience.institution}
-                        onChange={(e) =>
-                          updateExperience(
-                            experience.id,
-                            "institution",
-                            e.target.value
-                          )
-                        }
-                        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200"
-                        placeholder="Hospital, Clínica, Centro Médico..."
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <label className="flex items-center space-x-2 text-sm font-medium text-gray-700">
-                        <Briefcase className="w-4 h-4 text-orange-600" />
-                        <span>Título/Cargo</span>
-                      </label>
-                      <input
-                        type="text"
-                        value={experience.title}
-                        onChange={(e) =>
-                          updateExperience(
-                            experience.id,
-                            "title",
-                            e.target.value
-                          )
-                        }
-                        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200"
-                        placeholder="Médico General, Especialista..."
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <label className="flex items-center space-x-2 text-sm font-medium text-gray-700">
-                        <Calendar className="w-4 h-4 text-orange-600" />
-                        <span>Fecha de inicio</span>
-                      </label>
-                      <input
-                        type="date"
-                        value={experience.startDate}
-                        onChange={(e) =>
-                          updateExperience(
-                            experience.id,
-                            "startDate",
-                            e.target.value
-                          )
-                        }
-                        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <label className="flex items-center space-x-2 text-sm font-medium text-gray-700">
-                        <Calendar className="w-4 h-4 text-orange-600" />
-                        <span>Fecha de fin (opcional)</span>
-                      </label>
-                      <input
-                        type="date"
-                        value={experience.endDate}
-                        onChange={(e) =>
-                          updateExperience(
-                            experience.id,
-                            "endDate",
-                            e.target.value
-                          )
-                        }
-                        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200"
-                      />
-                    </div>
-                    <div className="md:col-span-2 space-y-2">
-                      <label className="flex items-center space-x-2 text-sm font-medium text-gray-700">
-                        <FileText className="w-4 h-4 text-orange-600" />
-                        <span>Descripción (opcional)</span>
-                      </label>
-                      <textarea
-                        value={experience.description}
-                        onChange={(e) =>
-                          updateExperience(
-                            experience.id,
-                            "description",
-                            e.target.value
-                          )
-                        }
-                        rows={3}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200"
-                        placeholder="Describe tus responsabilidades y logros..."
-                      />
-                    </div>
-                  </div>
-                </div>
-              ))}
-              {experiences.length === 0 && (
-                <div className="text-center py-12 bg-white rounded-xl border-2 border-dashed border-orange-200">
-                  <div className="p-4 bg-orange-100 rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center">
-                    <Briefcase className="w-8 h-8 text-orange-600" />
-                  </div>
-                  <h3 className="text-lg font-medium text-gray-900 mb-2">
-                    No hay experiencias agregadas
-                  </h3>
-                  <p className="text-gray-500 mb-4">
-                    Agrega tu primera experiencia profesional para mejorar tu
-                    perfil
-                  </p>
-                  <button
-                    type="button"
-                    onClick={addExperience}
-                    className="bg-orange-600 hover:bg-orange-700 text-white px-6 py-3 rounded-xl flex items-center space-x-2 font-medium transition-all duration-200 mx-auto"
-                  >
-                    <Plus className="w-5 h-5" />
-                    <span>Agregar Primera Experiencia</span>
-                  </button>
-                </div>
-              )}
             </div>
           </div>
         </div>

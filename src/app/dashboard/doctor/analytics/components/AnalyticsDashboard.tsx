@@ -204,10 +204,10 @@ export default function AnalyticsDashboard() {
               </div>
               <div>
                 <h1 className="text-2xl font-semibold text-gray-900">
-                  Analytics Dashboard
+                  Panel de análisis
                 </h1>
                 <p className="text-gray-600 text-sm mt-1">
-                  Insights y métricas de tu práctica médica
+                  Información y métricas de tu práctica médica
                 </p>
               </div>
             </div>

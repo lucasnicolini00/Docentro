@@ -19,14 +19,7 @@ const quickActionsData: QuickAction[] = [
     color: "bg-green-500 hover:bg-green-600",
     description: "Revisar citas programadas",
   },
-  {
-    id: "manage-patients",
-    label: "Pacientes",
-    href: "/dashboard/doctor/patients",
-    icon: Users,
-    color: "bg-purple-500 hover:bg-purple-600",
-    description: "Gestionar historial de pacientes",
-  },
+
   {
     id: "view-analytics",
     label: "Analíticas",

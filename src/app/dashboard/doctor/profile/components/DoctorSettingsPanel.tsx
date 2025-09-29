@@ -7,19 +7,7 @@ import {
   updateDoctorSettings,
 } from "@/lib/actions/settings";
 import { LoadingSpinner } from "@/components/ui/feedback";
-import {
-  Mail,
-  Bell,
-  Eye,
-  EyeOff,
-  Video,
-  CheckCircle,
-  DollarSign,
-  Settings,
-  Info,
-  Zap,
-  Shield,
-} from "lucide-react";
+import { Mail, Bell, Settings, Info } from "lucide-react";
 
 interface DoctorSettings {
   emailNotifications: boolean;
@@ -118,25 +106,25 @@ export default function DoctorSettingsPanel() {
     });
   };
 
-  const handlePriceChange = (price: number) => {
-    if (!settings) return;
+  // const handlePriceChange = (price: number) => {
+  //   if (!settings) return;
 
-    const newSettings = { ...settings, consultationPrice: price };
-    setSettings(newSettings);
+  //   const newSettings = { ...settings, consultationPrice: price };
+  //   setSettings(newSettings);
 
-    startTransition(async () => {
-      try {
-        const result = await updateDoctorSettings({ consultationPrice: price });
-        if (result.success) {
-          toast.success("Precio actualizado");
-        } else {
-          toast.error(result.error || "Error al actualizar precio");
-        }
-      } catch {
-        toast.error("Error al actualizar precio");
-      }
-    });
-  };
+  //   startTransition(async () => {
+  //     try {
+  //       const result = await updateDoctorSettings({ consultationPrice: price });
+  //       if (result.success) {
+  //         toast.success("Precio actualizado");
+  //       } else {
+  //         toast.error(result.error || "Error al actualizar precio");
+  //       }
+  //     } catch {
+  //       toast.error("Error al actualizar precio");
+  //     }
+  //   });
+  // };
 
   if (loading) {
     return (
@@ -265,7 +253,7 @@ export default function DoctorSettingsPanel() {
       </div>
 
       {/* Availability Section */}
-      <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+      {/* <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
         <div className="bg-gray-50 px-6 py-4 border-b border-gray-200">
           <div className="flex items-center space-x-2">
             <Eye className="w-5 h-5 text-gray-600" />
@@ -404,10 +392,10 @@ export default function DoctorSettingsPanel() {
             </button>
           </div>
         </div>
-      </div>
+      </div> */}
 
       {/* Pricing Section */}
-      <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+      {/* <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
         <div className="bg-gray-50 px-6 py-4 border-b border-gray-200">
           <div className="flex items-center space-x-2">
             <DollarSign className="w-5 h-5 text-gray-600" />
@@ -452,10 +440,10 @@ export default function DoctorSettingsPanel() {
             </div>
           </div>
         </div>
-      </div>
+      </div> */}
 
       {/* Quick Actions with improved design */}
-      <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+      {/* <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
         <div className="bg-gradient-to-r from-indigo-50 to-purple-50 px-6 py-4 border-b border-gray-200">
           <div className="flex items-center space-x-2">
             <Shield className="w-5 h-5 text-indigo-600" />
@@ -552,7 +540,7 @@ export default function DoctorSettingsPanel() {
             </button>
           </div>
         </div>
-      </div>
+      </div> */}
 
       {/* Enhanced loading overlay */}
       {isPending && (
