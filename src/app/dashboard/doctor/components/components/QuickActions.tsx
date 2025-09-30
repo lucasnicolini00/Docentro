@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Calendar, Clock, Users, BarChart3, Settings } from "lucide-react";
+import { Calendar, Clock, BarChart3, Settings } from "lucide-react";
 import { QuickAction } from "./types";
 
 const quickActionsData: QuickAction[] = [

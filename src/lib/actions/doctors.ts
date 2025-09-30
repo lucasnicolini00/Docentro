@@ -322,3 +322,81 @@ export async function getDoctorDashboard(): Promise<ActionResult> {
     };
   }
 }
+
+/**
+ * Save a single 'Perfil profesional' experience (markdown biography) for the current doctor
+ */
+export async function saveDoctorProfileExperience(
+  formData: FormData
+): Promise<ActionResult> {
+  try {
+    const validation = await validateDoctor();
+
+    if ("error" in validation) {
+      return { success: false, error: validation.error };
+    }
+
+    const { doctor } = validation;
+
+    let description = (formData.get("description") as string) || "";
+
+    // Simple server-side validation
+    const minLen = 10;
+    const maxLen = 5000;
+    if (description.trim().length < minLen) {
+      return {
+        success: false,
+        error: `La descripción debe tener al menos ${minLen} caracteres.`,
+      };
+    }
+    if (description.length > maxLen) {
+      return {
+        success: false,
+        error: `La descripción no puede exceder ${maxLen} caracteres.`,
+      };
+    }
+
+    // Simple sanitization: remove script tags and on* attributes
+    description = description.replace(
+      /<script[\s\S]*?>[\s\S]*?<\/script>/gi,
+      ""
+    );
+    description = description.replace(/on\w+\s*=\s*\"[^"]*\"/gi, "");
+    description = description.replace(/on\w+\s*=\s*'[^']*'/gi, "");
+
+    // Find an existing profile experience with a reserved title
+    const existing = await prisma.experience.findFirst({
+      where: {
+        doctorId: doctor.id,
+        title: "Perfil profesional",
+        experienceType: "OTHER",
+      },
+    });
+
+    if (existing) {
+      await prisma.experience.update({
+        where: { id: existing.id },
+        data: { description },
+      });
+    } else {
+      await prisma.experience.create({
+        data: {
+          doctorId: doctor.id,
+          experienceType: "OTHER",
+          title: "Perfil profesional",
+          institution: null,
+          startDate: null,
+          endDate: null,
+          description,
+        },
+      });
+    }
+
+    revalidatePath("/dashboard/doctor/profile");
+
+    return { success: true, message: "Experiencia guardada" };
+  } catch (error) {
+    console.error("Error saving profile experience:", error);
+    return { success: false, error: "Error guardando la experiencia" };
+  }
+}

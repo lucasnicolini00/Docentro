@@ -5,8 +5,6 @@ import {
   getUpcomingAppointments,
 } from "@/lib/actions/analytics";
 import DoctorDashboardOverview from "./components/DoctorDashboardOverview";
-import { Plus } from "lucide-react";
-import Link from "next/link";
 
 export default async function DoctorDashboard() {
   // Ensure user is authenticated as a doctor
@@ -51,13 +49,6 @@ export default async function DoctorDashboard() {
                 </p>
               </div>
             </div>
-            <Link
-              href="/dashboard/doctor/schedules"
-              className="inline-flex items-center text-sm px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-            >
-              <Plus className="h-4 w-4 mr-2" />
-              Gestionar Horarios
-            </Link>
           </div>
         </div>
       </div>

@@ -65,23 +65,6 @@ export default function CalendarLoading() {
           ))}
         </div>
       </div>
-
-      {/* Sidebar with Today's Appointments */}
-      <div className="fixed right-6 top-20 w-80 bg-white rounded-xl shadow-sm border border-gray-100 p-6 hidden xl:block">
-        <Skeleton className="h-6 w-32 mb-4" />
-        <div className="space-y-3">
-          {Array.from({ length: 4 }).map((_, i) => (
-            <div key={i} className="border border-gray-200 rounded-lg p-3">
-              <div className="flex items-center space-x-3 mb-2">
-                <Skeleton className="w-6 h-6 rounded-full" />
-                <Skeleton className="h-4 w-24" />
-              </div>
-              <Skeleton className="h-3 w-20 mb-1" />
-              <Skeleton className="h-3 w-16" />
-            </div>
-          ))}
-        </div>
-      </div>
     </div>
   );
 }

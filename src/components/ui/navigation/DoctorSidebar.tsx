@@ -43,7 +43,7 @@ const sidebarItems = [
   //   icon: MessageSquare,
   // },
   {
-    label: "Analytics",
+    label: "Análisis",
     href: "/dashboard/doctor/analytics",
     icon: BarChart3,
   },

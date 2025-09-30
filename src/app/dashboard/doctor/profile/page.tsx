@@ -1,7 +1,8 @@
 import { requireDoctor } from "@/lib/auth-guards";
 import { getDoctorProfile, getAllSpecialities } from "@/lib/actions/doctors";
 import { DoctorProfileForm } from "@/components/ui/forms";
-import { User, Settings, ArrowLeft, CheckCircle } from "lucide-react";
+import { User, Settings, CheckCircle } from "lucide-react";
+import Link from "next/link";
 
 export default async function DoctorProfilePage() {
   // Ensure user is authenticated as a doctor
@@ -64,6 +65,14 @@ export default async function DoctorProfilePage() {
                   </span>
                   <CheckCircle className="w-4 h-4 text-green-500" />
                 </p>
+              </div>
+              <div className="flex items-center gap-3">
+                <Link
+                  href="/dashboard/doctor/profile/experiencia"
+                  className="inline-flex items-center gap-2 px-3 py-2 bg-white border border-gray-200 rounded-md shadow-sm text-sm font-medium hover:bg-gray-50"
+                >
+                  Editar Experiencia
+                </Link>
               </div>
             </div>
           </div>

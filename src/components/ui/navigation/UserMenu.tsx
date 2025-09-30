@@ -11,6 +11,7 @@ import {
   BarChart3,
   CalendarDays,
   Home,
+  Clock,
 } from "lucide-react";
 
 export default function UserMenu() {
@@ -68,14 +69,14 @@ export default function UserMenu() {
             icon: Activity,
           },
           {
-            label: "Perfil y Configuración",
-            href: "/dashboard/doctor/profile",
-            icon: User,
-          },
-          {
             label: "Mis Citas",
             href: "/dashboard/doctor/appointments",
             icon: Calendar,
+          },
+          {
+            label: "Horarios",
+            href: "/dashboard/doctor/schedules",
+            icon: Clock,
           },
           {
             label: "Analisis",
@@ -86,6 +87,11 @@ export default function UserMenu() {
             label: "Calendario",
             href: "/dashboard/doctor/calendar",
             icon: CalendarDays,
+          },
+          {
+            label: "Perfil y Configuración",
+            href: "/dashboard/doctor/profile",
+            icon: User,
           },
         ]
       : [

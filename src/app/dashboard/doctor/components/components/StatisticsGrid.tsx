@@ -1,4 +1,4 @@
-import { Calendar, Clock, Users, BarChart3 } from "lucide-react";
+import { Calendar, Clock, Users } from "lucide-react";
 import StatCard from "./StatCard";
 import { DashboardStats } from "./types";
 

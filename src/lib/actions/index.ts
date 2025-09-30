@@ -41,6 +41,7 @@ export {
   getDoctorSpecialities,
   getDoctorProfile,
   getDoctorDashboard,
+  saveDoctorProfileExperience,
 } from "./doctors";
 
 // Search and general data actions

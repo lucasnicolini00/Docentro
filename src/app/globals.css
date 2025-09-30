@@ -93,3 +93,29 @@ body {
 button {
   cursor: pointer;
 }
+
+body .w-md-editor-text-pre > code,
+body .w-md-editor-text-input {
+  font-size: 23px !important;
+  line-height: 24px !important;
+}
+
+/* Increase clickable area of toolbar buttons */
+.w-md-editor-toolbar button {
+  padding: 8px !important;
+  min-width: 30px !important;
+  min-height: 30px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+/* Target SVG icons inside toolbar buttons and scale them */
+.w-md-editor-toolbar button svg,
+.w-md-editor-toolbar svg {
+  width: 17px !important;
+  height: 17px !important;
+  min-width: 17px !important;
+  min-height: 17px !important;
+  vertical-align: middle;
+}
