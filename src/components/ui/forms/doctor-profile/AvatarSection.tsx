@@ -62,7 +62,7 @@ export default function AvatarSection({
             src={previewUrl}
             alt="Foto de perfil"
             onLoad={() => setImgLoaded(true)}
-            className={`absolute inset-0 m-0 p-2 rounded-full object-cover border border-gray-200 w-20 h-20 transition-opacity duration-200 ${
+            className={`absolute inset-0 m-0  rounded-full object-cover border border-gray-200 w-20 h-20 transition-opacity duration-200 ${
               imgLoaded ? "opacity-100" : "opacity-0"
             }`}
           />

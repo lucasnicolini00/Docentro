@@ -42,6 +42,7 @@ export {
   getDoctorProfile,
   getDoctorDashboard,
   saveDoctorProfileExperience,
+  getAllDoctorImages,
 } from "./doctors";
 
 // Image upload/remove actions
@@ -49,6 +50,7 @@ export {
   uploadDoctorProfileImage,
   removeDoctorProfileImage,
   uploadDoctorImages,
+  removeDoctorImage,
   getImageUrl,
 } from "./images-uploader";
 

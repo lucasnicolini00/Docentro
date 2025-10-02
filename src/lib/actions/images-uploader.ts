@@ -130,16 +130,25 @@ export async function removeDoctorProfileImage(): Promise<ActionResult> {
     const bucketName = process.env.GCLOUD_BUCKET;
     if (bucketName && image?.url) {
       try {
+        // Handle both public URLs and signed URLs
+        // Signed URLs have query parameters, so we need to extract just the pathname
         const url = new URL(image.url);
-        // pathname looks like /<bucket>/<key>
-        const parts = url.pathname.split("/").filter(Boolean);
+        const pathname = url.pathname; // This gives us /bucket/key
+        const parts = pathname.split("/").filter(Boolean);
+
         if (parts.length >= 2 && parts[0] === bucketName) {
           const key = parts.slice(1).join("/");
           const bucket = storage.bucket(bucketName);
           const file = bucket.file(key);
-          await file.delete().catch(() => {
+          await file.delete().catch((error) => {
+            console.log("Failed to delete profile image from GCS:", error);
             // ignore errors deleting from storage
           });
+        } else {
+          console.log(
+            "Could not extract key from profile image URL:",
+            image.url
+          );
         }
       } catch {
         // ignore any parsing/storage errors, DB is already updated
@@ -151,6 +160,80 @@ export async function removeDoctorProfileImage(): Promise<ActionResult> {
     return { success: true, message: "Imagen eliminada" };
   } catch (error) {
     console.error("Error removing profile image:", error);
+    return { success: false, error: "Error eliminando la imagen" };
+  }
+}
+
+/**
+ * Removes a specific doctor image both from the DB and
+ * attempts to remove the object from GCS if possible.
+ */
+export async function removeDoctorImage(
+  imageId: string
+): Promise<ActionResult> {
+  try {
+    const validation = await validateDoctor();
+
+    if ("error" in validation) {
+      return { success: false, error: validation.error };
+    }
+
+    const { doctor } = validation;
+
+    // Verify the image belongs to this doctor and is not a profile image
+    const image = await prisma.image.findUnique({
+      where: { id: imageId },
+      include: { profileForDoctor: true },
+    });
+
+    if (!image || image.doctorId !== doctor.id) {
+      return { success: false, error: "Imagen no encontrada o no autorizada" };
+    }
+
+    // Don't allow deleting profile images through gallery delete
+    if (image.profileForDoctor) {
+      return {
+        success: false,
+        error: "No se puede eliminar imagen de perfil desde la galería",
+      };
+    }
+
+    // Delete the Image row
+    await prisma.image.delete({ where: { id: imageId } });
+
+    // Try to remove from GCS when possible
+    const bucketName = process.env.GCLOUD_BUCKET;
+    if (bucketName && image.url) {
+      try {
+        // Handle both public URLs and signed URLs
+        // Signed URLs have query parameters, so we need to extract just the pathname
+        const url = new URL(image.url);
+        const pathname = url.pathname; // This gives us /bucket/key
+        const parts = pathname.split("/").filter(Boolean);
+
+        if (parts.length >= 2 && parts[0] === bucketName) {
+          const key = parts.slice(1).join("/");
+          const bucket = storage.bucket(bucketName);
+          const file = bucket.file(key);
+          await file.delete().catch((error) => {
+            console.log("Failed to delete from GCS:", error);
+            // ignore errors deleting from storage
+          });
+        } else {
+          console.log("Could not extract key from URL:", image.url);
+        }
+      } catch (e) {
+        console.log("Error parsing URL for deletion:", e);
+        // ignore any parsing/storage errors, DB is already updated
+      }
+    }
+
+    revalidatePath("/dashboard/doctor/profile");
+    revalidatePath("/dashboard/doctor/profile/experiencia");
+
+    return { success: true, message: "Imagen eliminada" };
+  } catch (error) {
+    console.error("Error removing image:", error);
     return { success: false, error: "Error eliminando la imagen" };
   }
 }

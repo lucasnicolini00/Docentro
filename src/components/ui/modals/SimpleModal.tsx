@@ -47,14 +47,6 @@ export default function SimpleModal({
         <div className="text-gray-700 whitespace-pre-line">
           {children ? children : content}
         </div>
-        <div className="mt-6 flex justify-end">
-          <button
-            onClick={onClose}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium"
-          >
-            Cerrar
-          </button>
-        </div>
       </div>
     </div>
   );

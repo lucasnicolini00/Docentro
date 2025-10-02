@@ -3,6 +3,7 @@
 import prisma from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { validateDoctor, validateAuth, type ActionResult } from "./utils";
+import { getImageUrl } from "./images-uploader";
 
 /**
  * Server action for updating doctor profile
@@ -213,6 +214,56 @@ export async function getDoctorProfile(): Promise<ActionResult> {
     console.error("Error fetching doctor profile:", error);
     return { success: false, error: "Error al obtener el perfil del doctor" };
   }
+}
+export async function getAllDoctorImages(): Promise<ActionResult> {
+  try {
+    const session = await validateAuth();
+
+    if (!session || !session.user?.id) {
+      return { success: false, error: "No autorizado" };
+    }
+
+    const images = await prisma.image.findMany({
+      where: {
+        doctorId: await getDoctorIdFromUserId(session.user.id),
+        profileForDoctor: null, // Exclude profile images from gallery
+      },
+      orderBy: { createdAt: "desc" },
+      select: { id: true, createdAt: true },
+    });
+
+    // Generate fresh signed URLs for each image
+    const imagesWithUrls = await Promise.all(
+      images.map(async (img) => {
+        const urlResult = await getImageUrl(img.id);
+        return {
+          id: img.id,
+          url: urlResult.success ? urlResult.data : "", // should always succeed
+          createdAt: img.createdAt,
+        };
+      })
+    );
+
+    return {
+      success: true,
+      data: imagesWithUrls,
+    };
+  } catch (error) {
+    console.error("Error fetching doctor images:", error);
+    return { success: false, error: "Error al obtener imágenes" };
+  }
+}
+
+/**
+ * Helper to get doctor id from user id
+ */
+async function getDoctorIdFromUserId(userId: string): Promise<string> {
+  const doctor = await prisma.doctor.findUnique({
+    where: { userId },
+    select: { id: true },
+  });
+  if (!doctor) throw new Error("Doctor not found");
+  return doctor.id;
 }
 
 /**
