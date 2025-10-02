@@ -44,6 +44,14 @@ export {
   saveDoctorProfileExperience,
 } from "./doctors";
 
+// Image upload/remove actions
+export {
+  uploadDoctorProfileImage,
+  removeDoctorProfileImage,
+  uploadDoctorImages,
+  getImageUrl,
+} from "./images-uploader";
+
 // Search and general data actions
 export {
   getPopularSpecialities,

@@ -171,6 +171,8 @@ export async function getDoctorProfile(): Promise<ActionResult> {
           },
         },
         experiences: true,
+        profileImage: true,
+        images: true,
         clinics: {
           include: {
             clinic: true,
@@ -192,6 +194,12 @@ export async function getDoctorProfile(): Promise<ActionResult> {
     return { success: false, error: "Error al obtener el perfil del doctor" };
   }
 }
+
+/**
+ * Uploads a profile image for the current doctor to Google Cloud Storage and
+ * saves the Image row in the database, linking it as the doctor's profile image.
+ */
+// upload/remove image actions moved to images-uploader.ts
 
 /**
  * Server action for getting all specialities

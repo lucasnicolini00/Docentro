@@ -51,7 +51,7 @@ export default async function DoctorProfilePage() {
       <div className="bg-white shadow-sm border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-4 ">
               <div className="p-3 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-xl">
                 <User className="w-8 h-8 text-blue-600" />
               </div>
@@ -66,14 +66,14 @@ export default async function DoctorProfilePage() {
                   <CheckCircle className="w-4 h-4 text-green-500" />
                 </p>
               </div>
-              <div className="flex items-center gap-3">
-                <Link
-                  href="/dashboard/doctor/profile/experiencia"
-                  className="inline-flex items-center gap-2 px-3 py-2 bg-white border border-gray-200 rounded-md shadow-sm text-sm font-medium hover:bg-gray-50"
-                >
-                  Editar Experiencia
-                </Link>
-              </div>
+            </div>
+            <div className="flex items-center gap-3 justify-end">
+              <Link
+                href="/dashboard/doctor/profile/experiencia"
+                className="inline-flex items-center gap-2 px-3 py-2 bg-white border border-gray-200 rounded-md shadow-sm text-sm font-medium hover:bg-gray-50"
+              >
+                Editar Experiencia
+              </Link>
             </div>
           </div>
         </div>

@@ -23,6 +23,11 @@ export default async function ExperienciaPage() {
       <ExperienceEditor
         initialValue={description}
         saveAction={saveDoctorProfileExperience}
+        existingImages={
+          profileResult.success && profileResult.data
+            ? profileResult.data.images || []
+            : []
+        }
       />
     </div>
   );

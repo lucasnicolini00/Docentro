@@ -54,32 +54,35 @@ enum DayOfWeek {
 // ======================
 
 model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  password  String   // Will be hashed
-  firstName String
-  lastName  String
-  phone     String?
-  role      UserRole @default(PATIENT)
-  isActive  Boolean  @default(true)
-  emailVerified Boolean @default(false)
-  
+  id            String   @id @default(cuid())
+  email         String   @unique
+  password      String // Will be hashed
+  firstName     String
+  lastName      String
+  phone         String?
+  role          UserRole @default(PATIENT)
+  isActive      Boolean  @default(true)
+  emailVerified Boolean  @default(false)
+
   // Relations
-  patient   Patient?
-  doctor    Doctor?
-  
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  patient        Patient?
+  doctor         Doctor?
+  profileImageId String?  @unique
+  profileImage   Image?   @relation("UserProfileImage", fields: [profileImageId], references: [id])
+  images         Image[]  @relation("UserGallery")
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
   deletedAt DateTime?
 }
 
 model Patient {
-  id        String   @id @default(cuid())
-  userId    String   @unique
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id        String    @id @default(cuid())
+  userId    String    @unique
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   name      String
   surname   String
-  email     String   @unique
+  email     String    @unique
   phone     String?
   birthdate DateTime?
   gender    String?
@@ -87,26 +90,28 @@ model Patient {
   appointments Appointment[]
   opinions     Opinion[]
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
   deletedAt DateTime?
-
 }
 
 model Doctor {
-  id         String  @id @default(cuid())
-  userId     String  @unique
-  user       User    @relation(fields: [userId], references: [id], onDelete: Cascade)
-  name       String
-  surname    String
-  email      String? @unique
-  phone      String?
-  picaddress String?
+  id             String  @id @default(cuid())
+  userId         String  @unique
+  user           User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name           String
+  surname        String
+  email          String? @unique
+  phone          String?
+  picaddress     String?
+  profileImageId String? @unique
+  profileImage   Image?  @relation("DoctorProfileImage", fields: [profileImageId], references: [id])
+  images         Image[] @relation("DoctorGallery")
 
   // Settings fields
   emailNotifications       Boolean @default(true)
   pushNotifications        Boolean @default(false)
-  isPublic                Boolean @default(true)
+  isPublic                 Boolean @default(true)
   allowOnlineConsultations Boolean @default(false)
   autoBookingEnabled       Boolean @default(false)
   remindersEnabled         Boolean @default(true)
@@ -122,24 +127,48 @@ model Doctor {
   appointments Appointment[]
   opinions     Opinion[]
 
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+}
+
+// Images stored externally (e.g. Google Cloud Storage). Each Image may be:
+// - a profile image referenced directly from User.profileImageId or Doctor.profileImageId
+// - a gallery image linked via userId or doctorId
+model Image {
+  id       String  @id @default(cuid())
+  url      String
+  filename String?
+  mime     String?
+  size     Int?
+
+  // Optional owner relations for gallery images
+  userId   String?
+  doctorId String?
+
+  // Relations
+  user   User?   @relation("UserGallery", fields: [userId], references: [id])
+  doctor Doctor? @relation("DoctorGallery", fields: [doctorId], references: [id])
+
+  // Profile reverse-relations (one side owns the FK)
+  profileForUser   User?   @relation("UserProfileImage")
+  profileForDoctor Doctor? @relation("DoctorProfileImage")
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  deletedAt DateTime?
-
 }
 
 model Speciality {
-  id          String @id @default(cuid())
-  name        String @unique
+  id          String  @id @default(cuid())
+  name        String  @unique
   description String?
 
   // many-to-many
   doctors DoctorSpeciality[]
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
   deletedAt DateTime?
-
 }
 
 model DoctorSpeciality {
@@ -165,10 +194,9 @@ model Experience {
   endDate        DateTime?
   description    String?
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
   deletedAt DateTime?
-
 }
 
 model Clinic {
@@ -187,10 +215,9 @@ model Clinic {
   pricing      Pricing[]
   appointments Appointment[]
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
   deletedAt DateTime?
-
 }
 
 model DoctorClinic {
@@ -219,10 +246,9 @@ model Pricing {
 
   appointments Appointment[]
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
   deletedAt DateTime?
-
 }
 
 model Schedule {
@@ -238,8 +264,8 @@ model Schedule {
 
   timeSlots TimeSlot[]
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
   deletedAt DateTime?
 
   @@unique([doctorId, clinicId, dayOfWeek])
@@ -259,8 +285,8 @@ model TimeSlot {
   appointmentId String?      @unique
   appointment   Appointment? @relation(fields: [appointmentId], references: [id], onDelete: SetNull)
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
   deletedAt DateTime?
 
   @@unique([scheduleId, startTime])
@@ -288,8 +314,8 @@ model Appointment {
   status          AppointmentStatus @default(PENDING)
   notes           String?
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
   deletedAt DateTime?
 
   // Performance indexes for dashboard queries
@@ -311,8 +337,7 @@ model Opinion {
   description String?
   anonymized  Boolean @default(false)
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
   deletedAt DateTime?
-
 }
