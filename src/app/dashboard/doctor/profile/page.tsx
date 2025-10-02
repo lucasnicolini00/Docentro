@@ -3,10 +3,24 @@ import { getDoctorProfile, getAllSpecialities } from "@/lib/actions/doctors";
 import { DoctorProfileForm } from "@/components/ui/forms";
 import { User, Settings, CheckCircle } from "lucide-react";
 import Link from "next/link";
+import { validateDoctor } from "@/lib/actions";
 
 export default async function DoctorProfilePage() {
   // Ensure user is authenticated as a doctor
   await requireDoctor();
+  const validation = await validateDoctor();
+  if ("error" in validation) {
+    return (
+      <div className="space-y-6">
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+          <div className="text-center">
+            <h1 className="text-2xl font-bold text-gray-900">Error</h1>
+            <p className="text-gray-600">{validation.error}</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   // Get doctor data and specialities using Server Actions
   const [doctorResult, specialitiesResult] = await Promise.all([

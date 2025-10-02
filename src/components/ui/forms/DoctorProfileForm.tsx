@@ -1,15 +1,10 @@
 "use client";
 
-import { useState, useTransition, useRef, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useTransition } from "react";
 import LoadingButton from "../buttons/LoadingButton";
 import Link from "next/link";
-import {
-  updateDoctorProfile,
-  uploadDoctorProfileImage,
-  removeDoctorProfileImage,
-  getImageUrl,
-} from "@/lib/actions";
+import { updateDoctorProfile } from "@/lib/actions";
+import AvatarSection from "./doctor-profile/AvatarSection";
 import {
   User,
   Mail,
@@ -24,144 +19,7 @@ import {
 } from "lucide-react";
 import toast from "react-hot-toast";
 
-// Allowed file types and max size (5MB)
-const MAX_FILE_SIZE = 5 * 1024 * 1024;
-const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"];
-
-// UploadForm component placed in module scope to avoid inline function definitions in JSX
-function UploadForm({ onUploadSuccess }: { onUploadSuccess?: () => void }) {
-  const router = useRouter();
-  const [uploading, setUploading] = useState(false);
-  const [selectedName, setSelectedName] = useState<string | null>(null);
-  const [selectedValid, setSelectedValid] = useState(false);
-  const inputRef = useRef<HTMLInputElement | null>(null);
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files && e.target.files[0];
-    if (!file) {
-      setSelectedName(null);
-      setSelectedValid(false);
-      return;
-    }
-
-    if (!ALLOWED_TYPES.includes(file.type)) {
-      toast.error("Tipo de archivo no permitido");
-      e.currentTarget.value = "";
-      setSelectedName(null);
-      setSelectedValid(false);
-      return;
-    }
-
-    if (file.size > MAX_FILE_SIZE) {
-      toast.error("El archivo supera el tamaño máximo de 5MB");
-      e.currentTarget.value = "";
-      setSelectedName(null);
-      setSelectedValid(false);
-      return;
-    }
-
-    setSelectedName(file.name);
-    setSelectedValid(true);
-  };
-
-  const handleUpload = async () => {
-    const file = inputRef.current?.files?.[0];
-    if (!file) {
-      toast.error("Seleccione un archivo");
-      return;
-    }
-
-    if (!ALLOWED_TYPES.includes(file.type)) {
-      toast.error("Tipo de archivo no permitido");
-      return;
-    }
-
-    if (file.size > MAX_FILE_SIZE) {
-      toast.error("El archivo supera el tamaño máximo de 5MB");
-      return;
-    }
-
-    const formData = new FormData();
-    formData.append("file", file);
-
-    try {
-      setUploading(true);
-      const res = await uploadDoctorProfileImage(formData);
-      if (res?.success) {
-        onUploadSuccess?.();
-        router.refresh();
-      } else {
-        toast.error(res?.error || "Error subiendo imagen");
-      }
-    } catch (err) {
-      toast.error("Error subiendo imagen");
-      console.log(err);
-    } finally {
-      setUploading(false);
-      // clear selection after attempt
-      if (inputRef.current) inputRef.current.value = "";
-      setSelectedName(null);
-      setSelectedValid(false);
-    }
-  };
-
-  return (
-    <div className="flex items-center">
-      {/* Hidden native file input; triggered by the custom select button */}
-      <input
-        ref={inputRef}
-        type="file"
-        name="file"
-        accept={ALLOWED_TYPES.join(",")}
-        onChange={handleFileChange}
-        className="sr-only"
-        aria-hidden
-      />
-
-      <div className="flex items-center space-x-3">
-        <button
-          type="button"
-          onClick={() => inputRef.current?.click()}
-          className="inline-flex items-center px-3 py-2 bg-white border border-gray-200 rounded-md text-sm font-medium hover:bg-gray-50"
-        >
-          Seleccionar imagen
-        </button>
-
-        {/* Show filename and Clear action when a file is selected */}
-        {selectedName && (
-          <div className="flex items-center space-x-2">
-            <span className="text-sm text-gray-700">{selectedName}</span>
-            <button
-              type="button"
-              onClick={() => {
-                if (inputRef.current) inputRef.current.value = "";
-                setSelectedName(null);
-                setSelectedValid(false);
-              }}
-              className="text-sm text-red-600 hover:underline"
-            >
-              Borrar
-            </button>
-          </div>
-        )}
-
-        {/* Only show the upload button when a valid file is selected */}
-        {selectedValid && (
-          <button
-            type="button"
-            onClick={handleUpload}
-            disabled={uploading}
-            className={`ml-3 px-3 py-2 rounded-md text-sm text-white ${
-              uploading ? "bg-gray-400" : "bg-blue-600"
-            }`}
-          >
-            {uploading ? "Subiendo..." : "Subir"}
-          </button>
-        )}
-      </div>
-    </div>
-  );
-}
+// Avatar + image controls moved to AvatarSection component
 
 interface Doctor {
   id: string;
@@ -208,7 +66,6 @@ export default function DoctorProfileForm({
   doctor,
   allSpecialities,
 }: DoctorProfileFormProps) {
-  const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState("");
 
@@ -224,46 +81,7 @@ export default function DoctorProfileForm({
     doctorPhone: doctor.phone || "",
   });
 
-  // Preview URL for avatar (public URL or signed read URL)
-  const [previewUrl, setPreviewUrl] = useState<string | null>(
-    (doctor as any).profileImage?.url || null
-  );
-
-  const profileImageId = (doctor as any).profileImage?.id as string | undefined;
-  const profileImageUrl = (doctor as any).profileImage?.url as
-    | string
-    | undefined;
-
-  useEffect(() => {
-    let mounted = true;
-
-    const load = async () => {
-      const imgRow = (doctor as any).profileImage;
-      if (!imgRow?.id && !imgRow?.url) {
-        if (mounted) setPreviewUrl(null);
-        return;
-      }
-
-      if (imgRow?.id) {
-        try {
-          const res = await getImageUrl(imgRow.id as string);
-          if (res?.success && mounted) {
-            setPreviewUrl(res.data as string);
-            return;
-          }
-        } catch (e) {
-          console.log("getImageUrl error", e);
-        }
-      }
-
-      if (imgRow?.url && mounted) setPreviewUrl(imgRow.url as string);
-    };
-
-    load();
-    return () => {
-      mounted = false;
-    };
-  }, [profileImageId, profileImageUrl, doctor]);
+  // Avatar + upload controls handled by AvatarSection component
 
   const [selectedSpecialities, setSelectedSpecialities] = useState<string[]>(
     doctor.specialities.map((ds) => ds.specialityId)
@@ -328,70 +146,11 @@ export default function DoctorProfileForm({
           </div>
         </div>
       )}
-      {/* Profile image + upload controls */}
-      <div className="flex items-center mb-6 border border-gray-200 rounded-xl p-4">
-        {/* Avatar on the left */}
-        <div className="flex-none">
-          {previewUrl ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={previewUrl}
-              alt="Foto de perfil"
-              className="w-20 h-20 rounded-full object-cover border border-gray-200"
-            />
-          ) : (
-            <div className="w-20 h-20 rounded-full bg-gray-100 flex items-center justify-center border border-gray-200">
-              <User className="w-6 h-6 text-gray-400" />
-            </div>
-          )}
-        </div>
-
-        {/* Middle info block and controls on the right */}
-        <div className="mx-6 flex-1">
-          <div className="flex flex-col">
-            <div className="text-gray-900 font-medium">
-              {formData.doctorName} {formData.doctorSurname}
-            </div>
-            <div className="text-sm text-gray-500">Médico • Perfil público</div>
-            <div className="text-xs text-gray-400 mt-1">
-              Esta foto aparecerá en tu perfil público
-            </div>
-          </div>
-        </div>
-
-        {/* Controls on the right, take remaining space and right-align */}
-        <div className="flex-1 flex items-center justify-end">
-          <div className="flex items-center space-x-3">
-            <UploadForm
-              onUploadSuccess={() => {
-                toast.success("Imagen subida");
-                router.refresh();
-              }}
-            />
-
-            {(doctor as any).profileImage?.url && (
-              <button
-                type="button"
-                onClick={async () => {
-                  try {
-                    toast.dismiss();
-                    toast.promise(removeDoctorProfileImage(), {
-                      loading: "Eliminando...",
-                      success: "Imagen eliminada",
-                      error: "Error eliminando imagen",
-                    });
-                    setTimeout(() => router.refresh(), 800);
-                  } catch {
-                    toast.error("Error eliminando imagen");
-                  }
-                }}
-                className="bg-red-600 text-white px-3 py-2 rounded-md text-sm"
-              >
-                Eliminar
-              </button>
-            )}
-          </div>
-        </div>
+      <div className="mb-6">
+        <AvatarSection
+          doctor={doctor as any}
+          name={`${formData.doctorName} ${formData.doctorSurname}`}
+        />
       </div>
 
       <form action={handleSubmit} className="space-y-8">
@@ -575,7 +334,7 @@ export default function DoctorProfileForm({
                   key={speciality.id}
                   className={`group relative flex items-center p-4 border-2 rounded-xl cursor-pointer transition-all duration-200 ${
                     selectedSpecialities.includes(speciality.id)
-                      ? "border-purple-500 bg-purple-50 shadow-lg scale-105"
+                      ? "border-purple-500 bg-purple-50 shadow-lg scale-102"
                       : "border-gray-200 hover:border-purple-300 hover:bg-purple-25 hover:shadow-md"
                   }`}
                 >
@@ -585,7 +344,7 @@ export default function DoctorProfileForm({
                     onChange={() => handleSpecialityToggle(speciality.id)}
                     className="sr-only"
                   />
-                  <div className="flex-1">
+                  <div className="flex-1 gap-1">
                     <div className="flex items-center space-x-3">
                       <div
                         className={`p-2 rounded-lg ${

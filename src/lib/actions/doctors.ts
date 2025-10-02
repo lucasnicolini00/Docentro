@@ -2,7 +2,7 @@
 
 import prisma from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
-import { validateDoctor, type ActionResult } from "./utils";
+import { validateDoctor, validateAuth, type ActionResult } from "./utils";
 
 /**
  * Server action for updating doctor profile
@@ -152,31 +152,51 @@ export async function getDoctorSpecialities() {
  */
 export async function getDoctorProfile(): Promise<ActionResult> {
   try {
-    const validation = await validateDoctor();
+    const session = await validateAuth();
 
-    if ("error" in validation) {
-      return { success: false, error: validation.error };
+    if (!session || !session.user?.id) {
+      return { success: false, error: "No autorizado" };
     }
 
-    const { doctor } = validation;
-
-    // Get doctor with all related information
+    // Get doctor with all related information. Use userId from session to avoid
+    // doing an extra doctor lookup (validateDoctor previously fetched the
+    // doctor record which caused two DB calls). Also limit images returned to
+    // the most recent 6 to reduce payload for the profile page.
     const fullDoctor = await prisma.doctor.findUnique({
-      where: { id: doctor.id },
-      include: {
-        user: true,
-        specialities: {
-          include: {
-            speciality: true,
+      where: { userId: session.user.id },
+      select: {
+        id: true,
+        name: true,
+        surname: true,
+        email: true,
+        phone: true,
+        user: {
+          select: {
+            firstName: true,
+            lastName: true,
+            email: true,
+            phone: true,
           },
         },
-        experiences: true,
-        profileImage: true,
-        images: true,
-        clinics: {
+        specialities: {
           include: {
-            clinic: true,
+            speciality: {
+              select: { id: true, name: true },
+            },
           },
+        },
+        // Limit experiences to recent ones to avoid loading large histories
+        experiences: {
+          orderBy: { startDate: "desc" },
+          take: 10,
+        },
+        profileImage: {
+          select: { id: true, url: true, createdAt: true },
+        },
+        images: {
+          orderBy: { createdAt: "desc" },
+          take: 6,
+          select: { id: true, url: true, createdAt: true },
         },
       },
     });
