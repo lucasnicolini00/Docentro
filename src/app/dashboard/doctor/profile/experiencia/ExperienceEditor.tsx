@@ -181,29 +181,6 @@ export default function ExperienceEditor({
 
   return (
     <>
-      {/* Back to Profile Button */}
-      <div className="mb-6">
-        <Link
-          href="/dashboard/doctor/profile"
-          className="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 border border-gray-200 rounded-lg shadow-sm text-sm font-medium hover:bg-gray-200 transition-colors"
-        >
-          <svg
-            className="w-4 h-4"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M15 19l-7-7 7-7"
-            />
-          </svg>
-          Volver al Perfil
-        </Link>
-      </div>
-
       <div className="mb-6">
         <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
           <div className="flex justify-between items-center">
@@ -216,6 +193,27 @@ export default function ExperienceEditor({
                   Esto es lo que va a ver la gente cuando visite tu perfil.
                 </p>
               </div>
+            </div>
+            <div className="flex items-center">
+              <Link
+                href="/dashboard/doctor/profile"
+                className="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 border border-gray-200 rounded-lg shadow-sm text-sm font-medium hover:bg-gray-200 transition-colors"
+              >
+                <svg
+                  className="w-4 h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M15 19l-7-7 7-7"
+                  />
+                </svg>
+                Volver al Perfil
+              </Link>
             </div>
           </div>
         </div>
@@ -230,12 +228,15 @@ export default function ExperienceEditor({
             </h2>
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
               {galleryImages.map((image) => (
-                <div key={image.id} className="relative group">
+                <div
+                  key={image.id}
+                  className="relative group aspect-square rounded-lg overflow-hidden"
+                >
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={image.url}
                     alt="Imagen de galería"
-                    className=" w-full h-40 object-contain rounded-lg border border-gray-200"
+                    className="w-full h-full object-contain rounded-lg border border-gray-200"
                   />
                   <button
                     onClick={() => handleDeleteImage(image.id)}

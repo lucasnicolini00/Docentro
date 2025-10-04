@@ -55,7 +55,7 @@ interface BookingModalProps {
     city: string | null;
     address: string | null;
   } | null;
-  mode: "time-selection" | "all-times" | "quick-book";
+  mode: "time-selection" | "all-times" | "quick-book" | "clinics-list";
   onBookingConfirmed?: () => void;
 }
 
@@ -65,6 +65,7 @@ export default function BookingModal({
   doctor,
   selectedDate,
   selectedTime,
+  mode,
   onBookingConfirmed,
 }: BookingModalProps) {
   const [errorModal, setErrorModal] = useState<{
@@ -275,10 +276,14 @@ export default function BookingModal({
           <div className="flex items-center justify-between p-6 border-b border-gray-200">
             <div>
               <h2 className="text-xl font-bold text-gray-900">
-                Confirmar Reserva
+                {mode === "clinics-list"
+                  ? "Todas las Ubicaciones"
+                  : "Confirmar Reserva"}
               </h2>
               <p className="text-gray-600">
-                Dr. {doctor.name} {doctor.surname}
+                {mode === "clinics-list"
+                  ? `Dr. ${doctor.name} ${doctor.surname}`
+                  : `Dr. ${doctor.name} ${doctor.surname}`}
               </p>
             </div>
             <button
@@ -290,228 +295,284 @@ export default function BookingModal({
           </div>
 
           <div className="p-6">
-            {/* Appointment Summary and Confirm Button */}
-            {currentStep === "confirm-booking" && (
-              <div>
-                <div className="relative bg-green-50 rounded-xl p-0 mb-6 flex overflow-hidden shadow-sm">
-                  <div className="w-2 bg-green-600 rounded-l-xl" />
-                  <div className="flex-1 p-5">
-                    <h4 className="font-bold text-green-900 text-lg flex items-center gap-2 mb-4">
-                      <Calendar className="w-5 h-5 text-green-700" /> Resumen de
-                      la Cita
-                    </h4>
-                    <div className="space-y-3">
-                      <div className="flex items-center gap-3 bg-white/80 rounded-lg px-3 py-2">
-                        <User className="w-5 h-5 text-blue-600" />
-                        <div>
-                          <div className="text-xs text-gray-500 font-semibold uppercase">
-                            Doctor
-                          </div>
-                          <div className="font-semibold text-gray-900 text-base">
-                            Dr. {doctor.name} {doctor.surname}
-                          </div>
-                          <div className="text-xs text-gray-600">
-                            {primarySpeciality}
-                          </div>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-3 bg-white/80 rounded-lg px-3 py-2">
-                        <Calendar className="w-5 h-5 text-blue-600" />
-                        <div>
-                          <div className="text-xs text-gray-500 font-semibold uppercase">
-                            Fecha
-                          </div>
-                          <div className="font-semibold text-gray-900 text-base">
-                            {formatDate(selectedDate!)}
-                          </div>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-3 bg-white/80 rounded-lg px-3 py-2">
-                        <Clock className="w-5 h-5 text-blue-600" />
-                        <div>
-                          <div className="text-xs text-gray-500 font-semibold uppercase">
-                            Hora
-                          </div>
-                          <div className="font-semibold text-gray-900 text-base">
-                            {bookingData.selectedTime}
-                          </div>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-3 bg-white/80 rounded-lg px-3 py-2">
-                        <MapPin className="w-5 h-5 text-blue-600" />
-                        <div>
-                          <div className="text-xs text-gray-500 font-semibold uppercase">
-                            Clínica
-                          </div>
-                          <div className="font-semibold text-gray-900 text-base">
-                            {doctor.clinics.find(
-                              (dc) =>
-                                dc.clinic.id === bookingData.selectedClinicId
-                            )?.clinic.name || primaryClinic?.name}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <div className="mb-6">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Notas adicionales (opcional)
-                  </label>
-                  <textarea
-                    value={notes}
-                    onChange={(e) => setNotes(e.target.value)}
-                    rows={3}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="Motivo de la consulta, síntomas, etc."
-                  />
-                </div>
-                <div className="flex gap-3 pt-2">
-                  <button
-                    onClick={handleBookingConfirm}
-                    disabled={!patientData || isBooking}
-                    className="flex-1 bg-green-600 hover:bg-green-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white py-3 px-6 rounded-xl font-medium transition-colors flex items-center justify-center gap-2"
-                  >
-                    {isBooking && <Loader2 className="w-4 h-4 animate-spin" />}
-                    {isBooking ? "Creando Cita..." : "Confirmar Reserva"}
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {currentStep === "booking-confirmed" && (
-              <div className="text-center">
-                {/* Success Icon */}
-                <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <svg
-                    className="w-8 h-8 text-green-600"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M5 13l4 4L19 7"
-                    />
-                  </svg>
-                </div>
-
-                {/* Success Message */}
-                <h3 className="text-xl font-bold text-gray-900 mb-2">
-                  ¡Cita Agendada Exitosamente!
-                </h3>
-                <p className="text-gray-600 mb-6">
-                  Te contactaremos pronto para confirmar los detalles de tu
-                  cita.
+            {mode === "clinics-list" ? (
+              /* Clinics List View */
+              <div className="space-y-4">
+                <p className="text-gray-600 mb-4">
+                  El Dr. {doctor.name} {doctor.surname} atiende en las
+                  siguientes clínicas:
                 </p>
-
-                {/* Appointment Details */}
-                <div className="bg-green-50 border border-green-200 rounded-xl p-6 mb-6 text-left">
-                  <h4 className="font-semibold text-green-900 mb-4">
-                    Detalles de tu Cita
-                  </h4>
-
-                  <div className="space-y-3 text-sm">
-                    <div className="flex items-start gap-3">
-                      <User className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
-                      <div>
-                        <p className="font-medium text-gray-900">
-                          Dr. {doctor.name} {doctor.surname}
-                        </p>
-                        <p className="text-gray-600">{primarySpeciality}</p>
-                      </div>
+                {doctor.clinics.map((doctorClinic) => (
+                  <div
+                    key={doctorClinic.clinic.id}
+                    className="flex items-start gap-4 p-4 bg-gray-50 rounded-xl border border-gray-200"
+                  >
+                    <div className="p-2 bg-blue-100 rounded-full">
+                      <MapPin className="w-5 h-5 text-blue-600" />
                     </div>
-
-                    <div className="flex items-center gap-3">
-                      <Calendar className="w-5 h-5 text-green-600 flex-shrink-0" />
-                      <div>
-                        <p className="font-medium text-gray-900">
-                          {formatDate(selectedDate!)}
+                    <div className="flex-1">
+                      <h3 className="font-semibold text-gray-900 mb-1">
+                        {doctorClinic.clinic.name}
+                      </h3>
+                      <p className="text-gray-600 text-sm mb-1">
+                        {doctorClinic.clinic.city}
+                      </p>
+                      {doctorClinic.clinic.address && (
+                        <p className="text-gray-500 text-sm">
+                          {doctorClinic.clinic.address}
                         </p>
-                      </div>
+                      )}
                     </div>
-
-                    <div className="flex items-center gap-3">
-                      <Clock className="w-5 h-5 text-green-600 flex-shrink-0" />
-                      <div>
-                        <p className="font-medium text-gray-900">
-                          {bookingData.selectedTime}
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="flex items-start gap-3">
-                      <MapPin className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
-                      <div>
-                        <p className="font-medium text-gray-900">
-                          {doctor.clinics.find(
-                            (dc) =>
-                              dc.clinic.id === bookingData.selectedClinicId
-                          )?.clinic.name || primaryClinic?.name}
-                        </p>
-                        {doctor.clinics.find(
-                          (dc) => dc.clinic.id === bookingData.selectedClinicId
-                        )?.clinic.address && (
-                          <p className="text-gray-600">
-                            {
-                              doctor.clinics.find(
-                                (dc) =>
-                                  dc.clinic.id === bookingData.selectedClinicId
-                              )?.clinic.address
-                            }
-                            ,{" "}
-                            {
-                              doctor.clinics.find(
-                                (dc) =>
-                                  dc.clinic.id === bookingData.selectedClinicId
-                              )?.clinic.city
-                            }
-                          </p>
-                        )}
-                      </div>
-                    </div>
-
-                    {patientData && (
-                      <div className="flex items-start gap-3">
-                        <User className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
-                        <div>
-                          <p className="font-medium text-gray-900">
-                            {patientData.name} {patientData.surname}
-                          </p>
-                          <p className="text-gray-600">{patientData.phone}</p>
-                          <p className="text-gray-600">{patientData.email}</p>
-                        </div>
-                      </div>
-                    )}
-
-                    {bookingData.notes && (
-                      <div className="flex items-start gap-3">
-                        <div className="w-5 h-5 flex items-center justify-center mt-0.5">
-                          <div className="w-2 h-2 bg-green-600 rounded-full"></div>
-                        </div>
-                        <div>
-                          <p className="font-medium text-gray-900 mb-1">
-                            Notas:
-                          </p>
-                          <p className="text-gray-600">{bookingData.notes}</p>
-                        </div>
-                      </div>
-                    )}
                   </div>
-                </div>
-
-                {/* Action Buttons */}
-                <div className="flex gap-3">
+                ))}
+                <div className="flex justify-end mt-6">
                   <button
                     onClick={onClose}
-                    className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-3 px-6 rounded-xl font-medium transition-colors"
+                    className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors font-medium"
                   >
                     Cerrar
                   </button>
                 </div>
               </div>
+            ) : (
+              /* Original Booking Modal Content */
+              <>
+                {/* Appointment Summary and Confirm Button */}
+                {currentStep === "confirm-booking" && (
+                  <div>
+                    <div className="relative bg-green-50 rounded-xl p-0 mb-6 flex overflow-hidden shadow-sm">
+                      <div className="w-2 bg-green-600 rounded-l-xl" />
+                      <div className="flex-1 p-5">
+                        <h4 className="font-bold text-green-900 text-lg flex items-center gap-2 mb-4">
+                          <Calendar className="w-5 h-5 text-green-700" />{" "}
+                          Resumen de la Cita
+                        </h4>
+                        <div className="space-y-3">
+                          <div className="flex items-center gap-3 bg-white/80 rounded-lg px-3 py-2">
+                            <User className="w-5 h-5 text-blue-600" />
+                            <div>
+                              <div className="text-xs text-gray-500 font-semibold uppercase">
+                                Doctor
+                              </div>
+                              <div className="font-semibold text-gray-900 text-base">
+                                Dr. {doctor.name} {doctor.surname}
+                              </div>
+                              <div className="text-xs text-gray-600">
+                                {primarySpeciality}
+                              </div>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-3 bg-white/80 rounded-lg px-3 py-2">
+                            <Calendar className="w-5 h-5 text-blue-600" />
+                            <div>
+                              <div className="text-xs text-gray-500 font-semibold uppercase">
+                                Fecha
+                              </div>
+                              <div className="font-semibold text-gray-900 text-base">
+                                {formatDate(selectedDate!)}
+                              </div>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-3 bg-white/80 rounded-lg px-3 py-2">
+                            <Clock className="w-5 h-5 text-blue-600" />
+                            <div>
+                              <div className="text-xs text-gray-500 font-semibold uppercase">
+                                Hora
+                              </div>
+                              <div className="font-semibold text-gray-900 text-base">
+                                {bookingData.selectedTime}
+                              </div>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-3 bg-white/80 rounded-lg px-3 py-2">
+                            <MapPin className="w-5 h-5 text-blue-600" />
+                            <div>
+                              <div className="text-xs text-gray-500 font-semibold uppercase">
+                                Clínica
+                              </div>
+                              <div className="font-semibold text-gray-900 text-base">
+                                {doctor.clinics.find(
+                                  (dc) =>
+                                    dc.clinic.id ===
+                                    bookingData.selectedClinicId
+                                )?.clinic.name || primaryClinic?.name}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="mb-6">
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Notas adicionales (opcional)
+                      </label>
+                      <textarea
+                        value={notes}
+                        onChange={(e) => setNotes(e.target.value)}
+                        rows={3}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        placeholder="Motivo de la consulta, síntomas, etc."
+                      />
+                    </div>
+                    <div className="flex gap-3 pt-2">
+                      <button
+                        onClick={handleBookingConfirm}
+                        disabled={!patientData || isBooking}
+                        className="flex-1 bg-green-600 hover:bg-green-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white py-3 px-6 rounded-xl font-medium transition-colors flex items-center justify-center gap-2"
+                      >
+                        {isBooking && (
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                        )}
+                        {isBooking ? "Creando Cita..." : "Confirmar Reserva"}
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {currentStep === "booking-confirmed" && (
+                  <div className="text-center">
+                    {/* Success Icon */}
+                    <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <svg
+                        className="w-8 h-8 text-green-600"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M5 13l4 4L19 7"
+                        />
+                      </svg>
+                    </div>
+
+                    {/* Success Message */}
+                    <h3 className="text-xl font-bold text-gray-900 mb-2">
+                      ¡Cita Agendada Exitosamente!
+                    </h3>
+                    <p className="text-gray-600 mb-6">
+                      Te contactaremos pronto para confirmar los detalles de tu
+                      cita.
+                    </p>
+
+                    {/* Appointment Details */}
+                    <div className="bg-green-50 border border-green-200 rounded-xl p-6 mb-6 text-left">
+                      <h4 className="font-semibold text-green-900 mb-4">
+                        Detalles de tu Cita
+                      </h4>
+
+                      <div className="space-y-3 text-sm">
+                        <div className="flex items-start gap-3">
+                          <User className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
+                          <div>
+                            <p className="font-medium text-gray-900">
+                              Dr. {doctor.name} {doctor.surname}
+                            </p>
+                            <p className="text-gray-600">{primarySpeciality}</p>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-3">
+                          <Calendar className="w-5 h-5 text-green-600 flex-shrink-0" />
+                          <div>
+                            <p className="font-medium text-gray-900">
+                              {formatDate(selectedDate!)}
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-3">
+                          <Clock className="w-5 h-5 text-green-600 flex-shrink-0" />
+                          <div>
+                            <p className="font-medium text-gray-900">
+                              {bookingData.selectedTime}
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="flex items-start gap-3">
+                          <MapPin className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
+                          <div>
+                            <p className="font-medium text-gray-900">
+                              {doctor.clinics.find(
+                                (dc) =>
+                                  dc.clinic.id === bookingData.selectedClinicId
+                              )?.clinic.name || primaryClinic?.name}
+                            </p>
+                            {doctor.clinics.find(
+                              (dc) =>
+                                dc.clinic.id === bookingData.selectedClinicId
+                            )?.clinic.address && (
+                              <p className="text-gray-600">
+                                {
+                                  doctor.clinics.find(
+                                    (dc) =>
+                                      dc.clinic.id ===
+                                      bookingData.selectedClinicId
+                                  )?.clinic.address
+                                }
+                                ,{" "}
+                                {
+                                  doctor.clinics.find(
+                                    (dc) =>
+                                      dc.clinic.id ===
+                                      bookingData.selectedClinicId
+                                  )?.clinic.city
+                                }
+                              </p>
+                            )}
+                          </div>
+                        </div>
+
+                        {patientData && (
+                          <div className="flex items-start gap-3">
+                            <User className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
+                            <div>
+                              <p className="font-medium text-gray-900">
+                                {patientData.name} {patientData.surname}
+                              </p>
+                              <p className="text-gray-600">
+                                {patientData.phone}
+                              </p>
+                              <p className="text-gray-600">
+                                {patientData.email}
+                              </p>
+                            </div>
+                          </div>
+                        )}
+
+                        {bookingData.notes && (
+                          <div className="flex items-start gap-3">
+                            <div className="w-5 h-5 flex items-center justify-center mt-0.5">
+                              <div className="w-2 h-2 bg-green-600 rounded-full"></div>
+                            </div>
+                            <div>
+                              <p className="font-medium text-gray-900 mb-1">
+                                Notas:
+                              </p>
+                              <p className="text-gray-600">
+                                {bookingData.notes}
+                              </p>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Action Buttons */}
+                    <div className="flex gap-3">
+                      <button
+                        onClick={onClose}
+                        className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-3 px-6 rounded-xl font-medium transition-colors"
+                      >
+                        Cerrar
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </>
             )}
           </div>
         </div>

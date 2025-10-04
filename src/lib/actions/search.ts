@@ -116,6 +116,12 @@ export async function getFeaturedDoctors(): Promise<ActionResult> {
             isActive: true,
           },
         },
+        profileImage: {
+          select: {
+            id: true,
+            url: true,
+          },
+        },
       },
       take: 3,
     });

@@ -2,7 +2,7 @@
 
 export default function DisclaimerSection() {
   return (
-    <section className="py-10 bg-gray-50 border-t border-gray-200">
+    <section className="py-10 bg-gray-50 ">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-xs text-gray-500 leading-snug">
         <h2 className="text-xl font-bold text-gray-600 mb-2">
           {" "}
@@ -61,30 +61,34 @@ export default function DisclaimerSection() {
             <h3 className="font-semibold text-gray-600">
               Responsabilidades y Limitaciones
             </h3>
-            <p className="font-medium">Lo que SÍ hacemos:</p>
-            <p className="ml-2">
-              * Facilitar la búsqueda de profesionales
-              <br />
-              * Gestionar el agendamiento de citas
-              <br />
-              * Verificar credenciales básicas
-              <br />
-              * Proporcionar información de contacto
-              <br />* Mantener la plataforma funcionando
-            </p>
-
-            <p className="font-medium mt-1">Lo que NO hacemos:</p>
-            <p className="ml-2">
-              * Procesar pagos médicos
-              <br />
-              * Supervisar tratamientos médicos
-              <br />
-              * Garantizar resultados médicos
-              <br />
-              * Intervenir en diagnósticos
-              <br />* Mediar en disputas médicas
-            </p>
-
+            <div className="flex flex-row mb-4">
+              <div className="mr-10 col-auto">
+                <p className="font-medium">Lo que SÍ hacemos:</p>
+                <p className="ml-2">
+                  * Facilitar la búsqueda de profesionales
+                  <br />
+                  * Gestionar el agendamiento de citas
+                  <br />
+                  * Verificar credenciales básicas
+                  <br />
+                  * Proporcionar información de contacto
+                  <br />* Mantener la plataforma funcionando
+                </p>
+              </div>
+              <div className="mr-10 col-auto">
+                <p className="font-medium mt-1">Lo que NO hacemos:</p>
+                <p className="ml-2">
+                  * Procesar pagos médicos
+                  <br />
+                  * Supervisar tratamientos médicos
+                  <br />
+                  * Garantizar resultados médicos
+                  <br />
+                  * Intervenir en diagnósticos
+                  <br />* Mediar en disputas médicas
+                </p>
+              </div>
+            </div>
             <p className="text-gray-500 mt-1">
               <strong>Nota Legal:</strong> Al utilizar Docentro, el usuario
               acepta que la plataforma actúa únicamente como intermediario

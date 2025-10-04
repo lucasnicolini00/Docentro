@@ -384,3 +384,56 @@ export async function getImageUrl(imageId: string): Promise<ActionResult> {
     return { success: false, error: "Error obteniendo la imagen" };
   }
 }
+
+/**
+ * Get the profile image URL for the current user (works for both doctors and patients)
+ */
+export async function getUserProfileImageUrl(): Promise<ActionResult> {
+  try {
+    const { getServerSession } = await import("next-auth");
+    const { authOptions } = await import("@/lib/auth");
+
+    const session = await getServerSession(authOptions);
+    if (!session?.user) {
+      return { success: false, error: "Usuario no autenticado" };
+    }
+
+    // Get user with profile image
+    const user = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      include: {
+        profileImage: true,
+        doctor: {
+          include: {
+            profileImage: true,
+          },
+        },
+        patient: true,
+      },
+    });
+
+    if (!user) {
+      return { success: false, error: "Usuario no encontrado" };
+    }
+
+    // Check for profile image in order of priority: Doctor profile > User profile
+    let profileImageId: string | null = null;
+
+    if (user.doctor?.profileImageId) {
+      profileImageId = user.doctor.profileImageId;
+    } else if (user.profileImageId) {
+      profileImageId = user.profileImageId;
+    }
+
+    if (!profileImageId) {
+      return { success: true, data: null }; // No profile image
+    }
+
+    // Get the signed URL for the profile image
+    const imageResult = await getImageUrl(profileImageId);
+    return imageResult;
+  } catch (error) {
+    console.error("Error getting user profile image:", error);
+    return { success: false, error: "Error obteniendo imagen de perfil" };
+  }
+}

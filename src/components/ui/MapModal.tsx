@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState, useCallback, useEffect, useMemo } from "react";
-import Image from "next/image";
 import { X, MapPin } from "lucide-react";
 import {
   useJsApiLoader,
@@ -384,10 +383,10 @@ export default function MapModal({
                   <div className="flex items-start gap-3 mb-3">
                     {doctor.picaddress ? (
                       <div className="relative w-12 h-12 rounded-full overflow-hidden border-2 border-blue-100">
-                        <Image
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
                           src={doctor.picaddress}
                           alt={`Dr. ${doctor.name} ${doctor.surname}`}
-                          fill
                           className="object-cover"
                           sizes="48px"
                         />
@@ -552,10 +551,10 @@ export default function MapModal({
                   <div className="flex items-start gap-3 mb-2">
                     {selectedDoctor.doctor.picaddress ? (
                       <div className="relative w-10 h-10 rounded-full overflow-hidden border border-gray-200 flex-shrink-0">
-                        <Image
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
                           src={selectedDoctor.doctor.picaddress}
                           alt={`Dr. ${selectedDoctor.doctor.name}`}
-                          fill
                           className="object-cover"
                           sizes="40px"
                         />

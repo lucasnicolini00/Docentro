@@ -1,4 +1,5 @@
 import { getFeaturedDoctors } from "@/lib/actions/search";
+import { getImageUrl } from "@/lib/actions/images-uploader";
 import type {
   Doctor,
   DoctorSpeciality,
@@ -8,6 +9,7 @@ import type {
   Clinic,
   Pricing,
 } from "@prisma/client";
+import Link from "next/link";
 
 type DoctorWithRelations = Doctor & {
   specialities: (DoctorSpeciality & {
@@ -20,6 +22,10 @@ type DoctorWithRelations = Doctor & {
   pricings: (Pricing & {
     clinic: Clinic;
   })[];
+  profileImage?: {
+    id: string;
+    url: string;
+  } | null;
 };
 
 export default async function FeaturedDoctorsSection() {
@@ -28,6 +34,23 @@ export default async function FeaturedDoctorsSection() {
   const doctors: DoctorWithRelations[] = result.success
     ? result.data || []
     : [];
+
+  // Get signed URLs for profile images
+  const doctorsWithSignedUrls = await Promise.all(
+    doctors.map(async (doctor) => {
+      let profileImageUrl = null;
+      if (doctor.profileImage?.id) {
+        const imageResult = await getImageUrl(doctor.profileImage.id);
+        if (imageResult.success) {
+          profileImageUrl = imageResult.data;
+        }
+      }
+      return {
+        ...doctor,
+        profileImageUrl,
+      };
+    })
+  );
 
   return (
     <section
@@ -44,90 +67,50 @@ export default async function FeaturedDoctorsSection() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {doctors.map((doctor) => {
-            const avgRating =
-              doctor.opinions.length > 0
-                ? doctor.opinions.reduce(
-                    (sum, opinion) => sum + opinion.rating,
-                    0
-                  ) / doctor.opinions.length
-                : 0;
-
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {doctorsWithSignedUrls.map((doctor) => {
             const primarySpeciality =
               doctor.specialities[0]?.speciality?.name || "Especialista";
-            const location =
-              doctor.clinics[0]?.clinic?.city || "Ubicación no especificada";
 
             return (
               <div
                 key={doctor.id}
-                className="bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden border border-gray-100"
+                className="flex items-center space-x-4 p-4 bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow border border-gray-100"
               >
-                {/* Doctor Image Placeholder */}
-                <div className="relative h-48 bg-gradient-to-br from-blue-400 to-purple-500">
-                  <div className="absolute inset-0 bg-black bg-opacity-20"></div>
-                  <div className="absolute bottom-4 left-4 right-4">
-                    <div className="flex items-center space-x-3">
-                      <div className="w-16 h-16 rounded-full bg-white bg-opacity-90 flex items-center justify-center text-2xl">
-                        👨‍⚕️
-                      </div>
-                      <div className="text-white">
-                        <h3 className="text-xl font-bold">
-                          {doctor.name} {doctor.surname}
-                        </h3>
-                        <p className="text-blue-100">{primarySpeciality}</p>
-                      </div>
+                {/* Circular Profile Picture */}
+                <div className="flex-shrink-0">
+                  {doctor.profileImageUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={doctor.profileImageUrl}
+                      alt={`${doctor.name} ${doctor.surname}`}
+                      className="w-20 h-20 rounded-full object-cover border-2 border-gray-200"
+                    />
+                  ) : (
+                    <div className="w-20 h-20 rounded-full bg-gray-100 flex items-center justify-center border-2 border-gray-200">
+                      <span className="text-2xl">👨‍⚕️</span>
                     </div>
-                  </div>
+                  )}
                 </div>
 
                 {/* Doctor Info */}
-                <div className="p-6">
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center space-x-2">
-                      <div className="flex text-yellow-400">
-                        {"★".repeat(Math.round(avgRating))}
-                        {"☆".repeat(5 - Math.round(avgRating))}
-                      </div>
-                      <span className="text-gray-600 text-sm">
-                        {avgRating > 0 ? avgRating.toFixed(1) : "N/A"}
-                      </span>
-                    </div>
-                    <span className="text-sm text-gray-500">
-                      {doctor.opinions.length} opiniones
-                    </span>
-                  </div>
-
-                  <div className="mb-4">
-                    <div className="flex items-center text-gray-600 mb-2">
-                      <span className="mr-2">📍</span>
-                      <span className="text-sm">{location}</span>
-                    </div>
-                    <div className="flex items-center text-gray-600">
-                      <span className="mr-2">💰</span>
-                      <span className="text-sm">Desde $150 consulta</span>
-                    </div>
-                  </div>
-
-                  <div className="flex space-x-2">
-                    <button className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-xl transition-colors font-medium cursor-pointer">
-                      Ver Perfil
-                    </button>
-                    <button className="flex-1 border border-blue-600 text-blue-600 hover:bg-blue-50 py-2 px-4 rounded-xl transition-colors font-medium cursor-pointer">
-                      Agendar Cita
-                    </button>
-                  </div>
+                <div className="flex-1 min-w-0">
+                  <h3 className="text-lg font-semibold text-gray-900 truncate">
+                    {doctor.name} {doctor.surname}
+                  </h3>
+                  <p className="text-sm text-gray-600 mb-2">
+                    {primarySpeciality}
+                  </p>
+                  <Link
+                    href={`/doctor/${doctor.id}`}
+                    className="text-blue-600 hover:text-blue-800 text-sm font-medium hover:underline"
+                  >
+                    <span>Ver perfil</span>
+                  </Link>
                 </div>
               </div>
             );
           })}
-        </div>
-
-        <div className="text-center mt-12">
-          <button className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-8 py-3 rounded-xl font-semibold transition-all transform hover:scale-105 cursor-pointer">
-            Ver Todos los Profesionales
-          </button>
         </div>
       </div>
     </section>

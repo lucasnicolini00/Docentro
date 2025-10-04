@@ -6,13 +6,13 @@ import {
   Calendar,
   Clock,
   MapPin,
-  Star,
   Phone,
   User,
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
 import { getDoctorAvailability } from "@/lib/actions/appointments";
+import { getUserProfileImageUrl } from "@/lib/actions/images-uploader";
 import BookingModal from "./BookingModal";
 
 interface Doctor {
@@ -45,6 +45,10 @@ interface Doctor {
       name: string;
     };
   }[];
+  profileImage?: {
+    id: string;
+    url: string;
+  } | null;
 }
 
 interface DayInfo {
@@ -66,6 +70,9 @@ export default function DoctorCard({ doctor }: DoctorCardProps) {
   const clinicTabsRef = useRef<HTMLDivElement>(null);
   const [clinicTabScrollPos, setClinicTabScrollPos] = useState(0);
   const [clinicTabScrollEnd, setClinicTabScrollEnd] = useState(false);
+
+  // Profile image state
+  const [profileImageUrl, setProfileImageUrl] = useState<string | null>(null);
 
   const scrollClinicTabs = (direction: "left" | "right") => {
     const ref = clinicTabsRef.current;
@@ -113,7 +120,7 @@ export default function DoctorCard({ doctor }: DoctorCardProps) {
   // Modal states
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalMode, setModalMode] = useState<
-    "time-selection" | "all-times" | "quick-book"
+    "time-selection" | "all-times" | "quick-book" | "clinics-list"
   >("time-selection");
   const [modalSelectedTime, setModalSelectedTime] = useState<string>("");
   const [modalSelectedClinic, setModalSelectedClinic] = useState<{
@@ -123,18 +130,18 @@ export default function DoctorCard({ doctor }: DoctorCardProps) {
     address: string | null;
   } | null>(doctor.clinics[0]?.clinic || null);
 
-  const avgRating =
-    doctor.opinions.length > 0
-      ? (() => {
-          const validRatings = doctor.opinions
-            .map((opinion) => opinion.rating)
-            .filter((rating) => !isNaN(Number(rating)) && rating > 0);
-          return validRatings.length > 0
-            ? validRatings.reduce((sum, rating) => sum + Number(rating), 0) /
-                validRatings.length
-            : 0;
-        })()
-      : 0;
+  // const avgRating =
+  //   doctor.opinions.length > 0
+  //     ? (() => {
+  //         const validRatings = doctor.opinions
+  //           .map((opinion) => opinion.rating)
+  //           .filter((rating) => !isNaN(Number(rating)) && rating > 0);
+  //         return validRatings.length > 0
+  //           ? validRatings.reduce((sum, rating) => sum + Number(rating), 0) /
+  //               validRatings.length
+  //           : 0;
+  //       })()
+  //     : 0;
 
   const primarySpeciality =
     doctor.specialities[0]?.speciality?.name || "Especialista";
@@ -307,7 +314,7 @@ export default function DoctorCard({ doctor }: DoctorCardProps) {
 
   // Modal handlers
   const openModal = (
-    mode: "time-selection" | "all-times" | "quick-book",
+    mode: "time-selection" | "all-times" | "quick-book" | "clinics-list",
     time?: string
   ) => {
     setModalMode(mode);
@@ -347,6 +354,22 @@ export default function DoctorCard({ doctor }: DoctorCardProps) {
     initializeDays();
   }, [initializeDays]);
 
+  // Fetch profile image on component mount
+  useEffect(() => {
+    async function fetchProfileImage() {
+      try {
+        const result = await getUserProfileImageUrl();
+        if (result.success && result.data) {
+          setProfileImageUrl(result.data);
+        }
+      } catch (error) {
+        console.error("Error fetching profile image:", error);
+      }
+    }
+
+    fetchProfileImage();
+  }, []);
+
   useEffect(() => {
     if (selectedDate && selectedClinicId) {
       loadAvailableSlots(selectedDate);
@@ -368,28 +391,39 @@ export default function DoctorCard({ doctor }: DoctorCardProps) {
     currentStartIndex + daysToShow < 30; // Allow up to 30 days
 
   return (
-    <div className="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-100 overflow-hidden">
-      <div className="flex flex-col lg:flex-row">
+    <div className="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-100 overflow-hidden w-full">
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-0 min-h-[400px]">
         {/* Left Panel - Doctor Info */}
-        <div className="flex-1 p-6 flex flex-col min-h-[400px]">
+        <div className="lg:col-span-3 p-4 flex flex-col min-h-[400px]">
           {/* Doctor Header */}
           <div className="flex items-start gap-4 mb-6">
-            <div className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-xl text-white font-bold shadow-lg">
-              <User className="w-8 h-8" />
+            <div className="flex-shrink-0">
+              {profileImageUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={profileImageUrl}
+                  alt={`Dr. ${doctor.name} ${doctor.surname}`}
+                  className="w-16 h-16 rounded-full object-cover border-2 border-gray-200 shadow-sm"
+                />
+              ) : (
+                <div className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-xl text-white font-bold shadow-lg">
+                  <User className="w-8 h-8" />
+                </div>
+              )}
             </div>
-            <div className="flex-1">
+            <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 mb-2">
                 <h3 className="text-xl font-bold text-gray-900">
                   Dr. {doctor.name} {doctor.surname}
                 </h3>
-                <span className="text-green-500 text-sm bg-green-50 px-2 py-1 rounded-full">
+                {/* <span className="text-green-500 text-sm bg-green-50 px-2 py-1 rounded-full">
                   ✓ Verificado
-                </span>
+                </span> */}
               </div>
               <p className="text-gray-600 mb-3 font-medium">
                 {primarySpeciality}
               </p>
-              <div className="flex items-center gap-2">
+              {/* <div className="flex items-center gap-2">
                 <div className="flex text-yellow-400">
                   {[...Array(5)].map((_, i) => (
                     <Star
@@ -408,45 +442,89 @@ export default function DoctorCard({ doctor }: DoctorCardProps) {
                 <span className="text-gray-500 text-sm">
                   ({doctor.opinions.length} opiniones)
                 </span>
-              </div>
+              </div> */}
             </div>
           </div>
 
           {/* Location Info */}
-          <div className="mb-6 p-4 bg-gray-50 rounded-xl">
+          <div className="mb-6 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-100">
             <div className="flex items-center gap-2 mb-3">
-              <MapPin className="w-4 h-4 text-blue-600" />
-              <span className="font-semibold text-gray-900">
+              <div
+                className="p-1.5 bg-blue-100 rounded-full hover:bg-blue-200 cursor-pointer transition-colors"
+                onClick={() => openModal("clinics-list")}
+              >
+                <MapPin className="w-4 h-4 text-blue-600" />
+              </div>
+              <span
+                className="font-semibold text-gray-900 hover:text-blue-600 cursor-pointer transition-colors"
+                onClick={() => openModal("clinics-list")}
+              >
                 {doctor.clinics.length > 1 ? "Ubicaciones" : "Ubicación"}
+              </span>
+              <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full font-medium">
+                {doctor.clinics.length}{" "}
+                {doctor.clinics.length === 1 ? "clínica" : "clínicas"}
               </span>
             </div>
             {doctor.clinics.length > 1 ? (
-              <div className="space-y-2">
+              <div className="space-y-3">
                 {doctor.clinics.slice(0, 2).map((doctorClinic, index) => (
-                  <div key={index} className="text-sm">
-                    <p className="text-gray-700 font-medium">
-                      {doctorClinic.clinic.name}
-                    </p>
-                    <p className="text-gray-600">
-                      {doctorClinic.clinic.city}
-                      {doctorClinic.clinic.address &&
-                        ` • ${doctorClinic.clinic.address}`}
-                    </p>
+                  <div
+                    key={index}
+                    className="flex items-start gap-3 p-3 bg-white rounded-lg border border-gray-100"
+                  >
+                    <div className="p-1.5 bg-green-100 rounded-full mt-0.5">
+                      <MapPin className="w-3 h-3 text-green-600" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-semibold text-gray-900 truncate">
+                        {doctorClinic.clinic.name}
+                      </p>
+                      <p className="text-xs text-gray-600 mt-0.5">
+                        {doctorClinic.clinic.city}
+                        {doctorClinic.clinic.address && (
+                          <>
+                            <span className="mx-1">•</span>
+                            <span className="truncate block">
+                              {doctorClinic.clinic.address}
+                            </span>
+                          </>
+                        )}
+                      </p>
+                    </div>
                   </div>
                 ))}
                 {doctor.clinics.length > 2 && (
-                  <p className="text-xs text-blue-600 font-medium">
-                    +{doctor.clinics.length - 2} ubicación
-                    {doctor.clinics.length - 2 > 1 ? "es" : ""} más
-                  </p>
+                  <div className="text-center">
+                    <span
+                      className="inline-flex items-center gap-1 text-xs text-blue-600 font-medium bg-blue-50 px-3 py-1 rounded-full hover:bg-blue-100 cursor-pointer transition-colors"
+                      onClick={() => openModal("clinics-list")}
+                    >
+                      <MapPin className="w-3 h-3" />+{doctor.clinics.length - 2}{" "}
+                      ubicación{doctor.clinics.length - 2 > 1 ? "es" : ""} más
+                    </span>
+                  </div>
                 )}
               </div>
             ) : (
-              <div>
-                <p className="text-sm text-gray-700 mb-1">{clinicName}</p>
-                <p className="text-sm text-gray-600">
-                  {location} {address && `• ${address}`}
-                </p>
+              <div className="flex items-start gap-3 p-3 bg-white rounded-lg border border-gray-100">
+                <div className="p-1.5 bg-green-100 rounded-full mt-0.5">
+                  <MapPin className="w-3 h-3 text-green-600" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-semibold text-gray-900">
+                    {clinicName}
+                  </p>
+                  <p className="text-xs text-gray-600 mt-0.5">
+                    {location}
+                    {address && (
+                      <>
+                        <span className="mx-1">•</span>
+                        <span>{address}</span>
+                      </>
+                    )}
+                  </p>
+                </div>
               </div>
             )}
           </div>
@@ -488,7 +566,7 @@ export default function DoctorCard({ doctor }: DoctorCardProps) {
         </div>
 
         {/* Right Panel - Availability */}
-        <div className="lg:w-80 bg-gray-50 p-6 border-l border-gray-200 flex flex-col min-h-[400px]">
+        <div className="lg:col-span-2 bg-gray-50 p-4 border-l border-gray-200 flex flex-col min-h-[400px]">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
               <Calendar className="w-5 h-5 text-blue-600" />
@@ -586,10 +664,10 @@ export default function DoctorCard({ doctor }: DoctorCardProps) {
                     selectedDate === day.date
                       ? "bg-blue-600 text-white border-blue-600 shadow-md"
                       : day.hasAvailableSlots === false
-                      ? "bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed"
-                      : day.hasAvailableSlots === true
-                      ? "bg-white text-gray-700 border-green-200 hover:border-green-400 hover:bg-green-50"
-                      : "bg-white text-gray-700 border-gray-200 hover:border-blue-300 hover:bg-blue-50"
+                        ? "bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed"
+                        : day.hasAvailableSlots === true
+                          ? "bg-white text-gray-700 border-green-200 hover:border-green-400 hover:bg-green-50"
+                          : "bg-white text-gray-700 border-gray-200 hover:border-blue-300 hover:bg-blue-50"
                   }`}
                 >
                   <div className="text-xs font-medium">{day.dayName}</div>

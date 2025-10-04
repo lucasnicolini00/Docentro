@@ -152,7 +152,7 @@ export default function Search({ searchParams }: SearchProps) {
 
       {/* Search Header */}
       <div className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-6 py-6">
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
             <div>
               <h1 className="text-2xl font-bold text-gray-900">
@@ -189,10 +189,10 @@ export default function Search({ searchParams }: SearchProps) {
       </div>
 
       {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-6 py-6">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
           {/* Center Column - Doctors List */}
-          <div className="lg:col-span-2">
+          <div className="lg:col-span-3">
             {/* Sort Options */}
             <div className="mb-6">
               <div className="flex items-center justify-between">
@@ -235,7 +235,7 @@ export default function Search({ searchParams }: SearchProps) {
           <div className="lg:col-span-1">
             <div className="sticky top-24">
               <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
-                <div className="p-6">
+                <div className="p-3">
                   <h3 className="text-lg font-semibold text-gray-900 mb-4">
                     Ubicaciones
                   </h3>
@@ -249,7 +249,7 @@ export default function Search({ searchParams }: SearchProps) {
                   </div>
 
                   {/* Map Legend */}
-                  <div className="mt-4 space-y-2">
+                  <div className="mt-2 space-y-2">
                     <h4 className="font-medium text-gray-900 text-sm">
                       Leyenda:
                     </h4>

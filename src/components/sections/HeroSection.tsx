@@ -116,7 +116,7 @@ export default function HeroSection() {
             </form>
           </div>
 
-          {/* Quick Stats */}
+          {/* Quick Stats
           <div className="mt-16 grid grid-cols-2 md:grid-cols-4 gap-8 max-w-3xl mx-auto">
             <div className="text-center">
               <div className="text-3xl font-bold text-white">500+</div>
@@ -134,7 +134,7 @@ export default function HeroSection() {
               <div className="text-3xl font-bold text-white">4.8⭐</div>
               <div className="text-blue-200">Calificación</div>
             </div>
-          </div>
+          </div> */}
         </div>
       </div>
     </section>

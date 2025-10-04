@@ -13,10 +13,12 @@ import {
   Home,
   Clock,
 } from "lucide-react";
+import { getUserProfileImageUrl } from "@/lib/actions/images-uploader";
 
 export default function UserMenu() {
   const { data: session, status } = useSession();
   const [isOpen, setIsOpen] = useState(false);
+  const [profileImageUrl, setProfileImageUrl] = useState<string | null>(null);
   const menuRef = useRef<HTMLDivElement>(null);
 
   // Close menu when clicking outside
@@ -32,6 +34,24 @@ export default function UserMenu() {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
+
+  // Fetch profile image when session is available
+  useEffect(() => {
+    async function fetchProfileImage() {
+      if (session?.user) {
+        try {
+          const result = await getUserProfileImageUrl();
+          if (result.success) {
+            setProfileImageUrl(result.data);
+          }
+        } catch (error) {
+          console.error("Error fetching profile image:", error);
+        }
+      }
+    }
+
+    fetchProfileImage();
+  }, [session]);
 
   if (status === "loading") {
     return (
@@ -125,11 +145,20 @@ export default function UserMenu() {
         className="flex items-center space-x-3 px-4 py-2 rounded-lg hover:bg-gray-50 transition-colors border border-gray-200"
       >
         <div className="flex items-center space-x-2">
-          <div className="h-8 w-8 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full flex items-center justify-center">
-            <span className="text-white text-sm font-bold">
-              {session.user.name?.charAt(0)?.toUpperCase()}
-            </span>
-          </div>
+          {profileImageUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={profileImageUrl}
+              alt={`${session.user.name}`}
+              className="h-8 w-8 rounded-full object-cover border border-gray-200"
+            />
+          ) : (
+            <div className="h-8 w-8 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full flex items-center justify-center">
+              <span className="text-white text-sm font-bold">
+                {session.user.name?.charAt(0)?.toUpperCase()}
+              </span>
+            </div>
+          )}
           <div className="hidden sm:block text-left">
             <p className="text-sm font-medium text-gray-700">
               {session.user.name}
@@ -152,11 +181,20 @@ export default function UserMenu() {
           {/* User Info */}
           <div className="px-4 py-3 border-b border-gray-100">
             <div className="flex items-center space-x-3">
-              <div className="h-10 w-10 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full flex items-center justify-center">
-                <span className="text-white font-bold">
-                  {session.user.name?.charAt(0)?.toUpperCase()}
-                </span>
-              </div>
+              {profileImageUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={profileImageUrl}
+                  alt={`${session.user.name}`}
+                  className="h-10 w-10 rounded-full object-cover border border-gray-200"
+                />
+              ) : (
+                <div className="h-10 w-10 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full flex items-center justify-center">
+                  <span className="text-white font-bold">
+                    {session.user.name?.charAt(0)?.toUpperCase()}
+                  </span>
+                </div>
+              )}
               <div>
                 <p className="font-medium text-gray-900">{session.user.name}</p>
                 <p className="text-sm text-gray-500">{session.user.email}</p>

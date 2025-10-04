@@ -43,6 +43,8 @@ export {
   getDoctorDashboard,
   saveDoctorProfileExperience,
   getAllDoctorImages,
+  getDoctorPublicProfile,
+  getDoctorImagesById,
 } from "./doctors";
 
 // Image upload/remove actions
@@ -52,6 +54,7 @@ export {
   uploadDoctorImages,
   removeDoctorImage,
   getImageUrl,
+  getUserProfileImageUrl,
 } from "./images-uploader";
 
 // Search and general data actions

@@ -403,6 +403,125 @@ export async function getDoctorDashboard(): Promise<ActionResult> {
 }
 
 /**
+ * Server action for getting a doctor's public profile by ID
+ */
+export async function getDoctorPublicProfile(
+  id: string
+): Promise<ActionResult> {
+  try {
+    const doctor = await prisma.doctor.findUnique({
+      where: { id },
+      include: {
+        user: {
+          select: {
+            firstName: true,
+            lastName: true,
+            email: true,
+          },
+        },
+        specialities: {
+          include: {
+            speciality: true,
+          },
+        },
+        clinics: {
+          include: {
+            clinic: {
+              select: {
+                id: true,
+                name: true,
+                address: true,
+                city: true,
+                neighborhood: true,
+                isVirtual: true,
+              },
+            },
+          },
+        },
+        experiences: {
+          orderBy: {
+            startDate: "desc",
+          },
+        },
+      },
+    });
+
+    if (!doctor) {
+      return {
+        success: false,
+        error: "Doctor no encontrado",
+      };
+    }
+
+    // Get profile image URL
+    let profileImageUrl = null;
+    try {
+      const imageResult = await getImageUrl(`doctors/${id}/profile.jpg`);
+      if (imageResult.success && imageResult.data) {
+        profileImageUrl = imageResult.data;
+      }
+    } catch {
+      console.warn("Profile image not found for doctor:", id);
+    }
+
+    return {
+      success: true,
+      data: {
+        ...doctor,
+        profileImageUrl,
+      },
+    };
+  } catch (error) {
+    console.error("Error fetching doctor public profile:", error);
+    return {
+      success: false,
+      error: "Error al obtener el perfil del doctor",
+    };
+  }
+}
+
+/**
+ * Server action for getting all gallery images for a specific doctor by ID
+ */
+export async function getDoctorImagesById(
+  doctorId: string
+): Promise<ActionResult> {
+  try {
+    const images = await prisma.image.findMany({
+      where: {
+        doctorId: doctorId,
+        profileForDoctor: null, // Exclude profile images from gallery
+      },
+      orderBy: { createdAt: "desc" },
+      select: { id: true, createdAt: true },
+    });
+
+    // Generate fresh signed URLs for each image
+    const imagesWithUrls = await Promise.all(
+      images.map(async (img) => {
+        const urlResult = await getImageUrl(img.id);
+        return {
+          id: img.id,
+          url: urlResult.success ? urlResult.data : "", // should always succeed
+          createdAt: img.createdAt,
+        };
+      })
+    );
+
+    return {
+      success: true,
+      data: imagesWithUrls,
+    };
+  } catch (error) {
+    console.error("Error fetching doctor images by ID:", error);
+    return {
+      success: false,
+      error: "Error al obtener las imágenes del doctor",
+    };
+  }
+}
+
+/**
  * Save a single 'Perfil profesional' experience (markdown biography) for the current doctor
  */
 export async function saveDoctorProfileExperience(

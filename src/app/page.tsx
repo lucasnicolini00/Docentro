@@ -4,7 +4,6 @@ import {
   SpecialtiesSection,
   FeaturedDoctorsSection,
   HowItWorksSection,
-  TestimonialsSection,
   DisclaimerSection,
   Footer,
 } from "@/components/sections";
@@ -17,7 +16,7 @@ export default async function Home() {
       <SpecialtiesSection />
       <FeaturedDoctorsSection />
       <HowItWorksSection />
-      <TestimonialsSection />
+      {/* <TestimonialsSection /> */}
       <DisclaimerSection />
       <Footer />
     </div>
