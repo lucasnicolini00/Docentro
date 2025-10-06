@@ -4,19 +4,6 @@ export default function ProfileLoading() {
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
-        {/* Header */}
-        <div className="mb-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <Skeleton className="w-8 h-8 rounded" />
-              <div>
-                <Skeleton className="h-6 w-56" />
-                <Skeleton className="h-4 w-64 mt-2" />
-              </div>
-            </div>
-          </div>
-        </div>
-
         <div className="grid grid-cols-1 gap-8">
           {/* Main */}
           <div className="space-y-6">

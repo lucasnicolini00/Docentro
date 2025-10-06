@@ -83,7 +83,7 @@ export default async function DoctorProfilePage() {
             </div>
             <div className="flex items-center gap-3 justify-end">
               <Link
-                href="/dashboard/doctor/profile/experiencia"
+                href="/dashboard/doctor/profile/experience"
                 className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white border border-transparent rounded-lg shadow-sm text-sm font-medium hover:bg-blue-700 transition-colors"
               >
                 <svg

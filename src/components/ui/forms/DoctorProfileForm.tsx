@@ -119,15 +119,15 @@ export default function DoctorProfileForm({
 
         if (!result.success) {
           setError(result.error || "Error al actualizar el perfil");
-          toast.error("❌ Error al guardar el perfil");
+          toast.error("Error al guardar el perfil");
           return;
         }
 
-        toast.success("✅ Perfil actualizado exitosamente");
+        toast.success("Perfil actualizado exitosamente");
       } catch (err) {
         console.log(err);
         setError("Error al actualizar el perfil");
-        toast.error("❌ Error al guardar el perfil");
+        toast.error("Error al guardar el perfil");
       }
     });
   };

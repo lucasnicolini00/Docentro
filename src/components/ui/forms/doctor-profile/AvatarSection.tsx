@@ -52,9 +52,11 @@ export default function AvatarSection({
     <div className="flex items-center mb-6">
       <div className="flex-none relative w-20 h-20">
         {/* Placeholder icon shown underneath while image loads */}
-        <div className="w-20 h-20 rounded-full bg-white flex items-center justify-center border border-gray-200">
-          <User className="w-6 h-6 text-gray-400" />
-        </div>
+        {!previewUrl && (
+          <div className="w-20 h-20 rounded-full bg-white flex items-center justify-center border border-gray-200">
+            <User className="w-6 h-6 text-gray-400" />
+          </div>
+        )}
 
         {previewUrl && (
           // eslint-disable-next-line @next/next/no-img-element

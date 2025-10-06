@@ -1,16 +1,8 @@
 "use client";
 
 import { useTransition, useState } from "react";
-import {
-  X,
-  CheckCircle,
-  AlertCircle,
-  Loader2,
-  Clock,
-  Calendar,
-  MapPin,
-  Sparkles,
-} from "lucide-react";
+import toast from "react-hot-toast";
+import { X, Loader2, Clock, Calendar, MapPin, Sparkles } from "lucide-react";
 import { createBulkSchedules } from "@/lib/actions/schedules";
 import { SCHEDULE_TEMPLATES, Clinic, DAY_NAMES } from "./types";
 
@@ -30,10 +22,6 @@ export default function ScheduleTemplatesModal({
   const [isPending, startTransition] = useTransition();
   const [selectedTemplate, setSelectedTemplate] = useState<number | null>(null);
   const [selectedClinic, setSelectedClinic] = useState<string>("");
-  const [feedback, setFeedback] = useState<{
-    type: "success" | "error";
-    message: string;
-  } | null>(null);
   const [loadingState, setLoadingState] = useState<{
     isLoading: boolean;
     message: string;
@@ -85,8 +73,6 @@ export default function ScheduleTemplatesModal({
       event.preventDefault();
       event.stopPropagation();
     }
-
-    setFeedback(null);
 
     startTransition(async () => {
       try {
@@ -144,20 +130,12 @@ export default function ScheduleTemplatesModal({
             totalSteps: 3,
           });
 
-          setFeedback({
-            type: "success",
-            message: `Plantilla "${template.name}" aplicada exitosamente`,
-          });
+          toast.success(`Plantilla "${template.name}" aplicada exitosamente`);
 
           // Call the callback to refresh schedules
           if (onSchedulesUpdated) {
             onSchedulesUpdated();
           }
-
-          // Clear feedback after a few seconds, but keep modal open
-          setTimeout(() => {
-            setFeedback(null);
-          }, 3000);
         } else if (result.data?.requiresConfirmation) {
           // Reset loading state for confirmation dialog
           setLoadingState({
@@ -183,10 +161,7 @@ export default function ScheduleTemplatesModal({
             totalSteps: 3,
           });
 
-          setFeedback({
-            type: "error",
-            message: result.error || "Error al aplicar la plantilla",
-          });
+          toast.error(result.error || "Error al aplicar la plantilla");
         }
       } catch (error) {
         // Reset loading state on exception
@@ -198,10 +173,7 @@ export default function ScheduleTemplatesModal({
         });
 
         console.error("Error in handleApplyTemplate:", error);
-        setFeedback({
-          type: "error",
-          message: "Error inesperado al aplicar la plantilla",
-        });
+        toast.error("Error inesperado al aplicar la plantilla");
       }
     });
   };
@@ -262,32 +234,6 @@ export default function ScheduleTemplatesModal({
           </button>
         </div>
         <div className="p-6 overflow-y-auto flex-1 min-h-0 scroll-smooth">
-          {/* Feedback Message */}
-          {feedback && (
-            <div
-              className={`mb-6 p-4 rounded-lg flex items-start space-x-3 ${
-                feedback.type === "success"
-                  ? "bg-green-50 border border-green-200"
-                  : "bg-red-50 border border-red-200"
-              }`}
-            >
-              {feedback.type === "success" ? (
-                <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
-              ) : (
-                <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
-              )}
-              <p
-                className={`text-sm ${
-                  feedback.type === "success"
-                    ? "text-green-800"
-                    : "text-red-800"
-                }`}
-              >
-                {feedback.message}
-              </p>
-            </div>
-          )}
-
           {/* Progress Indicator */}
           {loadingState.isLoading && (
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">

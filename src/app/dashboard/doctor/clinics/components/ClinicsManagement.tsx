@@ -17,6 +17,7 @@ import {
   createPricingWrapper,
   updatePricingWrapper,
   deletePricingWrapper,
+  deleteClinicWrapper,
 } from ".";
 
 export default function ClinicsManagement({
@@ -129,6 +130,7 @@ export default function ClinicsManagement({
               : clinic
           )
         );
+        toast.success("Tarifa creada exitosamente");
         setShowPricingForm(false);
         setSelectedClinic(undefined);
       }
@@ -159,6 +161,7 @@ export default function ClinicsManagement({
               : clinic
           )
         );
+        toast.success("Tarifa actualizada exitosamente");
         setEditingPricing(null);
         setShowPricingForm(false);
         setSelectedClinic(undefined);
@@ -223,10 +226,20 @@ export default function ClinicsManagement({
 
     startTransition(async () => {
       if (confirmAction.type === "clinic") {
-        // TODO: Implement clinic deletion API call
-        setClinics((prev) =>
-          prev.filter((clinic) => clinic.id !== confirmAction.id)
-        );
+        // Call the API to delete the clinic
+        const result = await deleteClinicWrapper(confirmAction.id);
+
+        if (result.success) {
+          // Update the frontend state after successful deletion
+          setClinics((prev) =>
+            prev.filter((clinic) => clinic.id !== confirmAction.id)
+          );
+          toast.success("Clínica eliminada exitosamente");
+        } else {
+          // Handle error and show toast notification
+          toast.error(result.error || "Error al eliminar la clínica");
+          console.error("Error deleting clinic:", result.error);
+        }
       } else if (confirmAction.type === "pricing" && confirmAction.clinicId) {
         // Call the API to delete the pricing
         const result = await deletePricingWrapper(confirmAction.id);

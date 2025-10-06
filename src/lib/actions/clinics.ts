@@ -3,6 +3,7 @@
 import { requireDoctor } from "@/lib/auth-guards";
 import prisma from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
+import { ActionResult } from "./utils";
 
 export async function getDoctorClinics() {
   try {
@@ -34,23 +35,25 @@ export async function getDoctorClinics() {
       },
     });
 
-    // Properly serialize all Decimal and Date objects
-    const clinicsWithPricing = doctorClinics.map((dc) => {
-      const { pricing, ...clinicWithoutPricing } = dc.clinic;
-      return {
-        ...clinicWithoutPricing,
-        createdAt: dc.clinic.createdAt.toISOString(),
-        updatedAt: dc.clinic.updatedAt.toISOString(),
-        deletedAt: dc.clinic.deletedAt?.toISOString() || null,
-        pricings: pricing.map((pricingItem) => ({
-          ...pricingItem,
-          price: pricingItem.price.toNumber(), // Convert Decimal to number
-          createdAt: pricingItem.createdAt.toISOString(),
-          updatedAt: pricingItem.updatedAt.toISOString(),
-          deletedAt: pricingItem.deletedAt?.toISOString() || null,
-        })),
-      };
-    });
+    // Filter out soft-deleted clinics and properly serialize all Decimal and Date objects
+    const clinicsWithPricing = doctorClinics
+      .filter((dc) => dc.clinic && dc.clinic.deletedAt === null) // Only include non-deleted clinics
+      .map((dc) => {
+        const { pricing, ...clinicWithoutPricing } = dc.clinic;
+        return {
+          ...clinicWithoutPricing,
+          createdAt: dc.clinic.createdAt.toISOString(),
+          updatedAt: dc.clinic.updatedAt.toISOString(),
+          deletedAt: dc.clinic.deletedAt?.toISOString() || null,
+          pricings: pricing.map((pricingItem) => ({
+            ...pricingItem,
+            price: pricingItem.price.toNumber(), // Convert Decimal to number
+            createdAt: pricingItem.createdAt.toISOString(),
+            updatedAt: pricingItem.updatedAt.toISOString(),
+            deletedAt: pricingItem.deletedAt?.toISOString() || null,
+          })),
+        };
+      });
 
     return {
       success: true,
@@ -437,5 +440,83 @@ export async function deletePricing(pricingId: string) {
   } catch (error) {
     console.error("Error deleting pricing:", error);
     return { success: false, error: "Error al eliminar la tarifa" };
+  }
+}
+
+export async function deleteClinic(clinicId: string): Promise<ActionResult> {
+  console.log("deleteClinic called with clinicId:", clinicId);
+  try {
+    const session = await requireDoctor();
+    console.log("Doctor session:", session?.user?.id);
+
+    const doctor = await prisma.doctor.findUnique({
+      where: { userId: session.user.id },
+    });
+
+    if (!doctor) {
+      console.log("Doctor not found");
+      return { success: false, error: "Doctor no encontrado" };
+    }
+
+    console.log("Doctor found:", doctor.id);
+
+    // Verify doctor has access to this clinic
+    const doctorClinic = await prisma.doctorClinic.findUnique({
+      where: {
+        doctorId_clinicId: {
+          doctorId: doctor.id,
+          clinicId: clinicId,
+        },
+      },
+    });
+
+    if (!doctorClinic) {
+      console.log("Doctor does not have access to clinic");
+      return { success: false, error: "No tienes acceso a esta clínica" };
+    }
+
+    console.log("Doctor has access to clinic");
+
+    // Check if clinic has any active appointments
+    const activeAppointments = await prisma.appointment.findFirst({
+      where: {
+        clinicId: clinicId,
+        status: { in: ["PENDING", "CONFIRMED"] },
+        datetime: { gte: new Date() }, // Future appointments
+      },
+    });
+
+    if (activeAppointments) {
+      console.log("Clinic has active appointments, cannot delete");
+      return {
+        success: false,
+        error:
+          "No se puede eliminar la clínica porque tiene citas pendientes o confirmadas",
+      };
+    }
+
+    console.log("No active appointments found, proceeding with deletion");
+
+    // Soft delete the clinic
+    const deletedClinic = await prisma.clinic.update({
+      where: { id: clinicId },
+      data: {
+        deletedAt: new Date(),
+      },
+    });
+
+    console.log("Clinic soft deleted:", deletedClinic.id);
+
+    revalidatePath("/dashboard/doctor/clinics");
+
+    return {
+      success: true,
+      data: {
+        id: deletedClinic.id,
+      },
+    };
+  } catch (error) {
+    console.error("Error deleting clinic:", error);
+    return { success: false, error: "Error al eliminar la clínica" };
   }
 }

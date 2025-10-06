@@ -4,6 +4,8 @@ import {
   getRecentActivities,
   getUpcomingAppointments,
 } from "@/lib/actions/analytics";
+import { getDoctorClinics } from "@/lib/actions/clinics";
+import { getDoctorSchedules } from "@/lib/actions/schedules";
 import DoctorDashboardOverview from "./components/DoctorDashboardOverview";
 
 export default async function DoctorDashboard() {
@@ -11,9 +13,19 @@ export default async function DoctorDashboard() {
   await requireDoctor();
 
   // Fetch all dashboard data server-side in parallel for better performance
-  const [statsResult, activitiesResult, appointmentsResult] = await Promise.all(
-    [getDashboardStats(), getRecentActivities(), getUpcomingAppointments()]
-  );
+  const [
+    statsResult,
+    activitiesResult,
+    appointmentsResult,
+    clinicsResult,
+    schedulesResult,
+  ] = await Promise.all([
+    getDashboardStats(),
+    getRecentActivities(),
+    getUpcomingAppointments(),
+    getDoctorClinics(),
+    getDoctorSchedules(),
+  ]);
 
   // Handle errors gracefully
   const dashboardData = {
@@ -22,6 +34,11 @@ export default async function DoctorDashboard() {
     upcomingAppointments: appointmentsResult.success
       ? appointmentsResult.data
       : [],
+    clinics:
+      clinicsResult.success && clinicsResult.data
+        ? clinicsResult.data.clinics
+        : [],
+    schedules: schedulesResult.success ? schedulesResult.data : [],
     errors: {
       stats: !statsResult.success ? statsResult.error || null : null,
       activities: !activitiesResult.success
@@ -29,6 +46,10 @@ export default async function DoctorDashboard() {
         : null,
       appointments: !appointmentsResult.success
         ? appointmentsResult.error || null
+        : null,
+      clinics: !clinicsResult.success ? clinicsResult.error || null : null,
+      schedules: !schedulesResult.success
+        ? schedulesResult.error || null
         : null,
     },
   };

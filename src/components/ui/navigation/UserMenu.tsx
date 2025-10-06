@@ -7,11 +7,12 @@ import {
   User,
   LogOut,
   Calendar,
-  Activity,
   BarChart3,
   CalendarDays,
   Home,
   Clock,
+  Building2,
+  Briefcase,
 } from "lucide-react";
 import { getUserProfileImageUrl } from "@/lib/actions/images-uploader";
 
@@ -86,12 +87,12 @@ export default function UserMenu() {
           {
             label: "Dashboard",
             href: "/dashboard/doctor",
-            icon: Activity,
+            icon: Home,
           },
           {
-            label: "Mis Citas",
-            href: "/dashboard/doctor/appointments",
-            icon: Calendar,
+            label: "Clínicas y Precios",
+            href: "/dashboard/doctor/clinics",
+            icon: Building2,
           },
           {
             label: "Horarios",
@@ -99,9 +100,9 @@ export default function UserMenu() {
             icon: Clock,
           },
           {
-            label: "Analisis",
-            href: "/dashboard/doctor/analytics",
-            icon: BarChart3,
+            label: "Mis Citas",
+            href: "/dashboard/doctor/appointments",
+            icon: CalendarDays,
           },
           {
             label: "Calendario",
@@ -109,9 +110,19 @@ export default function UserMenu() {
             icon: CalendarDays,
           },
           {
+            label: "Análisis",
+            href: "/dashboard/doctor/analytics",
+            icon: BarChart3,
+          },
+          {
             label: "Perfil y Configuración",
             href: "/dashboard/doctor/profile",
             icon: User,
+          },
+          {
+            label: "Experiencia",
+            href: "/dashboard/doctor/profile/experience",
+            icon: Briefcase,
           },
         ]
       : [

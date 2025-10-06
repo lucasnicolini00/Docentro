@@ -6,7 +6,7 @@ import {
 export const dynamic = "force-dynamic";
 import ExperienceEditor from "./ExperienceEditor";
 
-export default async function ExperienciaPage() {
+export default async function ExperiencePage() {
   const [profileResult, imagesResult] = await Promise.all([
     getDoctorProfile(),
     getAllDoctorImages(),
@@ -25,12 +25,10 @@ export default async function ExperienciaPage() {
   const existingImages = imagesResult.success ? imagesResult.data || [] : [];
 
   return (
-    <div className="p-6">
-      <ExperienceEditor
-        initialValue={description}
-        saveAction={saveDoctorProfileExperience}
-        existingImages={existingImages}
-      />
-    </div>
+    <ExperienceEditor
+      initialValue={description}
+      saveAction={saveDoctorProfileExperience}
+      existingImages={existingImages}
+    />
   );
 }

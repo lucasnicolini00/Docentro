@@ -178,23 +178,26 @@ export default function ScheduleList({
   // Group schedules by clinic, filtering out optimistically deleted ones
   const schedulesByClinic = schedules
     .filter((schedule) => !optimisticallyDeletedSchedules.has(schedule.id))
-    .reduce((acc, schedule) => {
-      // Handle cases where clinic might be undefined
-      if (!schedule.clinic || !schedule.clinic.id) {
-        console.warn("Schedule missing clinic information:", schedule);
-        return acc;
-      }
+    .reduce(
+      (acc, schedule) => {
+        // Handle cases where clinic might be undefined
+        if (!schedule.clinic || !schedule.clinic.id) {
+          console.warn("Schedule missing clinic information:", schedule);
+          return acc;
+        }
 
-      const clinicId = schedule.clinic.id;
-      if (!acc[clinicId]) {
-        acc[clinicId] = {
-          clinic: schedule.clinic,
-          schedules: [],
-        };
-      }
-      acc[clinicId].schedules.push(schedule);
-      return acc;
-    }, {} as Record<string, { clinic: any; schedules: Schedule[] }>);
+        const clinicId = schedule.clinic.id;
+        if (!acc[clinicId]) {
+          acc[clinicId] = {
+            clinic: schedule.clinic,
+            schedules: [],
+          };
+        }
+        acc[clinicId].schedules.push(schedule);
+        return acc;
+      },
+      {} as Record<string, { clinic: any; schedules: Schedule[] }>
+    );
 
   // Sort schedules by day
   const sortSchedulesByDay = (schedules: Schedule[]) => {
@@ -388,17 +391,17 @@ export default function ScheduleList({
                                   slot.isBooked
                                     ? "bg-gradient-to-br from-red-50 to-red-100 text-red-800 border-red-300"
                                     : slot.isBlocked
-                                    ? "bg-gradient-to-br from-yellow-50 to-amber-100 text-amber-800 border-amber-300 hover:from-yellow-100 hover:to-amber-200 hover:border-amber-400 cursor-pointer"
-                                    : "bg-gradient-to-br from-green-50 to-emerald-100 text-emerald-800 border-emerald-300 hover:from-green-100 hover:to-emerald-200 hover:border-emerald-400 cursor-pointer"
+                                      ? "bg-gradient-to-br from-yellow-50 to-amber-100 text-amber-800 border-amber-300 hover:from-yellow-100 hover:to-amber-200 hover:border-amber-400 cursor-pointer"
+                                      : "bg-gradient-to-br from-green-50 to-emerald-100 text-emerald-800 border-emerald-300 hover:from-green-100 hover:to-emerald-200 hover:border-emerald-400 cursor-pointer"
                                 } ${isUpdating ? "opacity-70" : ""}`}
                                 title={
                                   isUpdating
                                     ? "Actualizando..."
                                     : slot.isBooked
-                                    ? "Horario reservado - No modificable"
-                                    : slot.isBlocked
-                                    ? "Click para habilitar este horario"
-                                    : "Click para bloquear este horario"
+                                      ? "Horario reservado - No modificable"
+                                      : slot.isBlocked
+                                        ? "Click para habilitar este horario"
+                                        : "Click para bloquear este horario"
                                 }
                               >
                                 {/* Content */}
@@ -410,10 +413,10 @@ export default function ScheduleList({
                                     {isUpdating
                                       ? "Actualizando..."
                                       : slot.isBooked
-                                      ? "🔒 Reservado"
-                                      : slot.isBlocked
-                                      ? "⏸️ Bloqueado"
-                                      : "✅ Disponible"}
+                                        ? "🔒 Reservado"
+                                        : slot.isBlocked
+                                          ? "⏸️ Bloqueado"
+                                          : "✅ Disponible"}
                                   </div>
                                 </div>
 
@@ -444,7 +447,7 @@ export default function ScheduleList({
                         {/* Enhanced Stats Summary */}
                         <div className="mt-6 pt-5 border-t border-gray-200">
                           <div className="grid grid-cols-3 gap-4">
-                            <div className="text-center bg-green-50 p-4 rounded-xl border border-green-200">
+                            <div className="flex flex-col items-center justify-center bg-green-50 p-4 rounded-xl border border-green-200">
                               <div className="text-2xl font-bold text-green-600 mb-1">
                                 {
                                   schedule.timeSlots.filter(
@@ -456,7 +459,7 @@ export default function ScheduleList({
                                 Disponibles
                               </div>
                             </div>
-                            <div className="text-center bg-amber-50 p-4 rounded-xl border border-amber-200">
+                            <div className="flex flex-col items-center justify-center bg-amber-50 p-4 rounded-xl border border-amber-200">
                               <div className="text-2xl font-bold text-amber-600 mb-1">
                                 {
                                   schedule.timeSlots.filter(
@@ -469,7 +472,7 @@ export default function ScheduleList({
                                 Bloqueados
                               </div>
                             </div>
-                            <div className="text-center bg-red-50 p-4 rounded-xl border border-red-200">
+                            <div className="flex flex-col items-center justify-center bg-red-50 p-4 rounded-xl border border-red-200">
                               <div className="text-2xl font-bold text-red-600 mb-1">
                                 {
                                   schedule.timeSlots.filter(

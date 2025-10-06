@@ -22,7 +22,7 @@ export default async function DoctorCalendarPage() {
   const calendarEvents = appointments.map(transformAppointmentToCalendarEvent);
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="container mx-auto ">
       <DoctorCalendar initialAppointments={calendarEvents} editable={true} />
     </div>
   );

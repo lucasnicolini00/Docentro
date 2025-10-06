@@ -54,7 +54,15 @@ export default function ClinicForm({
     const { name, value, type } = e.target;
     setFormData((prev) => ({
       ...prev,
-      [name]:
+      [name === "clinicName"
+        ? "name"
+        : name === "clinicCountry"
+          ? "country"
+          : name === "clinicCity"
+            ? "city"
+            : name === "clinicNeighborhood"
+              ? "neighborhood"
+              : name]:
         type === "checkbox" ? (e.target as HTMLInputElement).checked : value,
     }));
   };
@@ -83,10 +91,10 @@ export default function ClinicForm({
     const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
-      [name]: value,
+      [name === "clinicAddress" ? "address" : name]: value,
       // Clear coordinates and location fields when address is manually changed
       // The LocationPicker will geocode the new address and fill these automatically
-      ...(name === "address" && {
+      ...(name === "clinicAddress" && {
         latitude: null,
         longitude: null,
         country: "",
@@ -99,10 +107,10 @@ export default function ClinicForm({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-xs z-50 flex items-center justify-center p-4">
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-xs z-50 flex items-center justify-center p-3">
       <div className="bg-white rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-200">
+        <div className="flex items-center justify-between p-3 border-b border-gray-200">
           <h2 className="text-xl font-bold text-gray-900">
             {clinic?.id ? "Editar Clínica" : "Nueva Clínica"}
           </h2>
@@ -119,7 +127,15 @@ export default function ClinicForm({
           onSubmit={handleSubmit}
           className="p-6 space-y-6"
           autoComplete="off"
+          data-form-type="clinic"
         >
+          {/* Hidden inputs to confuse Chrome's address detection */}
+          <input
+            type="hidden"
+            name="fake-password"
+            autoComplete="new-password"
+          />
+          <input type="hidden" name="fake-username" autoComplete="username" />
           {/* Clinic Type */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-3">
@@ -171,10 +187,12 @@ export default function ClinicForm({
             <input
               type="text"
               id="clinic-name"
-              name="name"
+              name="clinicName"
               value={formData.name}
               onChange={handleInputChange}
-              autoComplete="off"
+              autoComplete="new-password"
+              data-lpignore="true"
+              data-form-type="other"
               required
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               placeholder="Ej: Clínica Central, Consultas Online"
@@ -201,10 +219,12 @@ export default function ClinicForm({
             <input
               type="text"
               id="clinic-address"
-              name="address"
+              name="clinicAddress"
               value={formData.address}
               onChange={handleAddressChange}
-              autoComplete="off"
+              autoComplete="new-password"
+              data-lpignore="true"
+              data-form-type="other"
               required
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               placeholder={
@@ -229,10 +249,12 @@ export default function ClinicForm({
                   <input
                     type="text"
                     id="clinic-country"
-                    name="country"
+                    name="clinicCountry"
                     value={formData.country}
                     onChange={handleInputChange}
-                    autoComplete="off"
+                    autoComplete="new-password"
+                    data-lpignore="true"
+                    data-form-type="other"
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     placeholder="Bolivia"
                   />
@@ -248,10 +270,12 @@ export default function ClinicForm({
                   <input
                     type="text"
                     id="clinic-city"
-                    name="city"
+                    name="clinicCity"
                     value={formData.city}
                     onChange={handleInputChange}
-                    autoComplete="off"
+                    autoComplete="new-password"
+                    data-lpignore="true"
+                    data-form-type="other"
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     placeholder="Santa Cruz"
                   />
@@ -267,10 +291,12 @@ export default function ClinicForm({
                   <input
                     type="text"
                     id="clinic-neighborhood"
-                    name="neighborhood"
+                    name="clinicNeighborhood"
                     value={formData.neighborhood}
                     onChange={handleInputChange}
-                    autoComplete="off"
+                    autoComplete="new-password"
+                    data-lpignore="true"
+                    data-form-type="other"
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     placeholder="La Palmas"
                   />

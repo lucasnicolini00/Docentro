@@ -9,6 +9,7 @@ import {
   BarChart3,
   Home,
   Building2,
+  Briefcase,
 } from "lucide-react";
 
 const sidebarItems = [
@@ -18,9 +19,9 @@ const sidebarItems = [
     icon: Home,
   },
   {
-    label: "Mis Citas",
-    href: "/dashboard/doctor/appointments",
-    icon: CalendarDays,
+    label: "Clínicas y Precios",
+    href: "/dashboard/doctor/clinics",
+    icon: Building2,
   },
   {
     label: "Horarios",
@@ -28,9 +29,9 @@ const sidebarItems = [
     icon: Clock,
   },
   {
-    label: "Clínicas y Precios",
-    href: "/dashboard/doctor/clinics",
-    icon: Building2,
+    label: "Mis Citas",
+    href: "/dashboard/doctor/appointments",
+    icon: CalendarDays,
   },
   // {
   //   label: "Pacientes",
@@ -42,15 +43,16 @@ const sidebarItems = [
   //   href: "/dashboard/doctor/messages",
   //   icon: MessageSquare,
   // },
-  {
-    label: "Análisis",
-    href: "/dashboard/doctor/analytics",
-    icon: BarChart3,
-  },
+
   {
     label: "Calendario",
     href: "/dashboard/doctor/calendar",
     icon: CalendarDays,
+  },
+  {
+    label: "Análisis",
+    href: "/dashboard/doctor/analytics",
+    icon: BarChart3,
   },
   // {
   //   label: "Historial Médico",
@@ -61,6 +63,11 @@ const sidebarItems = [
     label: "Perfil y Configuración",
     href: "/dashboard/doctor/profile",
     icon: User,
+  },
+  {
+    label: "Experiencia",
+    href: "/dashboard/doctor/profile/experience",
+    icon: Briefcase,
   },
 ];
 

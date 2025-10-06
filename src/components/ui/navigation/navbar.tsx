@@ -8,12 +8,12 @@ import { Menu, X, Search } from "lucide-react";
 export default function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  const navigationItems = [
-    { name: "Inicio", href: "/" },
-    { name: "Especialidades", href: "/specialties" },
-    { name: "Buscar Doctores", href: "/search" },
-    { name: "Cómo Funciona", href: "/how-it-works" },
-  ];
+  // const navigationItems = [
+  //   { name: "Inicio", href: "/" },
+  //   { name: "Especialidades", href: "/specialties" },
+  //   { name: "Buscar Doctores", href: "/search" },
+  //   { name: "Cómo Funciona", href: "/how-it-works" },
+  // ];
 
   return (
     <header className="bg-white/95 backdrop-blur-md shadow-sm sticky top-0 z-50 border-b border-gray-100">
@@ -31,7 +31,7 @@ export default function Navbar() {
           </div>
 
           {/* Desktop Navigation */}
-          <nav className="hidden lg:flex items-center space-x-8">
+          {/* <nav className="hidden lg:flex items-center space-x-8">
             {navigationItems.map((item) => (
               <Link
                 key={item.name}
@@ -42,7 +42,7 @@ export default function Navbar() {
                 <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-blue-600 transition-all group-hover:w-full"></span>
               </Link>
             ))}
-          </nav>
+          </nav> */}
 
           {/* Right side - Search, Notifications, User Menu */}
           <div className="flex items-center space-x-4">
@@ -87,7 +87,7 @@ export default function Navbar() {
         {/* Mobile Navigation */}
         {mobileMenuOpen && (
           <div className="lg:hidden border-t border-gray-200 py-4 space-y-2">
-            {navigationItems.map((item) => (
+            {/* {navigationItems.map((item) => (
               <Link
                 key={item.name}
                 href={item.href}
@@ -96,7 +96,7 @@ export default function Navbar() {
               >
                 {item.name}
               </Link>
-            ))}
+            ))} */}
 
             {/* Mobile Search */}
             <Link

@@ -3,7 +3,7 @@ import { Skeleton } from "@/components/ui/feedback";
 export default function ProfileLoading() {
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto">
         {/* Header card */}
         <div className="mb-6">
           <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
