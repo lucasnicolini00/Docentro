@@ -71,9 +71,8 @@ export default function ImageUploadControls({
       } else {
         toast.error(res?.error || "Error subiendo imagen");
       }
-    } catch (err) {
+    } catch  {
       toast.error("Error subiendo imagen");
-      console.log(err);
     } finally {
       setUploading(false);
       onUploadEnd?.();

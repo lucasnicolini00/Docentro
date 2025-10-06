@@ -8,6 +8,7 @@ import {
   getDoctorAvailability,
 } from "@/lib/actions/appointments";
 import { AppointmentType } from "@prisma/client";
+import toast from "react-hot-toast";
 
 interface Doctor {
   id: string;
@@ -54,8 +55,6 @@ export default function AppointmentBookingForm({
 }: AppointmentBookingFormProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
-  const [error, setError] = useState("");
-  const [successMessage, setSuccessMessage] = useState("");
 
   // Form state
   const [selectedDate, setSelectedDate] = useState("");
@@ -97,19 +96,16 @@ export default function AppointmentBookingForm({
       if (result.success) {
         setAvailableSlots(result.data || []);
       } else {
-        setError(result.error || "Error al obtener horarios disponibles");
+        toast.error(result.error || "Error al obtener horarios disponibles");
       }
     } catch {
-      setError("Error al obtener horarios disponibles");
+      toast.error("Error al obtener horarios disponibles");
     } finally {
       setLoadingSlots(false);
     }
   };
 
   const handleSubmit = async (formData: FormData) => {
-    setError("");
-    setSuccessMessage("");
-
     // Add selected values to form data
     formData.append("doctorId", doctor.id);
     formData.append("datetime", selectedTime);
@@ -122,16 +118,13 @@ export default function AppointmentBookingForm({
         const result = await createAppointment(formData);
 
         if (!result.success) {
-          setError(result.error || "Error al agendar la cita");
+          toast.error(result.error || "Error al agendar la cita");
           return;
         }
 
-        setSuccessMessage("¡Cita agendada exitosamente!");
-        setTimeout(() => {
-          router.push("/dashboard/patient");
-        }, 2000);
+        toast.success("¡Cita agendada exitosamente!");
       } catch {
-        setError("Error al agendar la cita");
+        toast.error("Error al agendar la cita");
       }
     });
   };
@@ -162,19 +155,6 @@ export default function AppointmentBookingForm({
           </div>
         </div>
       </div>
-
-      {/* Messages */}
-      {error && (
-        <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-md">
-          <p className="text-red-600 text-sm">{error}</p>
-        </div>
-      )}
-
-      {successMessage && (
-        <div className="mb-4 p-4 bg-green-50 border border-green-200 rounded-md">
-          <p className="text-green-600 text-sm">{successMessage}</p>
-        </div>
-      )}
 
       <form action={handleSubmit} className="space-y-6">
         {/* Date Selection */}

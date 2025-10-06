@@ -137,8 +137,8 @@ const getMarkerIcon = (type: string) => {
     type === "clinic"
       ? "%233B82F6"
       : type === "office"
-      ? "%2310B981"
-      : "%238B5CF6";
+        ? "%2310B981"
+        : "%238B5CF6";
   return {
     url: `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='${color}'%3E%3Cpath d='M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z'/%3E%3C/svg%3E`,
     scaledSize:
@@ -169,6 +169,35 @@ export default function Map({
       type: string;
     }>
   >([]);
+
+  // Add custom CSS for InfoWindow width and layout
+  useEffect(() => {
+    const style = document.createElement("style");
+    style.textContent = `
+      .gm-style .gm-style-iw {
+        min-width: 225px !important;
+      }
+      .gm-style .gm-style-iw-c {
+        padding: 0 !important;
+        display: flex !important;
+        flex-direction: row-reverse !important;
+        align-items: flex-start !important;
+      }
+      .gm-style .gm-style-iw-d {
+        margin: 0 !important;
+        padding: 8px !important;
+        flex: 1 !important;
+      }
+      .gm-style .gm-style-iw-t::after {
+        display: none !important;
+      }
+    `;
+    document.head.appendChild(style);
+
+    return () => {
+      document.head.removeChild(style);
+    };
+  }, []);
 
   // Process doctors and create markers
   useEffect(() => {
@@ -299,7 +328,7 @@ export default function Map({
             }
             onCloseClick={() => setActiveMarker(null)}
           >
-            <div className="p-2 max-w-xs">
+            <div className="p-2">
               {(() => {
                 const marker = markers.find((m) => m.id === activeMarker);
                 if (!marker) return null;

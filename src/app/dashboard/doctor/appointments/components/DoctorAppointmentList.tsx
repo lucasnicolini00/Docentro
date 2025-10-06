@@ -89,7 +89,6 @@ export default function DoctorAppointmentList({
           selectedAppointment.id,
           newStatus
         );
-        console.log("updateAppointmentStatus result:", result);
         if (result.success) {
           // Notify patient via server action
           // const { date: formattedDate, time: formattedTime } = formatDateTime(

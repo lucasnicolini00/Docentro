@@ -1,7 +1,6 @@
 import { requirePatient } from "@/lib/auth-guards";
 import { getPatientDashboard } from "@/lib/actions/patients";
 import PatientCalendar from "./components/PatientCalendar";
-import ActionButton from "./components/ActionButton";
 import Link from "next/link";
 
 export default async function PatientCalendarPage() {
@@ -113,7 +112,7 @@ export default async function PatientCalendarPage() {
         {/* Sidebar with actions and info */}
         <div className="lg:col-span-1 space-y-6">
           {/* Quick Actions */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+          {/* <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">
               Acciones
             </h3>
@@ -149,7 +148,7 @@ export default async function PatientCalendarPage() {
                 📄 Historial Médico
               </ActionButton>
             </div>
-          </div>
+          </div> */}
 
           {/* Appointment Summary */}
           <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">

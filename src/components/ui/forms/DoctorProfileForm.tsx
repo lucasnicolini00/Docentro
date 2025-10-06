@@ -124,8 +124,7 @@ export default function DoctorProfileForm({
         }
 
         toast.success("Perfil actualizado exitosamente");
-      } catch (err) {
-        console.log(err);
+      } catch {
         setError("Error al actualizar el perfil");
         toast.error("Error al guardar el perfil");
       }

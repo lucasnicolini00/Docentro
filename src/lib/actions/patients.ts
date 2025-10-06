@@ -62,7 +62,6 @@ export async function updatePatientProfile(
 
     // Revalidate the profile page to show updated data
     revalidatePath("/dashboard/patient/profile");
-
     return {
       success: true,
       message: "Perfil actualizado exitosamente",

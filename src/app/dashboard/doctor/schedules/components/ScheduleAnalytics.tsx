@@ -91,24 +91,17 @@ export default function ScheduleAnalytics({
       signal?: AbortSignal
     ) => {
       try {
-        console.log("🔍 CLIENT: Fetching analytics with:", { range, doctorId });
         setLoading(true);
         setError(null);
 
         const result = await getScheduleAnalytics(range, doctorId);
-        console.log("🔍 CLIENT: Analytics result:", result);
 
         // Check if request was aborted
         if (signal?.aborted) return;
 
         if (result.success && result.data) {
-          console.log(
-            "🔍 CLIENT: Setting analytics data:",
-            result.data.schedulesByDay
-          );
           setAnalytics(result.data);
         } else {
-          console.log("🔍 CLIENT: Analytics error:", result.error);
           setError(result.error || "Error al cargar las estadísticas");
           setAnalytics(null);
         }

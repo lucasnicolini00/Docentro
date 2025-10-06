@@ -5,21 +5,20 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { signIn, getSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import toast from "react-hot-toast";
 import LoadingButton from "@/components/ui/buttons/LoadingButton";
 
 function LoginForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState("");
-  const [successMessage, setSuccessMessage] = useState("");
   const searchParams = useSearchParams();
   const router = useRouter();
 
   useEffect(() => {
     const message = searchParams.get("message");
     if (message === "registered") {
-      setSuccessMessage(
+      toast.success(
         "¡Cuenta creada exitosamente! Ahora puedes iniciar sesión."
       );
     }
@@ -28,7 +27,6 @@ function LoginForm() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    setError("");
 
     try {
       const result = await signIn("credentials", {
@@ -38,7 +36,9 @@ function LoginForm() {
       });
 
       if (result?.error) {
-        setError("Credenciales incorrectas. Verifica tu email y contraseña.");
+        toast.error(
+          "Credenciales incorrectas. Verifica tu email y contraseña."
+        );
         setIsLoading(false);
       } else if (result?.ok) {
         // Get the session to check user role
@@ -54,7 +54,7 @@ function LoginForm() {
         // Keep loading state active during redirect
       }
     } catch {
-      setError("Error al iniciar sesión. Verifica tus credenciales.");
+      toast.error("Error al iniciar sesión. Verifica tus credenciales.");
       setIsLoading(false);
     }
   };
@@ -81,18 +81,6 @@ function LoginForm() {
 
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           <div className="bg-white rounded-2xl shadow-xl p-8 space-y-6">
-            {successMessage && (
-              <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg">
-                {successMessage}
-              </div>
-            )}
-
-            {error && (
-              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
-                {error}
-              </div>
-            )}
-
             <div>
               <label
                 htmlFor="email"

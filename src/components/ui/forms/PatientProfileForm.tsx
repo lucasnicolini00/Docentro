@@ -1,10 +1,10 @@
 "use client";
 
-import { useState, useTransition } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useTransition, useEffect } from "react";
 import LoadingButton from "../buttons/LoadingButton";
 import Link from "next/link";
 import { updatePatientProfile } from "@/lib/actions";
+import toast from "react-hot-toast";
 
 interface Patient {
   id: string;
@@ -29,10 +29,7 @@ interface PatientProfileFormProps {
 export default function PatientProfileForm({
   patient,
 }: PatientProfileFormProps) {
-  const router = useRouter();
   const [isPending, startTransition] = useTransition();
-  const [error, setError] = useState("");
-  const [successMessage, setSuccessMessage] = useState("");
 
   // Form state for controlled inputs
   const [formData, setFormData] = useState({
@@ -46,6 +43,20 @@ export default function PatientProfileForm({
     gender: patient.gender || "",
   });
 
+  // Sync state with props when patient data changes (e.g., after revalidatePath)
+  useEffect(() => {
+    setFormData({
+      firstName: patient.user.firstName,
+      lastName: patient.user.lastName,
+      email: patient.user.email,
+      phone: patient.user.phone || "",
+      birthdate: patient.birthdate
+        ? patient.birthdate.toISOString().split("T")[0]
+        : "",
+      gender: patient.gender || "",
+    });
+  }, [patient]);
+
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
@@ -57,44 +68,30 @@ export default function PatientProfileForm({
   };
 
   const handleSubmit = async (formDataSubmit: FormData) => {
-    setError("");
-    setSuccessMessage("");
+    // Add patient-specific fields to FormData (using same values as user fields for basic info)
+    formDataSubmit.append("patientName", formData.firstName);
+    formDataSubmit.append("patientSurname", formData.lastName);
+    formDataSubmit.append("patientEmail", formData.email);
+    formDataSubmit.append("patientPhone", formData.phone);
 
     startTransition(async () => {
       try {
         const result = await updatePatientProfile(formDataSubmit);
 
         if (!result.success) {
-          setError(result.error || "Error al actualizar el perfil");
+          toast.error(result.error || "Error al actualizar el perfil");
           return;
         }
 
-        setSuccessMessage("Perfil actualizado exitosamente");
-        // Show success message for 2 seconds before redirecting
-        setTimeout(() => {
-          router.push("/dashboard/patient");
-        }, 2000);
+        toast.success("Perfil actualizado exitosamente");
       } catch {
-        setError("Error al actualizar el perfil");
+        toast.error("Error al actualizar el perfil");
       }
     });
   };
 
   return (
     <form action={handleSubmit} className="space-y-8">
-      {/* Messages */}
-      {error && (
-        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
-          {error}
-        </div>
-      )}
-
-      {successMessage && (
-        <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg">
-          {successMessage}
-        </div>
-      )}
-
       {/* Personal Information */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-100">
         <div className="px-6 py-4 border-b border-gray-100">

@@ -444,21 +444,16 @@ export async function deletePricing(pricingId: string) {
 }
 
 export async function deleteClinic(clinicId: string): Promise<ActionResult> {
-  console.log("deleteClinic called with clinicId:", clinicId);
   try {
     const session = await requireDoctor();
-    console.log("Doctor session:", session?.user?.id);
 
     const doctor = await prisma.doctor.findUnique({
       where: { userId: session.user.id },
     });
 
     if (!doctor) {
-      console.log("Doctor not found");
       return { success: false, error: "Doctor no encontrado" };
     }
-
-    console.log("Doctor found:", doctor.id);
 
     // Verify doctor has access to this clinic
     const doctorClinic = await prisma.doctorClinic.findUnique({
@@ -471,11 +466,8 @@ export async function deleteClinic(clinicId: string): Promise<ActionResult> {
     });
 
     if (!doctorClinic) {
-      console.log("Doctor does not have access to clinic");
       return { success: false, error: "No tienes acceso a esta clínica" };
     }
-
-    console.log("Doctor has access to clinic");
 
     // Check if clinic has any active appointments
     const activeAppointments = await prisma.appointment.findFirst({
@@ -487,15 +479,12 @@ export async function deleteClinic(clinicId: string): Promise<ActionResult> {
     });
 
     if (activeAppointments) {
-      console.log("Clinic has active appointments, cannot delete");
       return {
         success: false,
         error:
           "No se puede eliminar la clínica porque tiene citas pendientes o confirmadas",
       };
     }
-
-    console.log("No active appointments found, proceeding with deletion");
 
     // Soft delete the clinic
     const deletedClinic = await prisma.clinic.update({
@@ -504,8 +493,6 @@ export async function deleteClinic(clinicId: string): Promise<ActionResult> {
         deletedAt: new Date(),
       },
     });
-
-    console.log("Clinic soft deleted:", deletedClinic.id);
 
     revalidatePath("/dashboard/doctor/clinics");
 

@@ -2,11 +2,11 @@
 
 export default function DisclaimerSection() {
   return (
-    <section className="py-10 bg-gray-50 ">
+    <section className="py-20 bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-xs text-gray-500 leading-snug">
         <h2 className="text-xl font-bold text-gray-600 mb-2">
           {" "}
-          Información Importante{" "}
+          Información Importante
         </h2>
         <p className="mb-3 text-gray-600">
           Conoce cómo funciona nuestra plataforma y nuestras responsabilidades
@@ -98,7 +98,7 @@ export default function DisclaimerSection() {
             </p>
           </div>
 
-          <p className="text-gray-500 pt-1">
+          {/* <p className="text-gray-500 pt-1">
             ¿Tienes preguntas sobre nuestra plataforma?{" "}
             <a
               href="mailto:soporte@docentro.com"
@@ -106,7 +106,7 @@ export default function DisclaimerSection() {
             >
               Contáctanos
             </a>
-          </p>
+          </p> */}
         </div>
       </div>
     </section>

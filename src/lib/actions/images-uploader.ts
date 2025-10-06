@@ -140,12 +140,11 @@ export async function removeDoctorProfileImage(): Promise<ActionResult> {
           const key = parts.slice(1).join("/");
           const bucket = storage.bucket(bucketName);
           const file = bucket.file(key);
-          await file.delete().catch((error) => {
-            console.log("Failed to delete profile image from GCS:", error);
+          await file.delete().catch(() => {
             // ignore errors deleting from storage
           });
         } else {
-          console.log(
+          console.error(
             "Could not extract key from profile image URL:",
             image.url
           );
@@ -216,14 +215,14 @@ export async function removeDoctorImage(
           const bucket = storage.bucket(bucketName);
           const file = bucket.file(key);
           await file.delete().catch((error) => {
-            console.log("Failed to delete from GCS:", error);
+            console.error("Failed to delete from GCS:", error);
             // ignore errors deleting from storage
           });
         } else {
-          console.log("Could not extract key from URL:", image.url);
+          console.error("Could not extract key from URL:", image.url);
         }
       } catch (e) {
-        console.log("Error parsing URL for deletion:", e);
+        console.error("Error parsing URL for deletion:", e);
         // ignore any parsing/storage errors, DB is already updated
       }
     }
