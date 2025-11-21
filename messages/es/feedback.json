@@ -1,0 +1,15 @@
+{
+  "apiErrorTitle": "Error de API",
+  "apiErrorMessage": "Ocurrió un error al comunicarse con el servidor.",
+  "apiLoading": "Cargando...",
+  "apiEmpty": "No hay datos disponibles.",
+  "realTimeStatusOnline": "En línea",
+  "realTimeStatusOffline": "Sin conexión",
+  "realTimeStatusConnecting": "Conectando...",
+  "skeletonLoading": "Cargando...",
+  "loadingPageWait": "Por favor espera un momento",
+  "errorBoundaryTitle": "Algo salió mal",
+  "errorBoundaryMessage": "Ha ocurrido un error inesperado. Por favor, recarga la página.",
+  "reload": "Recargar página",
+  "retry": "Reintentar"
+}

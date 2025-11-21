@@ -1,0 +1,21 @@
+{
+  "errorTitle": "Error del Mapa",
+  "errorMessage": "Error al cargar el mapa. Por favor, intenta nuevamente.",
+  "loading": "Cargando mapa...",
+  "sidebarTitle": "Doctores en el Área",
+  "sidebarFound": "doctores encontrados",
+  "years": "años de experiencia",
+  "year": "año de experiencia",
+  "noReviews": "Sin reseñas aún",
+  "viewProfile": "Ver Perfil",
+  "noAddress": "Dirección no disponible",
+  "noDoctors": "No hay doctores en esta área.",
+  "moveMap": "Mueve el mapa para explorar otras zonas.",
+  "review": "reseña",
+  "reviews": "reseñas",
+  "moreLocationsSuffix": "+{count} ubicaciones más",
+  "priceToConsult": "Precio a consultar",
+  "specialist": "Especialista",
+  "specialitiesTwo": "{first} y {second}",
+  "specialitiesMany": "{first} y {count} más"
+}

@@ -5,6 +5,8 @@ import LoadingButton from "../buttons/LoadingButton";
 import Link from "next/link";
 import { updatePatientProfile } from "@/lib/actions";
 import toast from "react-hot-toast";
+import { useTranslations } from "next-intl";
+import { useLocalePath } from "@/hooks";
 
 interface Patient {
   id: string;
@@ -30,6 +32,8 @@ export default function PatientProfileForm({
   patient,
 }: PatientProfileFormProps) {
   const [isPending, startTransition] = useTransition();
+  const t = useTranslations("forms");
+  const localePath = useLocalePath();
 
   // Form state for controlled inputs
   const [formData, setFormData] = useState({
@@ -79,34 +83,34 @@ export default function PatientProfileForm({
         const result = await updatePatientProfile(formDataSubmit);
 
         if (!result.success) {
-          toast.error(result.error || "Error al actualizar el perfil");
+          toast.error(result.error || t("patientProfileErrorUpdate"));
           return;
         }
 
-        toast.success("Perfil actualizado exitosamente");
+        toast.success(t("patientProfileSuccessUpdate"));
       } catch {
-        toast.error("Error al actualizar el perfil");
+        toast.error(t("patientProfileErrorUpdate"));
       }
     });
   };
 
   return (
-    <form action={handleSubmit} className="space-y-8">
-      {/* Personal Information */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100">
-        <div className="px-6 py-4 border-b border-gray-100">
-          <h2 className="text-lg font-semibold text-gray-900">
-            Información Personal
-          </h2>
-          <p className="text-sm text-gray-600 mt-1">
-            Información básica de contacto
-          </p>
-        </div>
-        <div className="p-6">
+    <form action={handleSubmit}>
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 space-y-8">
+        {/* Personal Information */}
+        <div>
+          <div className="mb-6">
+            <h2 className="text-xl font-semibold text-gray-900">
+              {t("patientProfilePersonalInfoTitle")}
+            </h2>
+            <p className="text-sm text-gray-600 mt-1">
+              {t("patientProfilePersonalInfoDesc")}
+            </p>
+          </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Nombre
+                {t("patientProfileName")}
               </label>
               <input
                 type="text"
@@ -119,7 +123,7 @@ export default function PatientProfileForm({
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Apellido
+                {t("patientProfileSurname")}
               </label>
               <input
                 type="text"
@@ -132,7 +136,7 @@ export default function PatientProfileForm({
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Email
+                {t("patientProfileEmail")}
               </label>
               <input
                 type="email"
@@ -145,7 +149,7 @@ export default function PatientProfileForm({
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Teléfono
+                {t("patientProfilePhone")}
               </label>
               <input
                 type="tel"
@@ -158,23 +162,24 @@ export default function PatientProfileForm({
             </div>
           </div>
         </div>
-      </div>
 
-      {/* Medical Information */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100">
-        <div className="px-6 py-4 border-b border-gray-100">
-          <h2 className="text-lg font-semibold text-gray-900">
-            Información Médica
-          </h2>
-          <p className="text-sm text-gray-600 mt-1">
-            Información adicional para mejorar la atención médica
-          </p>
-        </div>
-        <div className="p-6">
+        {/* Divider */}
+        <div className="border-t border-gray-200"></div>
+
+        {/* Medical Information */}
+        <div>
+          <div className="mb-6">
+            <h2 className="text-xl font-semibold text-gray-900">
+              {t("patientProfileMedicalInfoTitle")}
+            </h2>
+            <p className="text-sm text-gray-600 mt-1">
+              {t("patientProfileMedicalInfoDesc")}
+            </p>
+          </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Fecha de Nacimiento
+                {t("patientProfileBirthdate")}
               </label>
               <input
                 type="date"
@@ -186,7 +191,7 @@ export default function PatientProfileForm({
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Género
+                {t("patientProfileGender")}
               </label>
               <select
                 name="gender"
@@ -194,35 +199,44 @@ export default function PatientProfileForm({
                 onChange={handleInputChange}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
-                <option value="">Seleccionar género</option>
-                <option value="masculino">Masculino</option>
-                <option value="femenino">Femenino</option>
-                <option value="otro">Otro</option>
-                <option value="prefiero_no_decir">Prefiero no decir</option>
+                <option value="">{t("patientProfileGenderSelect")}</option>
+                <option value="masculino">
+                  {t("patientProfileGenderMale")}
+                </option>
+                <option value="femenino">
+                  {t("patientProfileGenderFemale")}
+                </option>
+                <option value="otro">{t("patientProfileGenderOther")}</option>
+                <option value="prefiero_no_decir">
+                  {t("patientProfileGenderNoSay")}
+                </option>
               </select>
             </div>
           </div>
         </div>
-      </div>
 
-      {/* Submit Button */}
-      <div className="flex justify-end space-x-4">
-        <Link
-          href="/dashboard/patient"
-          className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
-        >
-          Cancelar
-        </Link>
-        <LoadingButton
-          type="submit"
-          isLoading={isPending}
-          loadingText="Guardando..."
-          variant="success"
-          size="lg"
-          className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-8 py-3 rounded-xl flex items-center space-x-2 font-medium shadow-lg hover:shadow-xl transition-all duration-200"
-        >
-          <span>Guardar Cambios</span>
-        </LoadingButton>
+        {/* Divider */}
+        <div className="border-t border-gray-200"></div>
+
+        {/* Submit Button */}
+        <div className="flex justify-end space-x-4">
+          <Link
+            href={localePath("/dashboard/patient")}
+            className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+          >
+            {t("patientProfileCancel")}
+          </Link>
+          <LoadingButton
+            type="submit"
+            isLoading={isPending}
+            loadingText={t("patientProfileSaving")}
+            variant="success"
+            size="lg"
+            className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-8 py-3 rounded-xl flex items-center space-x-2 font-medium shadow-lg hover:shadow-xl transition-all duration-200"
+          >
+            <span>{t("patientProfileSave")}</span>
+          </LoadingButton>
+        </div>
       </div>
     </form>
   );

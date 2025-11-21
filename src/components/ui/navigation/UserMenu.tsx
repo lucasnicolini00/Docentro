@@ -15,12 +15,16 @@ import {
   Briefcase,
 } from "lucide-react";
 import { getUserProfileImageUrl } from "@/lib/actions/images-uploader";
+import { useTranslations } from "next-intl";
+import { useLocalePath } from "@/hooks";
 
 export default function UserMenu() {
+  const t = useTranslations("navigation");
   const { data: session, status } = useSession();
   const [isOpen, setIsOpen] = useState(false);
   const [profileImageUrl, setProfileImageUrl] = useState<string | null>(null);
   const menuRef = useRef<HTMLDivElement>(null);
+  const localePath = useLocalePath();
 
   // Close menu when clicking outside
   useEffect(() => {
@@ -66,16 +70,16 @@ export default function UserMenu() {
     return (
       <div className="flex items-center space-x-4">
         <Link
-          href="/register"
+          href={localePath("/register")}
           className="text-gray-700 hover:text-blue-600 font-medium cursor-pointer transition-colors"
         >
-          Registrarse
+          {t("register")}
         </Link>
         <Link
-          href="/login"
+          href={localePath("/login")}
           className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-full transition-colors font-medium cursor-pointer shadow-sm hover:shadow-md"
         >
-          Iniciar Sesión
+          {t("login")}
         </Link>
       </div>
     );
@@ -85,65 +89,65 @@ export default function UserMenu() {
     session.user.role === "DOCTOR"
       ? [
           {
-            label: "Dashboard",
-            href: "/dashboard/doctor",
+            label: t("doctorSidebarDashboard"),
+            href: localePath("/dashboard/doctor"),
             icon: Home,
           },
           {
-            label: "Clínicas y Precios",
-            href: "/dashboard/doctor/clinics",
+            label: t("doctorSidebarClinics"),
+            href: localePath("/dashboard/doctor/clinics"),
             icon: Building2,
           },
           {
-            label: "Horarios",
-            href: "/dashboard/doctor/schedules",
+            label: t("doctorSidebarSchedules"),
+            href: localePath("/dashboard/doctor/schedules"),
             icon: Clock,
           },
           {
-            label: "Mis Citas",
-            href: "/dashboard/doctor/appointments",
+            label: t("doctorSidebarAppointments"),
+            href: localePath("/dashboard/doctor/appointments"),
             icon: CalendarDays,
           },
           {
-            label: "Calendario",
-            href: "/dashboard/doctor/calendar",
+            label: t("doctorSidebarCalendar"),
+            href: localePath("/dashboard/doctor/calendar"),
             icon: CalendarDays,
           },
           {
-            label: "Análisis",
-            href: "/dashboard/doctor/analytics",
+            label: t("doctorSidebarAnalytics"),
+            href: localePath("/dashboard/doctor/analytics"),
             icon: BarChart3,
           },
           {
-            label: "Perfil y Configuración",
-            href: "/dashboard/doctor/profile",
+            label: t("doctorSidebarProfile"),
+            href: localePath("/dashboard/doctor/profile"),
             icon: User,
           },
           {
-            label: "Experiencia",
-            href: "/dashboard/doctor/profile/experience",
+            label: t("doctorSidebarExperience"),
+            href: localePath("/dashboard/doctor/profile/experience"),
             icon: Briefcase,
           },
         ]
       : [
           {
-            label: "Dashboard",
-            href: "/dashboard/patient",
+            label: t("patientSidebarDashboard"),
+            href: localePath("/dashboard/patient"),
             icon: Home,
           },
           {
-            label: "Mis Citas",
-            href: "/dashboard/patient/appointments",
+            label: t("patientSidebarAppointments"),
+            href: localePath("/dashboard/patient/appointments"),
             icon: CalendarDays,
           },
           {
-            label: "Calendario",
-            href: "/dashboard/patient/calendar",
+            label: t("patientSidebarCalendar"),
+            href: localePath("/dashboard/patient/calendar"),
             icon: Calendar,
           },
           {
-            label: "Mi Perfil",
-            href: "/dashboard/patient/profile",
+            label: t("patientSidebarProfile"),
+            href: localePath("/dashboard/patient/profile"),
             icon: User,
           },
         ];
@@ -175,7 +179,9 @@ export default function UserMenu() {
               {session.user.name}
             </p>
             <p className="text-xs text-gray-500">
-              {session.user.role === "DOCTOR" ? "Doctor" : "Paciente"}
+              {session.user.role === "DOCTOR"
+                ? t("roleDoctor")
+                : t("rolePatient")}
             </p>
           </div>
         </div>
@@ -210,7 +216,9 @@ export default function UserMenu() {
                 <p className="font-medium text-gray-900">{session.user.name}</p>
                 <p className="text-sm text-gray-500">{session.user.email}</p>
                 <span className="inline-block mt-1 px-2 py-0.5 bg-blue-100 text-blue-800 text-xs font-medium rounded-full">
-                  {session.user.role === "DOCTOR" ? "Doctor" : "Paciente"}
+                  {session.user.role === "DOCTOR"
+                    ? t("roleDoctor")
+                    : t("rolePatient")}
                 </span>
               </div>
             </div>
@@ -239,12 +247,12 @@ export default function UserMenu() {
             <button
               onClick={() => {
                 setIsOpen(false);
-                signOut({ callbackUrl: "/" });
+                signOut({ callbackUrl: localePath("/") });
               }}
               className="flex items-center space-x-3 w-full px-4 py-2 text-red-600 hover:bg-red-50 transition-colors"
             >
               <LogOut className="w-4 h-4" />
-              <span>Cerrar Sesión</span>
+              <span>{t("logout")}</span>
             </button>
           </div>
         </div>

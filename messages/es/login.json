@@ -1,0 +1,19 @@
+{
+  "title": "Iniciar sesión",
+  "subtitle": "Bienvenido de nuevo. Inicia sesión para continuar",
+  "email": "Correo electrónico",
+  "password": "Contraseña",
+  "loginButton": "Entrar",
+  "registerLink": "¿No tienes cuenta? Regístrate",
+  "loadingText": "Ingresando...",
+  "rememberMe": "Recordarme",
+  "forgotPassword": "¿Olvidaste tu contraseña?",
+  "emailPlaceholder": "tu@email.com",
+  "passwordPlaceholder": "••••••••",
+  "backHomeLink": "← Volver al inicio",
+  "toastRegisteredSuccess": "¡Cuenta creada exitosamente! Ahora puedes iniciar sesión.",
+  "toastLoginSuccess": "¡Inicio de sesión exitoso!",
+  "toastInvalidCredentials": "Credenciales incorrectas. Verifica tu email y contraseña.",
+  "toastSignInError": "Error al iniciar sesión. Verifica tus credenciales.",
+  "loadingFallback": "Cargando..."
+}

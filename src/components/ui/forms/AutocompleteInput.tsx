@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import { ChevronDown } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 interface AutocompleteInputProps {
   value: string;
@@ -26,6 +27,7 @@ export default function AutocompleteInput({
   const [filteredOptions, setFilteredOptions] = useState<string[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const t = useTranslations("forms");
 
   // Filter options based on input value
   useEffect(() => {
@@ -156,7 +158,7 @@ export default function AutocompleteInput({
                 : "px-4 py-2 text-gray-500 text-sm"
             }
           >
-            No se encontraron opciones
+            {t("autocompleteNoOptions")}
           </div>
         </div>
       )}

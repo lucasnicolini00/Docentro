@@ -1,3 +1,6 @@
+"use client";
+import { useTranslations } from "next-intl";
+
 interface LoadingSpinnerProps {
   size?: "sm" | "md" | "lg";
   className?: string;
@@ -7,6 +10,7 @@ export default function LoadingSpinner({
   size = "md",
   className = "",
 }: LoadingSpinnerProps) {
+  const t = useTranslations("feedback");
   const sizeClasses = {
     sm: "w-4 h-4",
     md: "w-5 h-5",
@@ -17,9 +21,9 @@ export default function LoadingSpinner({
     <div
       className={`animate-spin rounded-full border-2 border-current border-t-transparent ${sizeClasses[size]} ${className}`}
       role="status"
-      aria-label="Cargando"
+      aria-label={t("apiLoading")}
     >
-      <span className="sr-only">Cargando...</span>
+      <span className="sr-only">{t("apiLoading")}</span>
     </div>
   );
 }

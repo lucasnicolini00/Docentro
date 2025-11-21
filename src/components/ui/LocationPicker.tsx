@@ -1,4 +1,5 @@
 "use client";
+import { useTranslations } from "next-intl";
 
 import React, { useState, useCallback, useEffect } from "react";
 import { useJsApiLoader, GoogleMap, Marker } from "@react-google-maps/api";
@@ -121,6 +122,7 @@ export default function LocationPicker({
   address,
   className = "",
 }: LocationPickerProps) {
+  const t = useTranslations("locationPicker");
   const { isLoaded, loadError } = useJsApiLoader({
     id: "google-map-script",
     googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || "",
@@ -220,8 +222,8 @@ export default function LocationPicker({
       >
         <div className="text-center text-gray-500">
           <MapPin className="h-8 w-8 mx-auto mb-2" />
-          <p className="text-sm">Error al cargar el mapa</p>
-          <p className="text-xs">Verifica la configuración de Google Maps</p>
+          <p className="text-sm">{t("mapLoadError")}</p>
+          <p className="text-xs">{t("checkGoogleMapsConfig")}</p>
         </div>
       </div>
     );
@@ -234,7 +236,7 @@ export default function LocationPicker({
       >
         <div className="text-center text-gray-500">
           <Loader2 className="h-8 w-8 mx-auto mb-2 animate-spin" />
-          <p className="text-sm">Cargando mapa...</p>
+          <p className="text-sm">{t("loadingMap")}</p>
         </div>
       </div>
     );
@@ -248,13 +250,11 @@ export default function LocationPicker({
         <div className="text-center">
           <MapPin className="h-8 w-8 mx-auto mb-2 text-gray-400" />
           <h4 className="font-semibold text-gray-700 mb-2">
-            Selector de Ubicación
+            {t("locationSelectorTitle")}
           </h4>
-          <p className="text-sm text-gray-600 mb-2">
-            Haz clic en el mapa para seleccionar la ubicación
-          </p>
+          <p className="text-sm text-gray-600 mb-2">{t("clickMapToSelect")}</p>
           <p className="text-xs text-gray-500">
-            Configurar Google Maps API Key para activar
+            {t("configureApiKeyToEnable")}
           </p>
         </div>
       </div>
@@ -266,17 +266,17 @@ export default function LocationPicker({
       <div className="mb-3">
         <div className="flex items-center justify-between">
           <label className="block text-sm font-medium text-gray-700">
-            Ubicación en el Mapa
+            {t("mapLocationLabel")}
           </label>
           {isGeocodingAddress && (
             <div className="flex items-center text-xs text-blue-600">
               <Loader2 className="h-3 w-3 mr-1 animate-spin" />
-              Buscando ubicación...
+              {t("searchingLocation")}
             </div>
           )}
         </div>
         <p className="text-xs text-gray-500 mt-1">
-          Haz clic en el mapa para seleccionar la ubicación exacta de la clínica
+          {t("clickMapToSelectExact")}
         </p>
       </div>
 
@@ -297,7 +297,7 @@ export default function LocationPicker({
                 url: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23dc2626'%3E%3Cpath d='M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z'/%3E%3C/svg%3E",
                 scaledSize: new google.maps.Size(32, 32),
               }}
-              title="Ubicación de la clínica"
+              title={t("clinicLocationMarker")}
             />
           )}
         </GoogleMap>
@@ -309,12 +309,9 @@ export default function LocationPicker({
             <MapPin className="h-4 w-4 text-yellow-600 mt-0.5 mr-2 flex-shrink-0" />
             <div className="text-sm">
               <p className="font-medium text-yellow-900">
-                📍 Ubicación pendiente
+                {t("pendingLocation")}
               </p>
-              <p className="text-yellow-700">
-                Haz clic en el mapa para confirmar la ubicación exacta o ajusta
-                la dirección para búsqueda automática
-              </p>
+              <p className="text-yellow-700">{t("clickToConfirmOrAdjust")}</p>
             </div>
           </div>
         </div>

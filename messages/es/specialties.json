@@ -1,0 +1,20 @@
+{
+  "sectionTitle": "Especialidades Disponibles",
+  "sectionDescription": "Encuentra especialistas en todas las áreas de la salud",
+  "defaultDescription": "Atención especializada",
+  "viewSpecialists": "Ver especialistas →",
+  "names": {
+    "Cardiología": "Cardiología",
+    "Dermatología": "Dermatología",
+    "Pediatría": "Pediatría",
+    "Neurología": "Neurología",
+    "Ginecología": "Ginecología"
+  },
+  "descriptions": {
+    "Especialista en el sistema cardiovascular": "Especialista en el sistema cardiovascular",
+    "Especialista en enfermedades de la piel": "Especialista en enfermedades de la piel",
+    "Especialista en medicina infantil": "Especialista en medicina infantil",
+    "Especialista en el sistema nervioso": "Especialista en el sistema nervioso",
+    "Especialista en salud femenina": "Especialista en salud femenina"
+  }
+}

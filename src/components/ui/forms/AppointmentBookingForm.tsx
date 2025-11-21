@@ -9,6 +9,7 @@ import {
 } from "@/lib/actions/appointments";
 import { AppointmentType } from "@prisma/client";
 import toast from "react-hot-toast";
+import { useTranslations } from "next-intl";
 
 interface Doctor {
   id: string;
@@ -55,6 +56,7 @@ export default function AppointmentBookingForm({
 }: AppointmentBookingFormProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
+  const t = useTranslations("forms");
 
   // Form state
   const [selectedDate, setSelectedDate] = useState("");
@@ -96,10 +98,10 @@ export default function AppointmentBookingForm({
       if (result.success) {
         setAvailableSlots(result.data || []);
       } else {
-        toast.error(result.error || "Error al obtener horarios disponibles");
+        toast.error(result.error || t("appointmentErrorFetchSlots"));
       }
     } catch {
-      toast.error("Error al obtener horarios disponibles");
+      toast.error(t("appointmentErrorFetchSlots"));
     } finally {
       setLoadingSlots(false);
     }
@@ -118,13 +120,13 @@ export default function AppointmentBookingForm({
         const result = await createAppointment(formData);
 
         if (!result.success) {
-          toast.error(result.error || "Error al agendar la cita");
+          toast.error(result.error || t("appointmentErrorCreate"));
           return;
         }
 
-        toast.success("¡Cita agendada exitosamente!");
+        toast.success(t("appointmentSuccessCreate"));
       } catch {
-        toast.error("Error al agendar la cita");
+        toast.error(t("appointmentErrorCreate"));
       }
     });
   };
@@ -137,7 +139,9 @@ export default function AppointmentBookingForm({
   return (
     <div className="max-w-2xl mx-auto bg-white rounded-lg shadow-lg p-6">
       <div className="mb-6">
-        <h2 className="text-2xl font-bold text-gray-900 mb-2">Agendar Cita</h2>
+        <h2 className="text-2xl font-bold text-gray-900 mb-2">
+          {t("appointmentTitle")}
+        </h2>
         <div className="flex items-center space-x-4">
           <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
             <span className="text-lg font-semibold text-blue-600">
@@ -163,7 +167,7 @@ export default function AppointmentBookingForm({
             htmlFor="date"
             className="block text-sm font-medium text-gray-700 mb-2"
           >
-            Fecha *
+            {t("appointmentDateLabel")}
           </label>
           <input
             type="date"
@@ -181,13 +185,13 @@ export default function AppointmentBookingForm({
         {selectedDate && (
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Horario Disponible *
+              {t("appointmentTimeLabel")}
             </label>
             {loadingSlots ? (
               <div className="text-center py-4">
                 <div className="inline-block animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
                 <p className="text-sm text-gray-600 mt-2">
-                  Cargando horarios...
+                  {t("appointmentTimeLoading")}
                 </p>
               </div>
             ) : availableSlots.length > 0 ? (
@@ -209,7 +213,7 @@ export default function AppointmentBookingForm({
               </div>
             ) : (
               <p className="text-sm text-gray-600 py-4">
-                No hay horarios disponibles para esta fecha.
+                {t("appointmentTimeNone")}
               </p>
             )}
           </div>
@@ -221,7 +225,7 @@ export default function AppointmentBookingForm({
             htmlFor="clinic"
             className="block text-sm font-medium text-gray-700 mb-2"
           >
-            Clínica *
+            {t("appointmentClinicLabel")}
           </label>
           <select
             id="clinic"
@@ -233,7 +237,7 @@ export default function AppointmentBookingForm({
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             required
           >
-            <option value="">Seleccionar clínica</option>
+            <option value="">{t("appointmentClinicSelect")}</option>
             {doctor.clinics.map((clinic) => (
               <option key={clinic.clinic.id} value={clinic.clinic.id}>
                 {clinic.clinic.name} - {clinic.clinic.address}
@@ -249,7 +253,7 @@ export default function AppointmentBookingForm({
               htmlFor="pricing"
               className="block text-sm font-medium text-gray-700 mb-2"
             >
-              Tipo de Consulta *
+              {t("appointmentPricingLabel")}
             </label>
             <select
               id="pricing"
@@ -258,10 +262,11 @@ export default function AppointmentBookingForm({
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               required
             >
-              <option value="">Seleccionar tipo de consulta</option>
+              <option value="">{t("appointmentPricingSelect")}</option>
               {selectedClinicPricing.map((pricing) => (
                 <option key={pricing.id} value={pricing.id}>
-                  Consulta - ${pricing.consultationFee.toLocaleString()}
+                  {t("appointmentPricingOptionPrefix")} - $
+                  {pricing.consultationFee.toLocaleString()}
                 </option>
               ))}
             </select>
@@ -271,7 +276,7 @@ export default function AppointmentBookingForm({
         {/* Appointment Type */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            Modalidad *
+            {t("appointmentTypeLabel")}
           </label>
           <div className="space-y-2">
             <label className="flex items-center">
@@ -285,7 +290,7 @@ export default function AppointmentBookingForm({
                 }
                 className="mr-3"
               />
-              Presencial
+              {t("appointmentTypeInPerson")}
             </label>
             <label className="flex items-center">
               <input
@@ -298,7 +303,7 @@ export default function AppointmentBookingForm({
                 }
                 className="mr-3"
               />
-              Virtual
+              {t("appointmentTypeOnline")}
             </label>
           </div>
         </div>
@@ -309,7 +314,7 @@ export default function AppointmentBookingForm({
             htmlFor="notes"
             className="block text-sm font-medium text-gray-700 mb-2"
           >
-            Notas (Opcional)
+            {t("appointmentNotesLabel")}
           </label>
           <textarea
             id="notes"
@@ -318,7 +323,7 @@ export default function AppointmentBookingForm({
             onChange={(e) => setNotes(e.target.value)}
             rows={3}
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            placeholder="Describe el motivo de tu consulta o cualquier información relevante..."
+            placeholder={t("appointmentNotesPlaceholder")}
           />
         </div>
 
@@ -329,12 +334,12 @@ export default function AppointmentBookingForm({
             onClick={() => router.back()}
             className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
           >
-            Cancelar
+            {t("patientProfileCancel")}
           </button>
           <LoadingButton
             type="submit"
             isLoading={isPending}
-            loadingText="Agendando..."
+            loadingText={t("appointmentSubmitting")}
             variant="primary"
             size="lg"
             disabled={
@@ -344,7 +349,7 @@ export default function AppointmentBookingForm({
               !selectedPricing
             }
           >
-            Agendar Cita
+            {t("appointmentSubmit")}
           </LoadingButton>
         </div>
       </form>

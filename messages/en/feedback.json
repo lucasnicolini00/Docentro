@@ -1,0 +1,15 @@
+{
+  "apiErrorTitle": "API Error",
+  "apiErrorMessage": "An error occurred while communicating with the server.",
+  "apiLoading": "Loading...",
+  "apiEmpty": "No data available.",
+  "realTimeStatusOnline": "Online",
+  "realTimeStatusOffline": "Offline",
+  "realTimeStatusConnecting": "Connecting...",
+  "skeletonLoading": "Loading...",
+  "loadingPageWait": "Please wait a moment",
+  "errorBoundaryTitle": "Something went wrong",
+  "errorBoundaryMessage": "An unexpected error occurred. Please reload the page.",
+  "reload": "Reload page",
+  "retry": "Retry"
+}

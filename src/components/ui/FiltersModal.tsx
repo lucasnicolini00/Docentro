@@ -1,4 +1,5 @@
 "use client";
+import { useTranslations } from "next-intl";
 
 import { useState, useEffect } from "react";
 import { X, Filter } from "lucide-react";
@@ -24,6 +25,7 @@ export default function FiltersModal({
   currentFilters,
 }: FiltersModalProps) {
   const [filters, setFilters] = useState<FilterState>(currentFilters);
+  const t = useTranslations("filtersModal");
 
   // Update local state when currentFilters change
   useEffect(() => {
@@ -124,7 +126,7 @@ export default function FiltersModal({
             <div className="flex items-center gap-3">
               <Filter className="w-6 h-6 text-blue-600" />
               <h2 className="text-xl font-semibold text-gray-900">
-                Filtros Avanzados
+                {t("advancedFilters")}
               </h2>
             </div>
             <button
@@ -141,19 +143,10 @@ export default function FiltersModal({
               {/* Specialties */}
               <div>
                 <h3 className="text-lg font-medium text-gray-900 mb-4">
-                  Especialidades
+                  {t("specialtiesLabel")}
                 </h3>
                 <div className="space-y-3">
-                  {[
-                    "Cardiología",
-                    "Dermatología",
-                    "Pediatría",
-                    "Neurología",
-                    "Ginecología",
-                    "Traumatología",
-                    "Psiquiatría",
-                    "Oftalmología",
-                  ].map((specialty) => (
+                  {t.raw("specialtiesList").map((specialty: string) => (
                     <label key={specialty} className="flex items-center">
                       <input
                         type="checkbox"
@@ -172,15 +165,10 @@ export default function FiltersModal({
               {/* Price Range */}
               <div>
                 <h3 className="text-lg font-medium text-gray-900 mb-4">
-                  Rango de Precio
+                  {t("priceRangeLabel")}
                 </h3>
                 <div className="space-y-3">
-                  {[
-                    "Hasta Bs. 200",
-                    "Bs. 200 - 400",
-                    "Bs. 400 - 600",
-                    "Más de Bs. 600",
-                  ].map((range) => (
+                  {t.raw("priceRangesList").map((range: string) => (
                     <label key={range} className="flex items-center">
                       <input
                         type="checkbox"
@@ -199,36 +187,34 @@ export default function FiltersModal({
               {/* Availability */}
               <div>
                 <h3 className="text-lg font-medium text-gray-900 mb-4">
-                  Disponibilidad
+                  {t("availabilityLabel")}
                 </h3>
                 <div className="space-y-3">
-                  {["Hoy", "Esta semana", "Este mes", "Próximo mes"].map(
-                    (availability) => (
-                      <label key={availability} className="flex items-center">
-                        <input
-                          type="checkbox"
-                          checked={filters.availability.includes(availability)}
-                          onChange={(e) =>
-                            handleAvailabilityChange(
-                              availability,
-                              e.target.checked
-                            )
-                          }
-                          className="rounded border-gray-300 text-blue-600 mr-3 focus:ring-blue-500"
-                        />
-                        <span className="text-sm text-gray-700">
-                          {availability}
-                        </span>
-                      </label>
-                    )
-                  )}
+                  {t.raw("availabilityList").map((availability: string) => (
+                    <label key={availability} className="flex items-center">
+                      <input
+                        type="checkbox"
+                        checked={filters.availability.includes(availability)}
+                        onChange={(e) =>
+                          handleAvailabilityChange(
+                            availability,
+                            e.target.checked
+                          )
+                        }
+                        className="rounded border-gray-300 text-blue-600 mr-3 focus:ring-blue-500"
+                      />
+                      <span className="text-sm text-gray-700">
+                        {availability}
+                      </span>
+                    </label>
+                  ))}
                 </div>
               </div>
 
               {/* Rating */}
               <div>
                 <h3 className="text-lg font-medium text-gray-900 mb-4">
-                  Calificación Mínima
+                  {t("minRatingLabel")}
                 </h3>
                 <div className="space-y-3">
                   {[5, 4, 3, 2].map((rating) => (
@@ -252,7 +238,7 @@ export default function FiltersModal({
                           </span>
                         ))}
                         <span className="text-sm text-gray-700 ml-2">
-                          y más
+                          {t("andMore")}
                         </span>
                       </div>
                     </label>
@@ -271,7 +257,7 @@ export default function FiltersModal({
                     filters.priceRanges.length +
                     filters.availability.length +
                     (filters.rating ? 1 : 0)}{" "}
-                  filtros aplicados
+                  {t("appliedFilters")}
                 </span>
               )}
             </div>
@@ -280,13 +266,13 @@ export default function FiltersModal({
                 onClick={handleClear}
                 className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium"
               >
-                Limpiar
+                {t("clearButton")}
               </button>
               <button
                 onClick={handleApply}
                 className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
               >
-                Aplicar Filtros
+                {t("applyFiltersButton")}
               </button>
             </div>
           </div>

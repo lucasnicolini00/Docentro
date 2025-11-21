@@ -108,8 +108,9 @@ export const authOptions: NextAuthOptions = {
     },
   },
 
+  // Custom pages - use locale detection for dynamic redirect
   pages: {
-    signIn: "/login",
+    signIn: "/login", // Will be handled by middleware locale detection
   },
 
   secret: process.env.NEXTAUTH_SECRET,

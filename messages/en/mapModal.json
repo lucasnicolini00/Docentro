@@ -1,0 +1,21 @@
+{
+  "errorTitle": "Map Error",
+  "errorMessage": "Error loading map. Please try again.",
+  "loading": "Loading map...",
+  "sidebarTitle": "Doctors in the Area",
+  "sidebarFound": "doctors found",
+  "years": "years of experience",
+  "year": "year of experience",
+  "noReviews": "No reviews yet",
+  "viewProfile": "View Profile",
+  "noAddress": "Address not available",
+  "noDoctors": "No doctors in this area.",
+  "moveMap": "Move the map to explore other areas.",
+  "review": "review",
+  "reviews": "reviews",
+  "moreLocationsSuffix": "+{count} more locations",
+  "priceToConsult": "Price on request",
+  "specialist": "Specialist",
+  "specialitiesTwo": "{first} and {second}",
+  "specialitiesMany": "{first} and {count} more"
+}

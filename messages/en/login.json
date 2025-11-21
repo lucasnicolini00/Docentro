@@ -1,0 +1,19 @@
+{
+  "title": "Login",
+  "subtitle": "Welcome back. Sign in to continue.",
+  "email": "Email",
+  "password": "Password",
+  "loginButton": "Sign In",
+  "registerLink": "Don't have an account? Register",
+  "loadingText": "Signing in...",
+  "rememberMe": "Remember me",
+  "forgotPassword": "Forgot your password?",
+  "emailPlaceholder": "you@email.com",
+  "passwordPlaceholder": "••••••••",
+  "backHomeLink": "← Back to home",
+  "toastRegisteredSuccess": "Account created successfully! You can now sign in.",
+  "toastLoginSuccess": "Login successful!",
+  "toastInvalidCredentials": "Incorrect credentials. Check your email and password.",
+  "toastSignInError": "Error signing in. Please check your credentials.",
+  "loadingFallback": "Loading..."
+}

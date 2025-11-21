@@ -1,6 +1,7 @@
 "use client";
 
 import { Session } from "next-auth";
+import { useTranslations } from "next-intl";
 import { User, Calendar } from "lucide-react";
 
 interface PatientHeaderProps {
@@ -20,6 +21,7 @@ export default function PatientHeader({
   showProfile = true,
   customContent,
 }: PatientHeaderProps) {
+  const t = useTranslations("navigation");
   const formatDate = () => {
     return new Intl.DateTimeFormat("es-ES", {
       weekday: "long",
@@ -49,10 +51,13 @@ export default function PatientHeader({
             )}
             <div>
               <h1 className="text-2xl lg:text-3xl font-bold">
-                {title || `¡Hola, ${session?.user?.name || "Paciente"}!`}
+                {title ||
+                  t("patientHeaderGreeting", {
+                    name: session?.user?.name || t("patientHeaderDefaultName"),
+                  })}
               </h1>
               <p className="text-blue-100 mt-1">
-                {subtitle || "Gestiona tus citas médicas y perfil"}
+                {subtitle || t("patientHeaderSubtitle")}
               </p>
             </div>
           </div>

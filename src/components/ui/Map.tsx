@@ -1,5 +1,5 @@
 "use client";
-
+import { useTranslations } from "next-intl";
 import {
   GoogleMap,
   Marker,
@@ -8,6 +8,7 @@ import {
 } from "@react-google-maps/api";
 import { useState, useCallback, useEffect } from "react";
 import { Maximize2 } from "lucide-react";
+import { useLocalePath } from "@/hooks";
 
 const containerStyle = {
   width: "100%",
@@ -153,6 +154,8 @@ export default function Map({
   className,
   onOpenModal,
 }: MapProps) {
+  const t = useTranslations("map");
+  const localePath = useLocalePath();
   const { isLoaded } = useJsApiLoader({
     id: "google-map-script",
     googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || "",
@@ -276,13 +279,11 @@ export default function Map({
       >
         <div className="text-center">
           <div className="text-4xl mb-3">🗺️</div>
-          <h4 className="font-semibold text-gray-700 mb-2">Mapa Interactivo</h4>
-          <p className="text-sm text-gray-600 mb-4">
-            Aquí se mostrará la ubicación de las clínicas y consultorios
-          </p>
-          <div className="text-xs text-gray-500">
-            Configurar Google Maps API Key
-          </div>
+          <h4 className="font-semibold text-gray-700 mb-2">
+            {t("interactiveMap")}
+          </h4>
+          <p className="text-sm text-gray-600 mb-4">{t("clinicsShown")}</p>
+          <div className="text-xs text-gray-500">{t("apiKey")}</div>
         </div>
       </div>
     );
@@ -297,7 +298,7 @@ export default function Map({
         <button
           onClick={onOpenModal}
           className="absolute top-3 right-3 z-10 bg-white hover:bg-gray-50 border border-gray-200 rounded-lg p-2 shadow-md transition-colors"
-          title="Abrir mapa completo"
+          title={t("openFullMap")}
         >
           <Maximize2 className="h-4 w-4 text-gray-600" />
         </button>
@@ -340,7 +341,7 @@ export default function Map({
                     </h3>
                     <p className="text-sm text-blue-600 mb-2">
                       {marker.doctor.specialities[0]?.speciality?.name ||
-                        "Especialista"}
+                        t("specialist")}
                     </p>
                     <div className="text-sm text-gray-600">
                       <p className="font-medium">{marker.clinic.name}</p>
@@ -352,11 +353,14 @@ export default function Map({
                     <div className="mt-2 pt-2 border-t border-gray-200">
                       <button
                         onClick={() =>
-                          window.open(`/doctor/${marker.doctor.id}`, "_blank")
+                          window.open(
+                            localePath(`/doctor/${marker.doctor.id}`),
+                            "_blank"
+                          )
                         }
                         className="text-xs bg-blue-600 text-white px-2 py-1 rounded hover:bg-blue-700 transition-colors"
                       >
-                        Ver Perfil
+                        {t("viewProfile")}
                       </button>
                     </div>
                   </div>
@@ -373,7 +377,7 @@ export default function Map({
     >
       <div className="text-center">
         <div className="text-4xl mb-3">🗺️</div>
-        <h4 className="font-semibold text-gray-700 mb-2">Cargando Mapa...</h4>
+        <h4 className="font-semibold text-gray-700 mb-2">{t("loading")}</h4>
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
       </div>
     </div>

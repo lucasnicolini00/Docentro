@@ -1,0 +1,27 @@
+{
+  "title": "What Our Patients Say",
+  "subtitle": "Real testimonials from people who found their ideal specialist",
+  "testimonials": [
+    {
+      "name": "Maria Gonzalez",
+      "specialty": "Cardiology",
+      "rating": 5,
+      "comment": "I found the perfect cardiologist for my treatment. The process was very easy and fast.",
+      "avatar": "👩‍💼"
+    },
+    {
+      "name": "Carlos Mendoza",
+      "specialty": "Dermatology",
+      "rating": 5,
+      "comment": "Excellent platform. I was able to book my dermatology appointment without complications.",
+      "avatar": "👨‍💻"
+    },
+    {
+      "name": "Ana Rodriguez",
+      "specialty": "Pediatrics",
+      "rating": 5,
+      "comment": "As a mother, it's reassuring to find trusted pediatricians so easily.",
+      "avatar": "👩‍🏫"
+    }
+  ]
+}

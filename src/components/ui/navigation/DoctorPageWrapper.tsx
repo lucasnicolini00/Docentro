@@ -1,4 +1,5 @@
 import React from "react";
+import { useTranslations } from "next-intl";
 import { DoctorLayout } from "@/components/ui/navigation";
 
 interface DoctorPageWrapperProps {
@@ -44,10 +45,11 @@ export function DashboardPageWrapper({
 }: {
   children: React.ReactNode;
 }) {
+  const t = useTranslations("navigation");
   return (
     <DoctorPageWrapper
-      title="Panel de Control"
-      subtitle="Resumen de tu actividad médica"
+      title={t("doctorDashboardTitle")}
+      subtitle={t("doctorDashboardSubtitle")}
       showDate={true}
       showProfile={true}
     >
@@ -61,10 +63,11 @@ export function AppointmentsPageWrapper({
 }: {
   children: React.ReactNode;
 }) {
+  const t = useTranslations("navigation");
   return (
     <DoctorPageWrapper
-      title="Gestión de Citas"
-      subtitle="Administra y programa tus citas médicas"
+      title={t("doctorAppointmentsTitle")}
+      subtitle={t("doctorAppointmentsSubtitle")}
       showDate={true}
       showProfile={false}
     >
@@ -78,10 +81,11 @@ export function ProfilePageWrapper({
 }: {
   children: React.ReactNode;
 }) {
+  const t = useTranslations("navigation");
   return (
     <DoctorPageWrapper
-      title="Mi Perfil Profesional"
-      subtitle="Actualiza tu información y especialidades"
+      title={t("doctorProfileTitle")}
+      subtitle={t("doctorProfileSubtitle")}
       showDate={false}
       showProfile={true}
     >
@@ -95,10 +99,11 @@ export function ClinicsPageWrapper({
 }: {
   children: React.ReactNode;
 }) {
+  const t = useTranslations("navigation");
   return (
     <DoctorPageWrapper
-      title="Clínicas y Precios"
-      subtitle="Gestiona tus ubicaciones y tarifas"
+      title={t("doctorClinicsTitle")}
+      subtitle={t("doctorClinicsSubtitle")}
       showDate={false}
       showProfile={false}
     >
@@ -112,10 +117,11 @@ export function SchedulesPageWrapper({
 }: {
   children: React.ReactNode;
 }) {
+  const t = useTranslations("navigation");
   return (
     <DoctorPageWrapper
-      title="Horarios de Atención"
-      subtitle="Configura tu disponibilidad semanal"
+      title={t("doctorSchedulesTitle")}
+      subtitle={t("doctorSchedulesSubtitle")}
       showDate={false}
       showProfile={false}
     >

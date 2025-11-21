@@ -1,0 +1,33 @@
+{
+  "sectionTitle": "Important Information",
+  "sectionDescription": "Learn how our platform works and our responsibilities",
+  "platformTitle": "Medical Connection Platform",
+  "platformText1": "Docentro is a digital platform that connects healthcare professionals and patients in Bolivia. Our goal is to simplify the process of finding and booking medical appointments, providing an efficient and reliable tool for both parties.",
+  "platformText2": "As a technological intermediary, we focus exclusively on facilitating initial contact and appointment management between doctors and patients. The platform does not intervene in the provision of medical services or the professional relationship established between doctor and patient.",
+  "paymentsTitle": "Payments and Billing Policy",
+  "paymentsText": "Important: Docentro does NOT process, manage, or take responsibility for payments for medical services. All financial aspects related to medical consultations are handled directly between the healthcare professional and the patient.",
+  "paymentsBullets": [
+    "Prices shown are for informational purposes only and are provided by professionals",
+    "Payment methods are agreed upon directly with each doctor",
+    "Invoices and receipts are issued by the healthcare professional",
+    "Any payment dispute must be resolved directly with the doctor"
+  ],
+  "responsibilitiesTitle": "Responsibilities and Limitations",
+  "yesTitle": "What we DO:",
+  "yesBullets": [
+    "Facilitate the search for professionals",
+    "Manage appointment scheduling",
+    "Verify basic credentials",
+    "Provide contact information",
+    "Keep the platform operational"
+  ],
+  "noTitle": "What we DO NOT do:",
+  "noBullets": [
+    "Process medical payments",
+    "Oversee medical treatments",
+    "Guarantee medical results",
+    "Intervene in diagnoses",
+    "Mediate medical disputes"
+  ],
+  "legalNote": "Legal Note: By using Docentro, the user accepts that the platform acts only as a technological intermediary. All medical, ethical, and legal responsibility rests exclusively with the registered healthcare professionals and their respective professional associations."
+}

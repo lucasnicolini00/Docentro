@@ -1,5 +1,7 @@
+"use client";
 import { ButtonHTMLAttributes, ReactNode } from "react";
 import LoadingSpinner from "../feedback/LoadingSpinner";
+import { useTranslations } from "next-intl";
 
 interface LoadingButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   isLoading?: boolean;
@@ -11,7 +13,7 @@ interface LoadingButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 
 export default function LoadingButton({
   isLoading = false,
-  loadingText = "Cargando...",
+  loadingText,
   children,
   variant = "primary",
   size = "md",
@@ -19,6 +21,7 @@ export default function LoadingButton({
   disabled,
   ...props
 }: LoadingButtonProps) {
+  const t = useTranslations("feedback");
   const baseClasses =
     "inline-flex items-center justify-center font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed";
 
@@ -44,7 +47,7 @@ export default function LoadingButton({
       {isLoading && (
         <LoadingSpinner size={size === "lg" ? "md" : "sm"} className="mr-2" />
       )}
-      {isLoading ? loadingText : children}
+      {isLoading ? loadingText || t("apiLoading") : children}
     </button>
   );
 }

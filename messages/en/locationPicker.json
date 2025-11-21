@@ -1,0 +1,12 @@
+{
+  "error": "Error loading map",
+  "checkConfig": "Check Google Maps configuration",
+  "loading": "Loading map...",
+  "selectorTitle": "Location Selector",
+  "selectorInstruction": "Click on the map to select the location",
+  "apiKey": "Set up Google Maps API Key to activate",
+  "mapLabel": "Location on the Map",
+  "searching": "Searching location...",
+  "pendingTitle": "Location pending",
+  "pendingInstruction": "Click on the map to confirm the exact location or adjust the address for automatic search"
+}

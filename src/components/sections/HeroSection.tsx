@@ -1,16 +1,20 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { AutocompleteInput } from "@/components/ui/forms";
 import { getAllSpecialities, getAllCities } from "@/lib/actions/search";
+import { useLocalePath } from "@/hooks";
 
 export default function HeroSection() {
+  const t = useTranslations("hero");
   const [specialty, setSpecialty] = useState("");
   const [location, setLocation] = useState("");
   const [specialties, setSpecialties] = useState<string[]>([]);
   const [cities, setCities] = useState<string[]>([]);
   const router = useRouter();
+  const localePath = useLocalePath();
 
   // Fetch specialties and cities for autocomplete
   useEffect(() => {
@@ -51,9 +55,9 @@ export default function HeroSection() {
     }
 
     // Navigate to search page with parameters
-    const searchUrl = `/search${
-      params.toString() ? `?${params.toString()}` : ""
-    }`;
+    const searchUrl = localePath(
+      `/search${params.toString() ? `?${params.toString()}` : ""}`
+    );
     router.push(searchUrl);
   };
 
@@ -63,12 +67,11 @@ export default function HeroSection() {
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
         <div className="text-center">
           <h1 className="text-4xl md:text-6xl font-bold text-white mb-6 leading-tight">
-            Encuentra al profesional de salud
-            <span className="block text-blue-200">ideal para ti</span>
+            {t("title")}
+            <span className="block text-blue-200">{t("subtitle")}</span>
           </h1>
           <p className="text-xl text-blue-100 mb-8 max-w-2xl mx-auto">
-            Conectamos pacientes con los mejores profesionales de la salud.
-            Agenda tu cita de forma rápida y segura.
+            {t("description")}
           </p>
 
           {/* Enhanced Search Form */}
@@ -80,26 +83,26 @@ export default function HeroSection() {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="relative">
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Especialidad
+                    {t("specialtyLabel")}
                   </label>
                   <AutocompleteInput
                     value={specialty}
                     onChange={setSpecialty}
                     options={specialties}
-                    placeholder="Ej: Psicología, Dermatología..."
+                    placeholder={t("specialtyPlaceholder")}
                     variant="hero"
                     className="w-full"
                   />
                 </div>
                 <div className="relative">
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Ciudad o ubicación
+                    {t("locationLabel")}
                   </label>
                   <AutocompleteInput
                     value={location}
                     onChange={setLocation}
                     options={cities}
-                    placeholder="Ej: La Paz, Santa Cruz..."
+                    placeholder={t("locationPlaceholder")}
                     variant="hero"
                     className="w-full"
                   />
@@ -109,7 +112,7 @@ export default function HeroSection() {
                     type="submit"
                     className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-8 py-3 rounded-xl font-semibold transition-all transform hover:scale-105 shadow-lg cursor-pointer"
                   >
-                    🔍 Buscar Profesionales
+                    🔍 {t("searchButton")}
                   </button>
                 </div>
               </div>

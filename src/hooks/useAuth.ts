@@ -2,6 +2,7 @@
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
+import { useLocalePath } from "./useLocalePath";
 
 export function useAuth() {
   const { data: session, status } = useSession();
@@ -22,12 +23,13 @@ export function useAuth() {
 export function useRequireAuth() {
   const { isAuthenticated, isLoading } = useAuth();
   const router = useRouter();
+  const localePath = useLocalePath();
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
-      router.push("/login");
+      router.push(localePath("/login"));
     }
-  }, [isAuthenticated, isLoading, router]);
+  }, [isAuthenticated, isLoading, router, localePath]);
 
   return { isAuthenticated, isLoading };
 }

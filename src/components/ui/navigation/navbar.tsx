@@ -3,18 +3,22 @@
 import Link from "next/link";
 import { useState } from "react";
 import UserMenu from "./UserMenu";
+import LanguageSwitcher from "@/components/ui/LanguageSwitcher";
+import { useLocalePath } from "@/hooks";
+import { useTranslations } from "next-intl";
 import { Menu, X, Search } from "lucide-react";
 
 export default function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-
+  const t = useTranslations("navigation");
   // const navigationItems = [
-  //   { name: "Inicio", href: "/" },
-  //   { name: "Especialidades", href: "/specialties" },
-  //   { name: "Buscar Doctores", href: "/search" },
-  //   { name: "Cómo Funciona", href: "/how-it-works" },
+  //   { name: t("navbarHome"), href: "/" },
+  //   { name: t("navbarSpecialties"), href: "/specialties" },
+  //   { name: t("navbarSearchDoctors"), href: "/search" },
+  //   { name: t("navbarHowItWorks"), href: "/how-it-works" },
   // ];
 
+  const localePath = useLocalePath();
   return (
     <header className="bg-white/95 backdrop-blur-md shadow-sm sticky top-0 z-50 border-b border-gray-100">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -22,7 +26,7 @@ export default function Navbar() {
           {/* Logo */}
           <div className="flex items-center">
             <Link
-              href="/"
+              href={localePath("/")}
               className="flex items-center space-x-2 text-2xl font-bold bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent cursor-pointer hover:from-blue-700 hover:to-blue-900 transition-all"
             >
               <span className="text-2xl">🩺</span>
@@ -53,7 +57,7 @@ export default function Navbar() {
                 className="flex items-center space-x-2 text-gray-500 hover:text-blue-600 transition-colors"
               >
                 <Search className="w-5 h-5" />
-                <span className="text-sm">Buscar</span>
+                <span className="text-sm">{t("navbarSearchDoctors")}</span>
               </Link>
             </div> */}
 
@@ -66,6 +70,11 @@ export default function Navbar() {
                 </span>
               </button>
             )} */}
+
+            {/* Language Switcher */}
+            <div className="hidden sm:block">
+              <LanguageSwitcher />
+            </div>
 
             {/* User Menu */}
             <UserMenu />
@@ -97,16 +106,20 @@ export default function Navbar() {
                 {item.name}
               </Link>
             ))} */}
-
             {/* Mobile Search */}
             <Link
-              href="/search"
+              href={localePath("/search")}
               onClick={() => setMobileMenuOpen(false)}
               className="flex items-center space-x-2 px-4 py-2 text-gray-700 hover:text-blue-600 hover:bg-blue-50 transition-colors font-medium rounded-md"
             >
               <Search className="w-5 h-5" />
-              <span>Buscar Doctores</span>
+              <span>{t("navbarSearchDoctors")}</span>
             </Link>
+
+            {/* Mobile Language Switcher */}
+            <div className="px-4">
+              <LanguageSwitcher variant="full" />
+            </div>
           </div>
         )}
       </div>

@@ -1,31 +1,12 @@
 "use client";
 
 import Link from "next/link";
+import { useTranslations } from "next-intl";
+import { useLocalePath } from "@/hooks";
 import { usePathname } from "next/navigation";
 import { CalendarDays, Home, User, Calendar } from "lucide-react";
 
-const sidebarItems = [
-  {
-    label: "Dashboard",
-    href: "/dashboard/patient",
-    icon: Home,
-  },
-  {
-    label: "Mis Citas",
-    href: "/dashboard/patient/appointments",
-    icon: CalendarDays,
-  },
-  {
-    label: "Calendario",
-    href: "/dashboard/patient/calendar",
-    icon: Calendar,
-  },
-  {
-    label: "Mi Perfil",
-    href: "/dashboard/patient/profile",
-    icon: User,
-  },
-];
+// Sidebar items will be defined inside the component to use translations
 
 interface PatientSidebarProps {
   isOpen: boolean;
@@ -36,6 +17,30 @@ export default function PatientSidebar({
   isOpen,
   onClose,
 }: PatientSidebarProps) {
+  const t = useTranslations("navigation");
+  const localePath = useLocalePath();
+  const sidebarItems = [
+    {
+      label: t("patientSidebarDashboard"),
+      href: localePath("/dashboard/patient"),
+      icon: Home,
+    },
+    {
+      label: t("patientSidebarAppointments"),
+      href: localePath("/dashboard/patient/appointments"),
+      icon: CalendarDays,
+    },
+    {
+      label: t("patientSidebarCalendar"),
+      href: localePath("/dashboard/patient/calendar"),
+      icon: Calendar,
+    },
+    {
+      label: t("patientSidebarProfile"),
+      href: localePath("/dashboard/patient/profile"),
+      icon: User,
+    },
+  ];
   const pathname = usePathname();
 
   return (
@@ -63,28 +68,8 @@ export default function PatientSidebar({
           <div className="flex items-center space-x-2">
             <span className="text-lg">🏥</span>
             <span className="font-semibold text-gray-900">
-              Panel de Paciente
+              {t("patientSidebarHeader")}
             </span>
-          </div>
-          <div className="lg:hidden">
-            <button
-              onClick={onClose}
-              className="lg:hidden p-2 rounded-md hover:bg-gray-100"
-            >
-              <svg
-                className="w-5 h-5"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M6 18L18 6M6 6l12 12"
-                />
-              </svg>
-            </button>
           </div>
         </div>
 
@@ -93,7 +78,6 @@ export default function PatientSidebar({
           {sidebarItems.map((item) => {
             const isActive = pathname === item.href;
             const Icon = item.icon;
-
             return (
               <Link
                 key={item.href}
@@ -109,9 +93,7 @@ export default function PatientSidebar({
                 `}
               >
                 <Icon
-                  className={`w-5 h-5 ${
-                    isActive ? "text-blue-600" : "text-gray-500"
-                  }`}
+                  className={`w-5 h-5 ${isActive ? "text-blue-600" : "text-gray-500"}`}
                 />
                 <span className="font-medium text-sm lg:text-base">
                   {item.label}
@@ -125,7 +107,7 @@ export default function PatientSidebar({
         <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-200">
           <div className="text-xs lg:text-sm text-gray-500 text-center">
             <p className="font-medium">Docentro Medical</p>
-            <p>Panel de Paciente</p>
+            <p>{t("patientSidebarFooter")}</p>
           </div>
         </div>
       </div>

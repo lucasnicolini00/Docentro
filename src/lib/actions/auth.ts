@@ -7,8 +7,9 @@ import {
   type LoginData,
 } from "@/lib/auth";
 import { redirect } from "next/navigation";
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 import type { ActionResult } from "./utils";
+import { detectPreferredLocaleFromStrings } from "@/lib/detectLocale";
 
 /**
  * Server action for user registration
@@ -24,6 +25,9 @@ export async function registerAction(
     phone: (formData.get("phone") as string) || undefined,
     userType: formData.get("userType") as "patient" | "doctor",
   };
+
+  // Locale-aware redirect support (hidden input in form)
+  const locale = (formData.get("locale") as string) || "es";
 
   const result = await registerUser(data);
 
@@ -45,7 +49,8 @@ export async function registerAction(
       }
     );
 
-    redirect("/login?message=registered");
+    // Redirect to locale login (default es) after registration
+    redirect(`/${locale}/login?message=registered`);
   }
 
   return result;
@@ -60,10 +65,10 @@ export async function loginAction(formData: FormData): Promise<ActionResult> {
     password: formData.get("password") as string,
   };
 
+  const locale = (formData.get("locale") as string) || "es";
   const result = await loginUser(data);
 
   if (result.success) {
-    // Set a simple session cookie (in production, use proper JWT/session management)
     const cookieStore = await cookies();
     cookieStore.set(
       "user-session",
@@ -76,11 +81,18 @@ export async function loginAction(formData: FormData): Promise<ActionResult> {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
         sameSite: "lax",
-        maxAge: 60 * 60 * 24 * 7, // 1 week
+        maxAge: 60 * 60 * 24 * 7,
       }
     );
 
-    redirect("/");
+    const role = result.user?.role;
+    if (role === "DOCTOR") {
+      redirect(`/${locale}/dashboard/doctor`);
+    } else if (role === "PATIENT") {
+      redirect(`/${locale}/dashboard/patient`);
+    } else {
+      redirect(`/${locale}`);
+    }
   }
 
   return result;
@@ -91,8 +103,19 @@ export async function loginAction(formData: FormData): Promise<ActionResult> {
  */
 export async function logoutAction(): Promise<void> {
   const cookieStore = await cookies();
+  const headersList = await headers();
+
+  // Detect user's preferred locale
+  const localeCookie = cookieStore.get("NEXT_LOCALE");
+  const acceptLanguage = headersList.get("accept-language");
+  const locale = detectPreferredLocaleFromStrings(
+    localeCookie?.value,
+    acceptLanguage
+  );
+
   cookieStore.delete("user-session");
-  redirect("/");
+  // Redirect to user's locale home after logout
+  redirect(`/${locale}`);
 }
 
 /**

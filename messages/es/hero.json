@@ -1,0 +1,10 @@
+{
+  "title": "Encuentra al profesional de salud",
+  "subtitle": "ideal para ti",
+  "description": "Conectamos pacientes con los mejores profesionales de la salud. Agenda tu cita de forma rápida y segura.",
+  "searchButton": "Buscar Profesionales",
+  "specialtyLabel": "Especialidad",
+  "locationLabel": "Ciudad o ubicación",
+  "specialtyPlaceholder": "Ej: Psicología, Dermatología...",
+  "locationPlaceholder": "Ej: La Paz, Santa Cruz..."
+}

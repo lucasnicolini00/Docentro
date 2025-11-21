@@ -1,0 +1,18 @@
+{
+  "sectionTitle": "¿Cómo Funciona?",
+  "sectionDescription": "Tres simples pasos para conectarte con tu profesional ideal",
+  "steps": [
+    {
+      "title": "Busca un Especialista",
+      "description": "Encuentra profesionales por especialidad, ubicación o síntomas específicos"
+    },
+    {
+      "title": "Revisa Opiniones",
+      "description": "Lee reseñas reales de otros pacientes y compara perfiles de especialistas"
+    },
+    {
+      "title": "Agenda tu Cita",
+      "description": "Reserva tu consulta de forma segura y recibe confirmación inmediata"
+    }
+  ]
+}

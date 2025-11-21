@@ -1,0 +1,30 @@
+{
+  "title": "Advanced Filters",
+  "specialties": "Specialties",
+  "priceRange": "Price Range",
+  "availability": "Availability",
+  "minRating": "Minimum Rating",
+  "clear": "Clear",
+  "apply": "Apply Filters",
+  "appliedFilters": "filters applied",
+  "options": {
+    "specialties": [
+      "Cardiology",
+      "Dermatology",
+      "Pediatrics",
+      "Neurology",
+      "Gynecology",
+      "Traumatology",
+      "Psychiatry",
+      "Ophthalmology"
+    ],
+    "priceRanges": [
+      "Up to Bs. 200",
+      "Bs. 200 - 400",
+      "Bs. 400 - 600",
+      "More than Bs. 600"
+    ],
+    "availability": ["Today", "This week", "This month", "Next month"],
+    "ratingSuffix": "and up"
+  }
+}

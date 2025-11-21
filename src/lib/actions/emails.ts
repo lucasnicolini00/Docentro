@@ -42,7 +42,7 @@ export async function sendAppointmentStatusUpdateEmail(
   payload: AppointmentEmailPayload
 ): Promise<ActionResult> {
   try {
-    const html = appointmentStatusHtml(payload);
+    const html = await appointmentStatusHtml(payload);
     return await sendEmailRaw(to, "Actualización de cita - Docentro", html);
   } catch (error) {
     console.error("sendAppointmentStatusUpdateEmail error:", error);
@@ -55,7 +55,7 @@ export async function sendDoctorNewAppointmentEmail(
   payload: DoctorNotificationPayload
 ): Promise<ActionResult> {
   try {
-    const html = doctorNotificationHtml(payload);
+    const html = await doctorNotificationHtml(payload);
     return await sendEmailRaw(to, "Nueva solicitud de cita - Docentro", html);
   } catch (error) {
     console.error("sendDoctorNewAppointmentEmail error:", error);

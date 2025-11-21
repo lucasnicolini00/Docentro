@@ -4,6 +4,7 @@ import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import { uploadDoctorProfileImage } from "@/lib/actions";
+import { useTranslations } from "next-intl";
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024;
 const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"];
@@ -17,6 +18,7 @@ export default function ImageUploadControls({
   onUploadStart?: () => void;
   onUploadEnd?: () => void;
 }) {
+  const t = useTranslations("forms");
   const router = useRouter();
   const [uploading, setUploading] = useState(false);
   const [selectedName, setSelectedName] = useState<string | null>(null);
@@ -32,7 +34,7 @@ export default function ImageUploadControls({
     }
 
     if (!ALLOWED_TYPES.includes(file.type)) {
-      toast.error("Tipo de archivo no permitido");
+      toast.error(t("imageUploadTypeError"));
       e.currentTarget.value = "";
       setSelectedName(null);
       setSelectedValid(false);
@@ -40,7 +42,7 @@ export default function ImageUploadControls({
     }
 
     if (file.size > MAX_FILE_SIZE) {
-      toast.error("El archivo supera el tamaño máximo de 5MB");
+      toast.error(t("imageUploadSizeError"));
       e.currentTarget.value = "";
       setSelectedName(null);
       setSelectedValid(false);
@@ -54,7 +56,7 @@ export default function ImageUploadControls({
   const handleUpload = async () => {
     const file = inputRef.current?.files?.[0];
     if (!file) {
-      toast.error("Seleccione un archivo");
+      toast.error(t("imageUploadSelectError"));
       return;
     }
 
@@ -69,10 +71,10 @@ export default function ImageUploadControls({
         onUploadSuccess?.();
         router.refresh();
       } else {
-        toast.error(res?.error || "Error subiendo imagen");
+        toast.error(res?.error || t("imageUploadError"));
       }
-    } catch  {
-      toast.error("Error subiendo imagen");
+    } catch {
+      toast.error(t("imageUploadError"));
     } finally {
       setUploading(false);
       onUploadEnd?.();
@@ -100,7 +102,7 @@ export default function ImageUploadControls({
           onClick={() => inputRef.current?.click()}
           className="inline-flex items-center px-3 py-2 bg-white border border-gray-200 rounded-md text-sm font-medium hover:bg-gray-50"
         >
-          Seleccionar imagen
+          {t("imageUploadSelect")}
         </button>
 
         {selectedName && (
@@ -115,7 +117,7 @@ export default function ImageUploadControls({
               }}
               className="text-sm text-red-600 hover:underline"
             >
-              Borrar
+              {t("imageUploadRemove")}
             </button>
           </div>
         )}
@@ -129,7 +131,7 @@ export default function ImageUploadControls({
               uploading ? "bg-gray-400" : "bg-blue-600"
             }`}
           >
-            {uploading ? "Subiendo..." : "Subir"}
+            {uploading ? t("imageUploadLoading") : t("imageUploadUpload")}
           </button>
         )}
       </div>

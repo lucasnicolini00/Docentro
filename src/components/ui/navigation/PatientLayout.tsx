@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useSession } from "next-auth/react";
 import { Navbar } from "@/components/ui/navigation";
+import { useTranslations } from "next-intl";
 import PatientSidebar from "./PatientSidebar";
 import PatientHeader from "./PatientHeader";
 import { Menu } from "lucide-react";
@@ -28,25 +29,9 @@ export default function PatientLayout({
 }: PatientLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const { data: session } = useSession();
+  const t = useTranslations("navigation");
 
-  // Only show patient layout for patients
-  if (session?.user?.role !== "PATIENT") {
-    return (
-      <div className="min-h-screen bg-gray-50">
-        <Navbar />
-        <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
-          <div className="text-center">
-            <h1 className="text-2xl font-bold text-gray-900">
-              Acceso no autorizado
-            </h1>
-            <p className="text-gray-600">
-              Solo los pacientes pueden acceder a esta página.
-            </p>
-          </div>
-        </div>
-      </div>
-    );
-  }
+  // Server-side guard already enforced role; removing client unauthorized fallback.
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -68,7 +53,7 @@ export default function PatientLayout({
               className="flex items-center space-x-2 text-gray-700 hover:text-blue-600"
             >
               <Menu className="w-6 h-6" />
-              <span className="font-medium">Menú</span>
+              <span className="font-medium">{t("menu")}</span>
             </button>
           </div>
 

@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useCallback, useEffect, useMemo } from "react";
+import { useTranslations } from "next-intl";
 import { X, MapPin } from "lucide-react";
 import {
   useJsApiLoader,
@@ -115,7 +116,10 @@ const calculateYearsOfExperience = (
 };
 
 // Helper function to get price range for a doctor
-const getPriceRange = (doctor: Doctor): string => {
+const getPriceRange = (
+  doctor: Doctor,
+  t: (key: string, values?: any) => string
+): string => {
   if (doctor.pricings && doctor.pricings.length > 0) {
     // Filter out invalid prices and convert to numbers
     const validPrices = doctor.pricings
@@ -138,22 +142,31 @@ const getPriceRange = (doctor: Doctor): string => {
     return `Bs. ${Number(doctor.consultationPrice).toLocaleString()}`;
   }
 
-  return "Precio a consultar";
+  return t("priceToConsult");
 };
 
 // Helper function to get all specialities formatted
-const getSpecialitiesText = (specialities: Doctor["specialities"]): string => {
-  if (!specialities || specialities.length === 0) return "Especialista";
+const getSpecialitiesText = (
+  specialities: Doctor["specialities"],
+  t: (key: string, values?: any) => string
+): string => {
+  if (!specialities || specialities.length === 0) return t("specialist");
 
   if (specialities.length === 1) {
     return specialities[0].speciality.name;
   }
 
   if (specialities.length === 2) {
-    return `${specialities[0].speciality.name} y ${specialities[1].speciality.name}`;
+    return t("specialitiesTwo", {
+      first: specialities[0].speciality.name,
+      second: specialities[1].speciality.name,
+    });
   }
 
-  return `${specialities[0].speciality.name} y ${specialities.length - 1} más`;
+  return t("specialitiesMany", {
+    first: specialities[0].speciality.name,
+    count: specialities.length - 1,
+  });
 };
 
 // Get coordinates from clinic data (latitude/longitude from database)
@@ -242,6 +255,7 @@ export default function MapModal({
   doctors,
   initialCenter,
 }: MapModalProps) {
+  const t = useTranslations("mapModal");
   const { isLoaded, loadError } = useJsApiLoader({
     id: "google-map-script",
     googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || "",
@@ -310,7 +324,7 @@ export default function MapModal({
       <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
         <div className="bg-white p-6 rounded-lg max-w-md w-full mx-4">
           <div className="flex justify-between items-center mb-4">
-            <h3 className="text-lg font-semibold">Error del Mapa</h3>
+            <h3 className="text-lg font-semibold">{t("errorTitle")}</h3>
             <button
               onClick={onClose}
               className="text-gray-500 hover:text-gray-700"
@@ -318,9 +332,7 @@ export default function MapModal({
               <X className="h-6 w-6" />
             </button>
           </div>
-          <p className="text-red-600">
-            Error al cargar el mapa. Por favor, intenta nuevamente.
-          </p>
+          <p className="text-red-600">{t("errorMessage")}</p>
         </div>
       </div>
     );
@@ -331,7 +343,7 @@ export default function MapModal({
       <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
         <div className="bg-white p-6 rounded-lg">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-2 text-center">Cargando mapa...</p>
+          <p className="mt-2 text-center">{t("loading")}</p>
         </div>
       </div>
     );
@@ -359,11 +371,11 @@ export default function MapModal({
           <div className="p-4 border-b border-gray-200 bg-white">
             <div className="flex justify-between items-center">
               <h2 className="text-lg font-semibold text-gray-900">
-                Doctores en el Área
+                {t("sidebarTitle")}
               </h2>
             </div>
             <p className="text-sm text-gray-600 mt-1">
-              {visibleDoctors.length} doctores encontrados
+              {visibleDoctors.length} {t("sidebarFound")}
             </p>
           </div>
 
@@ -371,8 +383,11 @@ export default function MapModal({
             {visibleDoctors.map((doctor) => {
               const avgRating = calculateAverageRating(doctor.opinions);
               const yearsExp = calculateYearsOfExperience(doctor.experiences);
-              const priceRange = getPriceRange(doctor);
-              const specialitiesText = getSpecialitiesText(doctor.specialities);
+              const priceRange = getPriceRange(doctor, t);
+              const specialitiesText = getSpecialitiesText(
+                doctor.specialities,
+                t
+              );
 
               return (
                 <div
@@ -408,8 +423,7 @@ export default function MapModal({
                       </p>
                       {yearsExp > 0 && (
                         <p className="text-xs text-gray-500 mt-1">
-                          {yearsExp} {yearsExp === 1 ? "año" : "años"} de
-                          experiencia
+                          {yearsExp} {yearsExp === 1 ? t("year") : t("years")}
                         </p>
                       )}
                     </div>
@@ -437,14 +451,14 @@ export default function MapModal({
                           <span className="ml-2 text-sm text-gray-600">
                             {avgRating} ({doctor.opinions.length}{" "}
                             {doctor.opinions.length === 1
-                              ? "reseña"
-                              : "reseñas"}
+                              ? t("review")
+                              : t("reviews")}
                             )
                           </span>
                         </>
                       ) : (
                         <span className="text-sm text-gray-500">
-                          Sin reseñas aún
+                          {t("noReviews")}
                         </span>
                       )}
                     </div>
@@ -478,7 +492,9 @@ export default function MapModal({
                     ))}
                     {doctor.clinics.length > 2 && (
                       <p className="text-xs text-blue-600 ml-4">
-                        +{doctor.clinics.length - 2} ubicaciones más
+                        {t("moreLocationsSuffix", {
+                          count: doctor.clinics.length - 2,
+                        })}
                       </p>
                     )}
                   </div>
@@ -489,10 +505,8 @@ export default function MapModal({
             {visibleDoctors.length === 0 && (
               <div className="text-center py-8">
                 <MapPin className="h-12 w-12 text-gray-300 mx-auto mb-3" />
-                <p className="text-gray-500">No hay doctores en esta área.</p>
-                <p className="text-sm text-gray-400 mt-1">
-                  Mueve el mapa para explorar otras zonas.
-                </p>
+                <p className="text-gray-500">{t("noDoctors")}</p>
+                <p className="text-sm text-gray-400 mt-1">{t("moveMap")}</p>
               </div>
             )}
           </div>
@@ -574,7 +588,8 @@ export default function MapModal({
                       </h3>
                       <p className="text-xs text-blue-600 font-medium">
                         {getSpecialitiesText(
-                          selectedDoctor.doctor.specialities
+                          selectedDoctor.doctor.specialities,
+                          t
                         )}
                       </p>
                     </div>
@@ -587,7 +602,7 @@ export default function MapModal({
                     <p className="text-xs text-gray-600">
                       {selectedDoctor.clinic.address ||
                         selectedDoctor.clinic.city ||
-                        "Dirección no disponible"}
+                        t("noAddress")}
                     </p>
                   </div>
 
@@ -607,13 +622,13 @@ export default function MapModal({
                           </>
                         ) : (
                           <span className="text-xs text-gray-500">
-                            Sin reseñas
+                            {t("noReviews")}
                           </span>
                         );
                       })()}
                     </div>
                     <span className="text-xs font-semibold text-green-600">
-                      {getPriceRange(selectedDoctor.doctor)}
+                      {getPriceRange(selectedDoctor.doctor, t)}
                     </span>
                   </div>
                 </div>

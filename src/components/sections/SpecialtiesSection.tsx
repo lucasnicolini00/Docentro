@@ -1,21 +1,34 @@
 import { getPopularSpecialities } from "@/lib/actions/search";
 import type { Speciality } from "@prisma/client";
+import { getT } from "@/lib/getT";
 
-export default async function SpecialtiesSection() {
+export default async function SpecialtiesSection({
+  locale,
+}: {
+  locale: string;
+}) {
   const result = await getPopularSpecialities();
   const specialities: Speciality[] = result.success ? result.data || [] : [];
 
   const icons = ["🫀", "🧴", "👩🏻‍🦰", "🧠", "🩻", "💊", "🔬", "🩺"];
+  // Use request locale via next-intl server instead of hardcoding Spanish
+  const t = await getT("specialties", locale);
+
+  // Translation mappings moved to JSON files (names & descriptions objects in specialties namespace)
+  const nameMap = (await t.raw("names")) as Record<string, string> | undefined;
+  const descMap = (await t.raw("descriptions")) as
+    | Record<string, string>
+    | undefined;
 
   return (
     <section id="especialidades" className="py-20 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
         <div className="text-center mb-16">
           <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-            Especialidades Disponibles
+            {t("sectionTitle")}
           </h2>
           <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-            Encuentra especialistas en todas las áreas de la salud
+            {t("sectionDescription")}
           </p>
         </div>
 
@@ -30,13 +43,18 @@ export default async function SpecialtiesSection() {
                   {icons[index % icons.length]}
                 </div>
                 <h3 className="font-semibold text-gray-900 mb-2">
-                  {speciality.name}
+                  {locale === "en"
+                    ? nameMap?.[speciality.name] || speciality.name
+                    : speciality.name}
                 </h3>
                 <p className="text-sm text-gray-600 mb-4">
-                  {speciality.description || "Atención especializada"}
+                  {locale === "en"
+                    ? descMap?.[speciality.description || ""] ||
+                      t("defaultDescription")
+                    : speciality.description || t("defaultDescription")}
                 </p>
                 <button className="text-blue-600 hover:text-blue-800 font-medium text-sm transition-colors cursor-pointer">
-                  Ver especialistas →
+                  {t("viewSpecialists")}
                 </button>
               </div>
             </div>

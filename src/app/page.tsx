@@ -1,24 +1,14 @@
-import { Navbar } from "@/components/ui/navigation";
-import {
-  HeroSection,
-  SpecialtiesSection,
-  FeaturedDoctorsSection,
-  HowItWorksSection,
-  DisclaimerSection,
-  Footer,
-} from "@/components/sections";
+import { headers, cookies } from "next/headers";
+import { redirect } from "next/navigation";
+import { detectPreferredLocaleFromStrings } from "@/lib/detectLocale";
 
-export default async function Home() {
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-50">
-      <Navbar />
-      <HeroSection />
-      <SpecialtiesSection />
-      <FeaturedDoctorsSection />
-      <HowItWorksSection />
-      {/* <TestimonialsSection /> */}
-      <DisclaimerSection />
-      <Footer />
-    </div>
-  );
+export default async function RootRedirect() {
+  // Middleware performs redirects in most hosts, but on some preview/static
+  // setups middleware is skipped — keep a small server-side fallback here.
+  const cookieStore = await cookies();
+  const localeCookie = cookieStore.get("NEXT_LOCALE")?.value ?? null;
+  const hdrs = await headers();
+  const accept = hdrs.get("accept-language") ?? null;
+  const best = detectPreferredLocaleFromStrings(localeCookie, accept);
+  redirect(`/${best}`);
 }

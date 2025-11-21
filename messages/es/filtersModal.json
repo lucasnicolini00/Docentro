@@ -1,0 +1,30 @@
+{
+  "title": "Filtros Avanzados",
+  "specialties": "Especialidades",
+  "priceRange": "Rango de Precio",
+  "availability": "Disponibilidad",
+  "minRating": "Calificación Mínima",
+  "clear": "Limpiar",
+  "apply": "Aplicar Filtros",
+  "appliedFilters": "filtros aplicados",
+  "options": {
+    "specialties": [
+      "Cardiología",
+      "Dermatología",
+      "Pediatría",
+      "Neurología",
+      "Ginecología",
+      "Traumatología",
+      "Psiquiatría",
+      "Oftalmología"
+    ],
+    "priceRanges": [
+      "Hasta Bs. 200",
+      "Bs. 200 - 400",
+      "Bs. 400 - 600",
+      "Más de Bs. 600"
+    ],
+    "availability": ["Hoy", "Esta semana", "Este mes", "Próximo mes"],
+    "ratingSuffix": "y más"
+  }
+}

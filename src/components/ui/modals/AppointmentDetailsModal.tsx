@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { useTranslations } from "next-intl";
 import {
   X,
   Calendar,
@@ -37,6 +38,8 @@ export default function AppointmentDetailsModal({
   onClose,
   appointment,
 }: AppointmentDetailsModalProps) {
+  const t = useTranslations("modals");
+
   // Handle escape key
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
@@ -67,7 +70,7 @@ export default function AppointmentDetailsModal({
           text: "text-yellow-800",
           border: "border-yellow-200",
           icon: "text-yellow-600",
-          label: "Pendiente",
+          label: t("appointmentDetailsStatusPending"),
         };
       case "CONFIRMED":
         return {
@@ -75,7 +78,7 @@ export default function AppointmentDetailsModal({
           text: "text-blue-800",
           border: "border-blue-200",
           icon: "text-blue-600",
-          label: "Confirmada",
+          label: t("appointmentDetailsStatusConfirmed"),
         };
       case "COMPLETED":
         return {
@@ -83,7 +86,7 @@ export default function AppointmentDetailsModal({
           text: "text-green-800",
           border: "border-green-200",
           icon: "text-green-600",
-          label: "Completada",
+          label: t("appointmentDetailsStatusCompleted"),
         };
       case "CANCELED":
         return {
@@ -91,7 +94,7 @@ export default function AppointmentDetailsModal({
           text: "text-red-800",
           border: "border-red-200",
           icon: "text-red-600",
-          label: "Cancelada",
+          label: t("appointmentDetailsStatusCanceled"),
         };
       default:
         return {
@@ -125,7 +128,7 @@ export default function AppointmentDetailsModal({
               </div>
               <div>
                 <h2 className="text-xl font-semibold text-gray-900">
-                  Detalles de la Cita
+                  {t("appointmentDetailsTitle")}
                 </h2>
                 <p className="text-sm text-gray-600">
                   {start.toLocaleDateString("es-ES", {
@@ -161,12 +164,12 @@ export default function AppointmentDetailsModal({
               <div className="space-y-4">
                 <h3 className="text-lg font-semibold text-gray-900 flex items-center">
                   <User className="w-5 h-5 text-blue-600 mr-2" />
-                  Información del Doctor
+                  {t("appointmentDetailsDoctorInfo")}
                 </h3>
                 <div className="space-y-3">
                   <div>
                     <label className="text-sm font-medium text-gray-600">
-                      Doctor
+                      {t("appointmentDetailsDoctor")}
                     </label>
                     <p className="text-gray-900 font-medium">
                       Dr. {extendedProps.doctorName}
@@ -174,7 +177,7 @@ export default function AppointmentDetailsModal({
                   </div>
                   <div>
                     <label className="text-sm font-medium text-gray-600">
-                      Especialidad
+                      {t("appointmentDetailsSpecialty")}
                     </label>
                     <div className="flex items-center space-x-2">
                       <Stethoscope className="w-4 h-4 text-blue-600" />
@@ -188,12 +191,12 @@ export default function AppointmentDetailsModal({
               <div className="space-y-4">
                 <h3 className="text-lg font-semibold text-gray-900 flex items-center">
                   <Clock className="w-5 h-5 text-blue-600 mr-2" />
-                  Detalles de la Cita
+                  {t("appointmentDetailsDetails")}
                 </h3>
                 <div className="space-y-3">
                   <div>
                     <label className="text-sm font-medium text-gray-600">
-                      Fecha y Hora
+                      {t("appointmentDetailsDateTime")}
                     </label>
                     <p className="text-gray-900 font-medium">
                       {start.toLocaleDateString("es-ES")} a las{" "}
@@ -205,7 +208,7 @@ export default function AppointmentDetailsModal({
                   </div>
                   <div>
                     <label className="text-sm font-medium text-gray-600">
-                      Tipo de Consulta
+                      {t("appointmentDetailsType")}
                     </label>
                     <div className="flex items-center space-x-2">
                       {extendedProps.type === "ONLINE" ? (
@@ -215,8 +218,8 @@ export default function AppointmentDetailsModal({
                       )}
                       <p className="text-gray-900">
                         {extendedProps.type === "ONLINE"
-                          ? "Virtual"
-                          : "Presencial"}
+                          ? t("appointmentDetailsTypeOnline")
+                          : t("appointmentDetailsTypeInPerson")}
                       </p>
                     </div>
                   </div>
@@ -228,7 +231,7 @@ export default function AppointmentDetailsModal({
             <div className="space-y-3">
               <h3 className="text-lg font-semibold text-gray-900 flex items-center">
                 <MapPin className="w-5 h-5 text-blue-600 mr-2" />
-                Ubicación
+                {t("appointmentDetailsClinic")}
               </h3>
               <div className="bg-gray-50 rounded-lg p-4">
                 <p className="font-medium text-gray-900">
@@ -247,11 +250,11 @@ export default function AppointmentDetailsModal({
               <div className="space-y-3">
                 <h3 className="text-lg font-semibold text-gray-900 flex items-center">
                   <Video className="w-5 h-5 text-green-600 mr-2" />
-                  Link de la Reunión
+                  {t("appointmentDetailsMeetingLink")}
                 </h3>
                 <div className="bg-green-50 border border-green-200 rounded-lg p-4">
                   <p className="text-sm text-green-800 mb-2">
-                    Podrás unirte a la consulta virtual usando este enlace:
+                    {t("appointmentDetailsMeetingJoinText")}
                   </p>
                   <a
                     href={extendedProps.meetingLink}
@@ -260,7 +263,7 @@ export default function AppointmentDetailsModal({
                     className="inline-flex items-center text-green-700 hover:text-green-800 font-medium underline"
                   >
                     <Video className="w-4 h-4 mr-1" />
-                    Unirse a la reunión
+                    {t("appointmentDetailsMeetingJoin")}
                   </a>
                 </div>
               </div>
@@ -271,7 +274,7 @@ export default function AppointmentDetailsModal({
               <div className="space-y-3">
                 <h3 className="text-lg font-semibold text-gray-900 flex items-center">
                   <FileText className="w-5 h-5 text-blue-600 mr-2" />
-                  Notas Adicionales
+                  {t("appointmentDetailsNotes")}
                 </h3>
                 <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                   <p className="text-blue-900">{extendedProps.notes}</p>
@@ -284,9 +287,8 @@ export default function AppointmentDetailsModal({
               {extendedProps.status === "CONFIRMED" && (
                 <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 flex-1">
                   <p className="text-amber-800 text-sm">
-                    <strong>Recordatorio:</strong> Para cancelar o reprogramar
-                    tu cita, contacta a la clínica con al menos 24 horas de
-                    anticipación.
+                    <strong>{t("appointmentDetailsReminderTitle")}</strong>{" "}
+                    {t("appointmentDetailsReminderText")}
                   </p>
                 </div>
               )}
@@ -294,8 +296,8 @@ export default function AppointmentDetailsModal({
               {extendedProps.status === "PENDING" && (
                 <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 flex-1">
                   <p className="text-blue-800 text-sm">
-                    <strong>Pendiente de confirmación:</strong> La clínica
-                    confirmará tu cita pronto. Recibirás una notificación.
+                    <strong>{t("appointmentDetailsPendingTitle")}</strong>{" "}
+                    {t("appointmentDetailsPendingText")}
                   </p>
                 </div>
               )}
@@ -308,7 +310,7 @@ export default function AppointmentDetailsModal({
               onClick={onClose}
               className="px-6 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors font-medium"
             >
-              Cerrar
+              {t("appointmentDetailsClose")}
             </button>
             {extendedProps.type === "ONLINE" && extendedProps.meetingLink && (
               <a
@@ -318,7 +320,7 @@ export default function AppointmentDetailsModal({
                 className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium inline-flex items-center"
               >
                 <Video className="w-4 h-4 mr-2" />
-                Unirse ahora
+                {t("appointmentDetailsMeetingJoinNow")}
               </a>
             )}
           </div>

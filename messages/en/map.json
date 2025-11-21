@@ -1,0 +1,9 @@
+{
+  "interactiveMap": "Interactive Map",
+  "clinicsShown": "Here the location of clinics and offices will be shown",
+  "apiKey": "Set up Google Maps API Key",
+  "loading": "Loading Map...",
+  "viewProfile": "View Profile",
+  "openFullMap": "Open full map",
+  "specialist": "Specialist"
+}

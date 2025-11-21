@@ -18,6 +18,8 @@ import {
   Stethoscope,
 } from "lucide-react";
 import toast from "react-hot-toast";
+import { useTranslations } from "next-intl";
+import { useLocalePath } from "@/hooks";
 
 // Avatar + image controls moved to AvatarSection component
 
@@ -68,6 +70,8 @@ export default function DoctorProfileForm({
 }: DoctorProfileFormProps) {
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState("");
+  const t = useTranslations("forms");
+  const localePath = useLocalePath();
 
   // Form state
   const [formData, setFormData] = useState({
@@ -118,15 +122,15 @@ export default function DoctorProfileForm({
         const result = await updateDoctorProfile(formDataSubmit);
 
         if (!result.success) {
-          setError(result.error || "Error al actualizar el perfil");
-          toast.error("Error al guardar el perfil");
+          setError(result.error || t("doctorProfileErrorUpdate"));
+          toast.error(t("doctorProfileErrorSave"));
           return;
         }
 
-        toast.success("Perfil actualizado exitosamente");
+        toast.success(t("doctorProfileSuccessUpdate"));
       } catch {
-        setError("Error al actualizar el perfil");
-        toast.error("Error al guardar el perfil");
+        setError(t("doctorProfileErrorUpdate"));
+        toast.error(t("doctorProfileErrorSave"));
       }
     });
   };
@@ -140,7 +144,9 @@ export default function DoctorProfileForm({
             <AlertCircle className="w-5 h-5 text-red-600" />
           </div>
           <div>
-            <h3 className="font-medium text-red-800">Error</h3>
+            <h3 className="font-medium text-red-800">
+              {t("doctorProfileErrorUpdate")}
+            </h3>
             <p className="text-red-700 text-sm">{error}</p>
           </div>
         </div>
@@ -162,10 +168,10 @@ export default function DoctorProfileForm({
               </div>
               <div>
                 <h2 className="text-xl font-bold text-blue-900">
-                  Información Personal
+                  {t("doctorProfilePersonalInfoTitle")}
                 </h2>
                 <p className="text-blue-700 text-sm">
-                  Datos personales de tu cuenta
+                  {t("doctorProfilePersonalInfoDesc")}
                 </p>
               </div>
             </div>
@@ -175,7 +181,7 @@ export default function DoctorProfileForm({
               <div className="space-y-2">
                 <label className="flex items-center space-x-2 text-sm font-medium text-gray-700">
                   <User className="w-4 h-4 text-blue-600" />
-                  <span>Nombre</span>
+                  <span>{t("doctorProfileName")}</span>
                 </label>
                 <input
                   type="text"
@@ -189,7 +195,7 @@ export default function DoctorProfileForm({
               <div className="space-y-2">
                 <label className="flex items-center space-x-2 text-sm font-medium text-gray-700">
                   <User className="w-4 h-4 text-blue-600" />
-                  <span>Apellido</span>
+                  <span>{t("doctorProfileSurname")}</span>
                 </label>
                 <input
                   type="text"
@@ -203,7 +209,7 @@ export default function DoctorProfileForm({
               <div className="space-y-2">
                 <label className="flex items-center space-x-2 text-sm font-medium text-gray-700">
                   <Mail className="w-4 h-4 text-blue-600" />
-                  <span>Email</span>
+                  <span>{t("doctorProfileEmail")}</span>
                 </label>
                 <input
                   type="email"
@@ -217,7 +223,7 @@ export default function DoctorProfileForm({
               <div className="space-y-2">
                 <label className="flex items-center space-x-2 text-sm font-medium text-gray-700">
                   <Phone className="w-4 h-4 text-blue-600" />
-                  <span>Teléfono</span>
+                  <span>{t("doctorProfilePhone")}</span>
                 </label>
                 <input
                   type="tel"
@@ -240,10 +246,10 @@ export default function DoctorProfileForm({
               </div>
               <div>
                 <h2 className="text-xl font-bold text-emerald-900">
-                  Información Profesional
+                  {t("doctorProfileProfessionalInfoTitle")}
                 </h2>
                 <p className="text-emerald-700 text-sm">
-                  Datos profesionales como médico
+                  {t("doctorProfileProfessionalInfoDesc")}
                 </p>
               </div>
             </div>
@@ -253,7 +259,7 @@ export default function DoctorProfileForm({
               <div className="space-y-2">
                 <label className="flex items-center space-x-2 text-sm font-medium text-gray-700">
                   <Stethoscope className="w-4 h-4 text-emerald-600" />
-                  <span>Nombre Profesional</span>
+                  <span>{t("doctorProfileProfessionalFirstName")}</span>
                 </label>
                 <input
                   type="text"
@@ -267,7 +273,7 @@ export default function DoctorProfileForm({
               <div className="space-y-2">
                 <label className="flex items-center space-x-2 text-sm font-medium text-gray-700">
                   <Stethoscope className="w-4 h-4 text-emerald-600" />
-                  <span>Apellido Profesional</span>
+                  <span>{t("doctorProfileProfessionalLastName")}</span>
                 </label>
                 <input
                   type="text"
@@ -281,7 +287,7 @@ export default function DoctorProfileForm({
               <div className="space-y-2">
                 <label className="flex items-center space-x-2 text-sm font-medium text-gray-700">
                   <Mail className="w-4 h-4 text-emerald-600" />
-                  <span>Email Profesional</span>
+                  <span>{t("doctorProfileProfessionalEmail")}</span>
                 </label>
                 <input
                   type="email"
@@ -294,7 +300,7 @@ export default function DoctorProfileForm({
               <div className="space-y-2">
                 <label className="flex items-center space-x-2 text-sm font-medium text-gray-700">
                   <Phone className="w-4 h-4 text-emerald-600" />
-                  <span>Teléfono Profesional</span>
+                  <span>{t("doctorProfileProfessionalPhone")}</span>
                 </label>
                 <input
                   type="tel"
@@ -317,11 +323,12 @@ export default function DoctorProfileForm({
               </div>
               <div>
                 <h2 className="text-xl font-bold text-purple-900">
-                  Especialidades Médicas
+                  {t("doctorProfileSpecialtiesTitle")}
                 </h2>
                 <p className="text-purple-700 text-sm">
-                  Selecciona tus especialidades profesionales (
-                  {selectedSpecialities.length} seleccionadas)
+                  {t("doctorProfileSpecialtiesDesc", {
+                    count: selectedSpecialities.length,
+                  })}
                 </p>
               </div>
             </div>
@@ -400,31 +407,31 @@ export default function DoctorProfileForm({
               </div>
               <div>
                 <h3 className="font-medium text-gray-900">
-                  ¿Listo para guardar?
+                  {t("doctorProfileReadyToSave")}
                 </h3>
                 <p className="text-sm text-gray-600">
-                  Los cambios se aplicarán inmediatamente
+                  {t("doctorProfileChangesApply")}
                 </p>
               </div>
             </div>
             <div className="flex space-x-4">
               <Link
-                href="/dashboard/doctor"
+                href={localePath("/dashboard/doctor")}
                 className="group flex items-center space-x-2 px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-all duration-200 font-medium"
               >
                 <X className="w-5 h-5 group-hover:rotate-90 transition-transform" />
-                <span>Cancelar</span>
+                <span>{t("patientProfileCancel")}</span>
               </Link>
               <LoadingButton
                 type="submit"
                 isLoading={isPending}
-                loadingText="Guardando cambios..."
+                loadingText={t("patientProfileSaving")}
                 variant="primary"
                 size="lg"
                 className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-8 py-3 rounded-xl flex items-center space-x-2 font-medium shadow-lg hover:shadow-xl transition-all duration-200"
               >
                 <Save className="w-5 h-5" />
-                <span>Guardar Cambios</span>
+                <span>{t("patientProfileSave")}</span>
               </LoadingButton>
             </div>
           </div>

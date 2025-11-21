@@ -10,6 +10,7 @@ import type {
   Pricing,
 } from "@prisma/client";
 import Link from "next/link";
+import { getT } from "@/lib/getT";
 
 type DoctorWithRelations = Doctor & {
   specialities: (DoctorSpeciality & {
@@ -27,8 +28,11 @@ type DoctorWithRelations = Doctor & {
     url: string;
   } | null;
 };
-
-export default async function FeaturedDoctorsSection() {
+export default async function FeaturedDoctorsSection({
+  locale,
+}: {
+  locale: string;
+}) {
   // Fetch real data from database using Server Action
   const result = await getFeaturedDoctors();
   const doctors: DoctorWithRelations[] = result.success
@@ -52,6 +56,9 @@ export default async function FeaturedDoctorsSection() {
     })
   );
 
+  // Get translations using request locale instead of hardcoded Spanish
+  const t = await getT("featuredDoctors", locale);
+
   return (
     <section
       id="profesionales"
@@ -60,17 +67,18 @@ export default async function FeaturedDoctorsSection() {
       <div className="max-w-7xl mx-auto">
         <div className="text-center mb-16">
           <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-            Profesionales Destacados
+            {t("sectionTitle")}
           </h2>
           <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-            Conoce a algunos de nuestros mejores especialistas
+            {t("sectionDescription")}
           </p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {doctorsWithSignedUrls.map((doctor) => {
             const primarySpeciality =
-              doctor.specialities[0]?.speciality?.name || "Especialista";
+              doctor.specialities[0]?.speciality?.name ||
+              t("defaultSpeciality");
 
             return (
               <div
@@ -102,10 +110,10 @@ export default async function FeaturedDoctorsSection() {
                     {primarySpeciality}
                   </p>
                   <Link
-                    href={`/doctor/${doctor.id}`}
+                    href={`/${locale}/doctor/${doctor.id}`}
                     className="text-blue-600 hover:text-blue-800 text-sm font-medium hover:underline"
                   >
-                    <span>Ver perfil</span>
+                    <span>{t("viewProfile")}</span>
                   </Link>
                 </div>
               </div>

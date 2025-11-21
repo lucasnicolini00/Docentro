@@ -1,0 +1,20 @@
+{
+  "sectionTitle": "Available Specialties",
+  "sectionDescription": "Find specialists in all areas of health",
+  "defaultDescription": "Specialized medical care",
+  "viewSpecialists": "View specialists →",
+  "names": {
+    "Cardiología": "Cardiology",
+    "Dermatología": "Dermatology",
+    "Pediatría": "Pediatrics",
+    "Neurología": "Neurology",
+    "Ginecología": "Gynecology"
+  },
+  "descriptions": {
+    "Especialista en el sistema cardiovascular": "Specialist in the cardiovascular system",
+    "Especialista en enfermedades de la piel": "Specialist in skin diseases",
+    "Especialista en medicina infantil": "Specialist in pediatric medicine",
+    "Especialista en el sistema nervioso": "Specialist in the nervous system",
+    "Especialista en salud femenina": "Specialist in women's health"
+  }
+}

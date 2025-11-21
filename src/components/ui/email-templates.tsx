@@ -1,3 +1,4 @@
+import { useTranslations } from "next-intl";
 // Email to doctor: notify of new appointment to approve/deny
 interface DoctorNotificationEmailProps {
   doctorName: string;
@@ -28,6 +29,7 @@ export function DoctorNewAppointmentEmail({
   notes,
   actionUrl,
 }: DoctorNotificationEmailProps) {
+  const t = useTranslations("email.doctorNotification");
   return (
     <div
       style={{ fontFamily: "sans-serif", background: "#f9fafb", padding: 24 }}
@@ -50,12 +52,12 @@ export function DoctorNewAppointmentEmail({
             marginBottom: 8,
           }}
         >
-          Nueva solicitud de cita
+          {t("newRequestTitle")}
         </h2>
         <p style={{ color: "#374151", fontSize: 16, marginBottom: 24 }}>
-          Hola <b>Dr. {doctorName}</b>,<br />
-          El paciente <b>{patientName}</b> ha solicitado una cita en{" "}
-          <b>{clinicName}</b>.
+          {t("greeting", { doctor: doctorName })}
+          <br />
+          {t("requestText", { patient: patientName, clinic: clinicName })}
         </p>
         <table style={{ width: "100%", marginBottom: 24 }}>
           <tbody>
@@ -63,7 +65,7 @@ export function DoctorNewAppointmentEmail({
               <td
                 style={{ color: "#6b7280", fontWeight: 600, padding: "6px 0" }}
               >
-                Fecha:
+                {t("dateLabel")}
               </td>
               <td style={{ color: "#111827", fontWeight: 500 }}>{date}</td>
             </tr>
@@ -71,7 +73,7 @@ export function DoctorNewAppointmentEmail({
               <td
                 style={{ color: "#6b7280", fontWeight: 600, padding: "6px 0" }}
               >
-                Hora:
+                {t("timeLabel")}
               </td>
               <td style={{ color: "#111827", fontWeight: 500 }}>{time}</td>
             </tr>
@@ -84,7 +86,7 @@ export function DoctorNewAppointmentEmail({
                     padding: "6px 0",
                   }}
                 >
-                  Notas:
+                  {t("notesLabel")}
                 </td>
                 <td style={{ color: "#111827", fontWeight: 500 }}>{notes}</td>
               </tr>
@@ -99,7 +101,7 @@ export function DoctorNewAppointmentEmail({
             marginBottom: 16,
           }}
         >
-          Por favor, ingresa al sistema para aprobar o rechazar esta cita.
+          {t("approvalInstruction")}
         </div>
         <a
           href={actionUrl}
@@ -115,10 +117,10 @@ export function DoctorNewAppointmentEmail({
             marginBottom: 12,
           }}
         >
-          Ir al sistema
+          {t("systemButton")}
         </a>
         <div style={{ color: "#6b7280", fontSize: 14, marginTop: 16 }}>
-          Si tienes dudas, comunícate con la clínica.
+          {t("questionsText")}
         </div>
       </div>
     </div>
@@ -142,6 +144,7 @@ export function AppointmentStatusUpdateEmail({
     PENDING: "#f59e0b",
   }[status];
 
+  const t = useTranslations("email.appointmentStatus");
   return (
     <div
       style={{ fontFamily: "sans-serif", background: "#f9fafb", padding: 24 }}
@@ -167,8 +170,9 @@ export function AppointmentStatusUpdateEmail({
           {status === "CONFIRMED" ? (
             <>
               <p style={{ color: "#374151", fontSize: 16, marginBottom: 24 }}>
-                Hola <b>{patientName}</b>,<br />
-                Tu cita con <b>Dr. {doctorName}</b> ha sido Aceptada.
+                {t("greeting", { name: patientName })}
+                <br />
+                {t("confirmedText", { doctor: doctorName })}
               </p>
               <table style={{ width: "100%", marginBottom: 24 }}>
                 <tbody>
@@ -180,7 +184,7 @@ export function AppointmentStatusUpdateEmail({
                         padding: "6px 0",
                       }}
                     >
-                      Clínica:
+                      {t("clinicLabel")}
                     </td>
                     <td style={{ color: "#111827", fontWeight: 500 }}>
                       {clinicName}
@@ -194,7 +198,7 @@ export function AppointmentStatusUpdateEmail({
                         padding: "6px 0",
                       }}
                     >
-                      Fecha:
+                      {t("dateLabel")}
                     </td>
                     <td style={{ color: "#111827", fontWeight: 500 }}>
                       {date}
@@ -208,7 +212,7 @@ export function AppointmentStatusUpdateEmail({
                         padding: "6px 0",
                       }}
                     >
-                      Hora:
+                      {t("timeLabel")}
                     </td>
                     <td style={{ color: "#111827", fontWeight: 500 }}>
                       {time}
@@ -223,7 +227,7 @@ export function AppointmentStatusUpdateEmail({
                           padding: "6px 0",
                         }}
                       >
-                        Notas:
+                        {t("notesLabel")}
                       </td>
                       <td style={{ color: "#111827", fontWeight: 500 }}>
                         {notes}
@@ -236,13 +240,11 @@ export function AppointmentStatusUpdateEmail({
           ) : status === "CANCELED" ? (
             <>
               <p style={{ color: "#374151", fontSize: 16, marginBottom: 12 }}>
-                Hola <b>{patientName}</b>,
+                {t("greeting", { name: patientName })}
               </p>
               <p style={{ color: "#374151", fontSize: 16, marginBottom: 18 }}>
-                Lamentamos informarte que tu cita con <b>Dr. {doctorName}</b> ha
-                sido <b style={{ color: "#ef4444" }}>cancelada</b>.
+                {t("canceledText", { doctor: doctorName })}
               </p>
-
               <table style={{ width: "100%", marginBottom: 20 }}>
                 <tbody>
                   <tr>
@@ -253,7 +255,7 @@ export function AppointmentStatusUpdateEmail({
                         padding: "6px 0",
                       }}
                     >
-                      Clínica:
+                      {t("clinicLabel")}
                     </td>
                     <td style={{ color: "#111827", fontWeight: 500 }}>
                       {clinicName}
@@ -267,7 +269,7 @@ export function AppointmentStatusUpdateEmail({
                         padding: "6px 0",
                       }}
                     >
-                      Fecha:
+                      {t("dateLabel")}
                     </td>
                     <td style={{ color: "#111827", fontWeight: 500 }}>
                       {date}
@@ -281,7 +283,7 @@ export function AppointmentStatusUpdateEmail({
                         padding: "6px 0",
                       }}
                     >
-                      Hora:
+                      {t("timeLabel")}
                     </td>
                     <td style={{ color: "#111827", fontWeight: 500 }}>
                       {time}
@@ -296,7 +298,7 @@ export function AppointmentStatusUpdateEmail({
                           padding: "6px 0",
                         }}
                       >
-                        Motivo / Notas:
+                        {t("notesLabel")}
                       </td>
                       <td style={{ color: "#111827", fontWeight: 500 }}>
                         {notes}
@@ -305,7 +307,6 @@ export function AppointmentStatusUpdateEmail({
                   )}
                 </tbody>
               </table>
-
               <div
                 style={{
                   color: "#ef4444",
@@ -314,12 +315,10 @@ export function AppointmentStatusUpdateEmail({
                   marginBottom: 10,
                 }}
               >
-                Lamentamos los inconvenientes.
+                {t("apologyText")}
               </div>
-
               <div style={{ color: "#6b7280", fontSize: 14 }}>
-                Si deseas reprogramar la cita, por favor responde a este correo
-                o comunícate con la clínica para agendar una nueva fecha.
+                {t("rescheduleText")}
               </div>
             </>
           ) : null}
@@ -334,11 +333,10 @@ export function AppointmentStatusUpdateEmail({
                 marginBottom: 12,
               }}
             >
-              Por favor, preséntate 10 minutos antes de tu cita.
+              {t("waitingText")}
             </div>
             <div style={{ color: "#6b7280", fontSize: 14 }}>
-              Si tienes dudas o necesitas reprogramar, responde a este correo o
-              comunícate con la clínica.
+              {t("questionsText")}
             </div>
           </>
         )}

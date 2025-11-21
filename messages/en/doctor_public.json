@@ -1,0 +1,22 @@
+{
+  "errorNotFoundTitle": "Doctor not found",
+  "errorNotFoundSubtitle": "Sorry, we couldn't find the requested information.",
+  "errorLoadingDoctor": "Error loading doctor information",
+  "galleryTitle": "Gallery",
+  "viewMoreImages": "View more ({count} images)",
+  "aboutMeTitle": "About me",
+  "experienceTitle": "Professional Experience",
+  "presentLabel": "Present",
+  "quickInfoTitle": "Quick Info",
+  "specialtiesLabel": "Specialties",
+  "languagesLabel": "Languages",
+  "languagesValueDefault": "Spanish, English",
+  "scheduleLabel": "Schedule",
+  "scheduleValueDefault": "Mon - Fri: 8:00 - 18:00",
+  "clinicsTitle": "Locations",
+  "imageCounterLabel": "{current} of {total}",
+  "galleryImageAlt": "Doctor gallery image",
+  "thumbnailAlt": "Thumbnail {index}",
+  "backAction": "Back",
+  "notAvailableShort": "N/A"
+}
