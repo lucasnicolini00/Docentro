@@ -130,6 +130,8 @@ model Doctor {
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
   deletedAt DateTime?
+
+  @@index([name, surname])
 }
 
 // Images stored externally (e.g. Google Cloud Storage). Each Image may be:
@@ -156,6 +158,9 @@ model Image {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([doctorId])
 }
 
 model Speciality {
@@ -181,6 +186,7 @@ model DoctorSpeciality {
   createdAt DateTime @default(now())
 
   @@id([doctorId, specialityId])
+  @@index([specialityId])
 }
 
 model Experience {
@@ -197,6 +203,8 @@ model Experience {
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
   deletedAt DateTime?
+
+  @@index([doctorId])
 }
 
 model Clinic {
@@ -218,6 +226,8 @@ model Clinic {
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
   deletedAt DateTime?
+
+  @@index([city])
 }
 
 model DoctorClinic {
@@ -229,6 +239,7 @@ model DoctorClinic {
   createdAt DateTime @default(now())
 
   @@id([doctorId, clinicId])
+  @@index([clinicId])
 }
 
 model Pricing {
@@ -249,6 +260,9 @@ model Pricing {
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
   deletedAt DateTime?
+
+  @@index([doctorId])
+  @@index([clinicId])
 }
 
 model Schedule {
@@ -340,4 +354,6 @@ model Opinion {
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
   deletedAt DateTime?
+
+  @@index([doctorId])
 }

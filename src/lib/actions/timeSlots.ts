@@ -1,9 +1,9 @@
 "use server";
 
-import prisma from "@/lib/prisma";
 import { validateAuth, type ActionResult } from "./utils";
 import { DayOfWeek } from "@prisma/client";
 import { getTimeSlotsForCalendar } from "./schedules";
+import { timeSlotsService } from "@/lib/services/timeSlotsService";
 
 /**
  * Server action to get available time slots for a doctor at a specific clinic on a specific date
@@ -26,50 +26,24 @@ export async function getTimeSlotsForBooking(
     }
 
     // Verify doctor and clinic exist
-    const doctor = await prisma.doctor.findUnique({
-      where: { id: doctorId },
-      include: {
-        user: true,
-        specialities: {
-          include: {
-            speciality: true,
-          },
-        },
-      },
-    });
+    const doctor = await timeSlotsService.getDoctor(doctorId);
 
     if (!doctor) {
       return { success: false, error: "Doctor no encontrado" };
     }
 
-    const clinic = await prisma.clinic.findUnique({
-      where: { id: clinicId },
-    });
+    const clinic = await timeSlotsService.getClinic(clinicId);
 
     if (!clinic) {
       return { success: false, error: "Clínica no encontrada" };
     }
 
     // Get schedules for this doctor, clinic, and day of week
-    const schedule = await prisma.schedule.findFirst({
-      where: {
-        doctorId,
-        clinicId,
-        dayOfWeek: targetDayOfWeek,
-        isActive: true,
-      },
-      include: {
-        timeSlots: {
-          where: {
-            isBooked: false,
-            isBlocked: false,
-          },
-          orderBy: {
-            startTime: "asc",
-          },
-        },
-      },
-    });
+    const schedule = await timeSlotsService.getScheduleForDay(
+      doctorId,
+      clinicId,
+      targetDayOfWeek
+    );
 
     if (!schedule) {
       return {
@@ -142,34 +116,7 @@ export async function getDoctorWeeklySchedule(
     }
 
     // Get all schedules for the doctor
-    const schedules = await prisma.schedule.findMany({
-      where: {
-        doctorId,
-        isActive: true,
-      },
-      include: {
-        clinic: true,
-        timeSlots: {
-          include: {
-            appointment: {
-              include: {
-                patient: {
-                  include: {
-                    user: true,
-                  },
-                },
-              },
-            },
-          },
-          orderBy: {
-            startTime: "asc",
-          },
-        },
-      },
-      orderBy: {
-        dayOfWeek: "asc",
-      },
-    });
+    const schedules = await timeSlotsService.getDoctorWeeklySchedule(doctorId);
 
     // Group by day of week
     const weeklySchedule = schedules.map((schedule) => {
@@ -228,30 +175,10 @@ export async function getAvailabilityOverview(
       return { success: false, error: "Authentication failed" };
     }
 
-    const whereClause: any = {
+    const schedules = await timeSlotsService.getAvailabilityOverview(
       doctorId,
-      isActive: true,
-      ...(clinicId && { clinicId }),
-    };
-
-    const schedules = await prisma.schedule.findMany({
-      where: whereClause,
-      include: {
-        clinic: true,
-        timeSlots: {
-          where: {
-            isBooked: false,
-            isBlocked: false,
-          },
-          orderBy: {
-            startTime: "asc",
-          },
-        },
-      },
-      orderBy: {
-        dayOfWeek: "asc",
-      },
-    });
+      clinicId
+    );
 
     // Group by day and clinic
     const availability = schedules.map((schedule) => ({

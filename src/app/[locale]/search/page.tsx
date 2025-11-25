@@ -7,8 +7,8 @@ import {
 } from "@/lib/actions/search";
 import SearchPageClient from "./SearchPageClient";
 
-// This page queries the database; render it dynamically to avoid SSG/prerender DB access
-export const dynamic = "force-dynamic";
+// This page queries the database; use ISR to cache results for 60 seconds
+export const revalidate = 60;
 
 export default async function Search({
   searchParams,

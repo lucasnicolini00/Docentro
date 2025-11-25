@@ -1,8 +1,8 @@
 "use server";
 
-import prisma from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { validatePatient, type ActionResult } from "./utils";
+import { patientsService } from "@/lib/services/patientsService";
 
 /**
  * Server action for updating patient profile
@@ -31,34 +31,23 @@ export async function updatePatientProfile(
     const birthdate = formData.get("birthdate") as string;
     const gender = formData.get("gender") as string;
 
-    // Start a transaction to update all related data
-    const result = await prisma.$transaction(async (tx) => {
-      // Update user data
-      const updatedUser = await tx.user.update({
-        where: { id: session.user.id },
-        data: {
-          firstName,
-          lastName,
-          email,
-          phone: phone || null,
-        },
-      });
-
-      // Update patient data
-      const updatedPatient = await tx.patient.update({
-        where: { id: patient.id },
-        data: {
-          name: patientName,
-          surname: patientSurname,
-          email: patientEmail,
-          phone: patientPhone || null,
-          birthdate: birthdate ? new Date(birthdate) : null,
-          gender: gender || null,
-        },
-      });
-
-      return { updatedUser, updatedPatient };
-    });
+    // Delegate to service
+    const result = await patientsService.updatePatientProfile(
+      session.user.id,
+      patient.id,
+      {
+        firstName,
+        lastName,
+        email,
+        phone,
+        patientName,
+        patientSurname,
+        patientEmail,
+        patientPhone,
+        birthdate,
+        gender,
+      }
+    );
 
     // Revalidate the profile page to show updated data
     revalidatePath("/dashboard/patient/profile");
@@ -113,29 +102,9 @@ export async function getPatientDashboard(): Promise<ActionResult> {
     const { patient: validatedPatient, session } = validation;
 
     // Get patient data with appointments
-    const patient = await prisma.patient.findUnique({
-      where: { id: validatedPatient.id },
-      include: {
-        appointments: {
-          include: {
-            doctor: {
-              include: {
-                user: {
-                  select: {
-                    firstName: true,
-                    lastName: true,
-                  },
-                },
-              },
-            },
-            clinic: true,
-          },
-          orderBy: {
-            datetime: "desc",
-          },
-        },
-      },
-    });
+    const patient = await patientsService.getPatientDashboard(
+      validatedPatient.id
+    );
 
     if (!patient) {
       return { success: false, error: "Paciente no encontrado" };

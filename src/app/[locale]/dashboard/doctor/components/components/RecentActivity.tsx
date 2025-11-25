@@ -6,6 +6,8 @@ import { Activity } from "./types";
 import { getIconComponent, getIconColorClasses } from "./utils";
 import { useLocalePath } from "@/hooks";
 
+import { useTranslations } from "next-intl";
+
 interface RecentActivityProps {
   activities: Activity[];
   loading: boolean;
@@ -15,13 +17,34 @@ export default function RecentActivity({
   activities,
   loading,
 }: RecentActivityProps) {
+  const t = useTranslations("dashboard_doctor");
   const localePath = useLocalePath();
+  
+  // Simple time ago formatter
+  const formatTimeAgo = (date: Date) => {
+    const now = new Date();
+    const diffInMinutes = Math.floor(
+      (now.getTime() - new Date(date).getTime()) / (1000 * 60)
+    );
+
+    if (diffInMinutes < 1) return t("timeAgo.justNow");
+    if (diffInMinutes < 60)
+      return t("timeAgo.minutes", { count: diffInMinutes });
+
+    const diffInHours = Math.floor(diffInMinutes / 60);
+    if (diffInHours < 24)
+      return t("timeAgo.hours", { count: diffInHours });
+
+    const diffInDays = Math.floor(diffInHours / 24);
+    return t("timeAgo.days", { count: diffInDays });
+  };
+
   if (loading) {
     return (
       <div className="bg-white rounded-lg shadow-sm border border-gray-200">
         <div className="p-6 border-b border-gray-200">
           <h3 className="text-lg font-semibold text-gray-900">
-            Actividad Reciente
+            {t("activities")}
           </h3>
         </div>
         <div className="p-6">
@@ -45,7 +68,7 @@ export default function RecentActivity({
     <div className="bg-white rounded-lg shadow-sm border border-gray-200">
       <div className="p-6 border-b border-gray-200">
         <h3 className="text-lg font-semibold text-gray-900">
-          Actividad Reciente
+          {t("activities")}
         </h3>
       </div>
       <div className="p-6">
@@ -64,7 +87,7 @@ export default function RecentActivity({
                     <p className="text-sm font-medium text-gray-900">
                       {activity.title}
                     </p>
-                    <p className="text-xs text-gray-500">{activity.timeAgo}</p>
+                    <p className="text-xs text-gray-500">{formatTimeAgo(activity.timestamp)}</p>
                   </div>
                 </div>
               );
@@ -73,7 +96,7 @@ export default function RecentActivity({
         ) : (
           <div className="text-center py-8 text-gray-500">
             <Calendar className="w-12 h-12 text-gray-400 mx-auto mb-3" />
-            <p>No hay actividad reciente</p>
+            <p>{t("noData")}</p>
           </div>
         )}
 
@@ -82,7 +105,7 @@ export default function RecentActivity({
             href={localePath("/dashboard/doctor/activity")}
             className="text-sm text-blue-600 hover:text-blue-700 font-medium"
           >
-            Ver toda la actividad →
+            {t("viewAllLinkLabel")} →
           </Link>
         </div>
       </div>

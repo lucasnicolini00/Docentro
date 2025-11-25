@@ -317,6 +317,19 @@ export default function MapModal({
     }
   }, [map, updateVisibleDoctors]);
 
+  // Memoize doctor calculations to avoid recalculating on every render
+  const doctorsWithCalculations = useMemo(
+    () =>
+      visibleDoctors.map((doctor) => ({
+        ...doctor,
+        avgRating: calculateAverageRating(doctor.opinions),
+        yearsExp: calculateYearsOfExperience(doctor.experiences),
+        priceRange: getPriceRange(doctor, t),
+        specialitiesText: getSpecialitiesText(doctor.specialities, t),
+      })),
+    [visibleDoctors, t]
+  );
+
   if (!isOpen) return null;
 
   if (loadError) {
@@ -380,15 +393,7 @@ export default function MapModal({
           </div>
 
           <div className="p-4 space-y-4">
-            {visibleDoctors.map((doctor) => {
-              const avgRating = calculateAverageRating(doctor.opinions);
-              const yearsExp = calculateYearsOfExperience(doctor.experiences);
-              const priceRange = getPriceRange(doctor, t);
-              const specialitiesText = getSpecialitiesText(
-                doctor.specialities,
-                t
-              );
-
+            {doctorsWithCalculations.map((doctor) => {
               return (
                 <div
                   key={doctor.id}
@@ -419,11 +424,11 @@ export default function MapModal({
                         Dr. {doctor.name} {doctor.surname}
                       </h3>
                       <p className="text-sm text-blue-600 font-medium">
-                        {specialitiesText}
+                        {doctor.specialitiesText}
                       </p>
-                      {yearsExp > 0 && (
+                      {doctor.yearsExp > 0 && (
                         <p className="text-xs text-gray-500 mt-1">
-                          {yearsExp} {yearsExp === 1 ? t("year") : t("years")}
+                          {doctor.yearsExp} {doctor.yearsExp === 1 ? t("year") : t("years")}
                         </p>
                       )}
                     </div>
@@ -432,14 +437,14 @@ export default function MapModal({
                   {/* Rating and Reviews */}
                   <div className="flex items-center justify-between mb-3">
                     <div className="flex items-center">
-                      {avgRating > 0 ? (
+                      {doctor.avgRating > 0 ? (
                         <>
                           <div className="flex items-center">
                             {[1, 2, 3, 4, 5].map((star) => (
                               <span
                                 key={star}
                                 className={`text-sm ${
-                                  star <= avgRating
+                                  star <= doctor.avgRating
                                     ? "text-yellow-400"
                                     : "text-gray-300"
                                 }`}
@@ -449,7 +454,7 @@ export default function MapModal({
                             ))}
                           </div>
                           <span className="ml-2 text-sm text-gray-600">
-                            {avgRating} ({doctor.opinions.length}{" "}
+                            {doctor.avgRating} ({doctor.opinions.length}{" "}
                             {doctor.opinions.length === 1
                               ? t("review")
                               : t("reviews")}
@@ -463,7 +468,7 @@ export default function MapModal({
                       )}
                     </div>
                     <span className="text-sm font-semibold text-green-600">
-                      {priceRange}
+                      {doctor.priceRange}
                     </span>
                   </div>
 

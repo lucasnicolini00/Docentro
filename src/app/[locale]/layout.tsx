@@ -31,26 +31,10 @@ export default async function LocaleLayout({
   const messages = await getMessages(locale, [
     "common",
     "navigation",
-    "dashboard_doctor",
-    "dashboard_patient",
-    "disclaimer",
-    "featuredDoctors",
-    "filtersModal",
     "footer",
-    "hero",
-    "howItWorks",
-    "locationPicker",
-    "login",
-    "register",
-    "map",
-    "mapModal",
-    "search",
-    "specialties",
-    "testimonials",
-    "forms",
-    "book",
-    "doctor_public",
-    "feedback",
+    "modals",
+    "login", // Often needed for auth modals
+    "register", // Often needed for auth modals
   ]);
 
   return (

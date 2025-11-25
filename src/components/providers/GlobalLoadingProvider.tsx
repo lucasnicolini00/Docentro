@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useState, ReactNode } from "react";
+import { createContext, useContext, useState, ReactNode, useMemo } from "react";
 
 interface GlobalLoadingContextType {
   isLoading: boolean;
@@ -23,8 +23,10 @@ export default function GlobalLoadingProvider({
 }: GlobalLoadingProviderProps) {
   const [isLoading, setIsLoading] = useState(false);
 
+  const value = useMemo(() => ({ isLoading, setIsLoading }), [isLoading]);
+
   return (
-    <GlobalLoadingContext.Provider value={{ isLoading, setIsLoading }}>
+    <GlobalLoadingContext.Provider value={value}>
       {/* More visible loading bar */}
       {isLoading && (
         <div className="fixed top-0 left-0 w-full h-4 bg-blue-500 z-50 shadow-lg">

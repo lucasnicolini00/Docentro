@@ -23,7 +23,7 @@ import InsightsPanel from "./InsightsPanel";
 import TabNavigation from "./TabNavigation";
 
 // Type definitions
-interface DashboardStats {
+export interface DashboardStats {
   todayAppointments: number;
   weekAppointments: number;
   monthlyRevenue: number;
@@ -32,7 +32,7 @@ interface DashboardStats {
   totalPatients: number;
 }
 
-interface ScheduleAnalytics {
+export interface ScheduleAnalytics {
   totalSlots: number;
   bookedSlots: number;
   availableSlots: number;
@@ -48,7 +48,7 @@ interface ScheduleAnalytics {
   insights: string[];
 }
 
-interface PatientAnalytics {
+export interface PatientAnalytics {
   totalPatients: number;
   newPatients: number;
   returningPatients: number;
@@ -64,7 +64,7 @@ interface PatientAnalytics {
   insights: string[];
 }
 
-interface RevenueAnalytics {
+export interface RevenueAnalytics {
   totalRevenue: number;
   averageValue: number;
   totalAppointments: number;
@@ -81,23 +81,34 @@ interface RevenueAnalytics {
 type TimeRange = "week" | "month" | "quarter" | "year";
 type TabType = "overview" | "patients" | "revenue" | "schedule";
 
-export default function AnalyticsDashboard() {
+interface AnalyticsDashboardProps {
+  initialData?: {
+    stats: DashboardStats | null;
+    schedule: ScheduleAnalytics | null;
+    patient: PatientAnalytics | null;
+    revenue: RevenueAnalytics | null;
+  };
+}
+
+export default function AnalyticsDashboard({
+  initialData,
+}: AnalyticsDashboardProps) {
   const t = useTranslations("dashboard_doctor");
   const [activeTab, setActiveTab] = useState<TabType>("overview");
   const [timeRange, setTimeRange] = useState<TimeRange>("month");
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(!initialData);
   const [error, setError] = useState<string | null>(null);
 
   // State for analytics data
   const [dashboardStats, setDashboardStats] = useState<DashboardStats | null>(
-    null
+    initialData?.stats || null
   );
   const [scheduleAnalytics, setScheduleAnalytics] =
-    useState<ScheduleAnalytics | null>(null);
+    useState<ScheduleAnalytics | null>(initialData?.schedule || null);
   const [patientAnalytics, setPatientAnalytics] =
-    useState<PatientAnalytics | null>(null);
+    useState<PatientAnalytics | null>(initialData?.patient || null);
   const [revenueAnalytics, setRevenueAnalytics] =
-    useState<RevenueAnalytics | null>(null);
+    useState<RevenueAnalytics | null>(initialData?.revenue || null);
 
   // Fetch analytics data
   const fetchAnalytics = useCallback(async () => {
@@ -151,8 +162,12 @@ export default function AnalyticsDashboard() {
   }, [timeRange, t]);
 
   useEffect(() => {
+    // Skip initial fetch if we have data and timeRange is default
+    if (initialData && timeRange === "month") {
+      return;
+    }
     fetchAnalytics();
-  }, [fetchAnalytics]);
+  }, [fetchAnalytics, initialData, timeRange]);
 
   if (loading) {
     return (

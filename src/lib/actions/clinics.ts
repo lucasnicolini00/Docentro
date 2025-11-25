@@ -1,39 +1,16 @@
 "use server";
 
 import { requireDoctor } from "@/lib/auth-guards";
-import prisma from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { ActionResult } from "./utils";
+import { clinicsService } from "@/lib/services/clinicsService";
 
 export async function getDoctorClinics() {
   try {
     const session = await requireDoctor();
 
-    const doctor = await prisma.doctor.findUnique({
-      where: { userId: session.user.id },
-    });
-
-    if (!doctor) {
-      return { success: false, error: "Doctor no encontrado" };
-    }
-
     // Get doctor's clinics with pricing data
-    const doctorClinics = await prisma.doctorClinic.findMany({
-      where: { doctorId: doctor.id },
-      include: {
-        clinic: {
-          include: {
-            pricing: {
-              where: {
-                doctorId: doctor.id,
-                deletedAt: null, // Only get non-deleted pricing
-              },
-              orderBy: { title: "asc" },
-            },
-          },
-        },
-      },
-    });
+    const doctorClinics = await clinicsService.getDoctorClinics(session.user.id);
 
     // Filter out soft-deleted clinics and properly serialize all Decimal and Date objects
     const clinicsWithPricing = doctorClinics
@@ -80,35 +57,8 @@ export async function createClinic(data: {
   try {
     const session = await requireDoctor();
 
-    const doctor = await prisma.doctor.findUnique({
-      where: { userId: session.user.id },
-    });
-
-    if (!doctor) {
-      return { success: false, error: "Doctor no encontrado" };
-    }
-
-    // Create clinic
-    const clinic = await prisma.clinic.create({
-      data: {
-        name: data.name,
-        address: data.address,
-        isVirtual: data.isVirtual,
-        country: data.country,
-        city: data.city,
-        neighborhood: data.neighborhood,
-        latitude: data.latitude,
-        longitude: data.longitude,
-      },
-    });
-
-    // Link doctor to clinic
-    await prisma.doctorClinic.create({
-      data: {
-        doctorId: doctor.id,
-        clinicId: clinic.id,
-      },
-    });
+    // Create clinic using service
+    const clinic = await clinicsService.createClinic(session.user.id, data);
 
     revalidatePath("/dashboard/doctor/clinics");
 
@@ -143,42 +93,8 @@ export async function updateClinic(
   try {
     const session = await requireDoctor();
 
-    const doctor = await prisma.doctor.findUnique({
-      where: { userId: session.user.id },
-    });
-
-    if (!doctor) {
-      return { success: false, error: "Doctor no encontrado" };
-    }
-
-    // Verify doctor has access to this clinic
-    const doctorClinic = await prisma.doctorClinic.findUnique({
-      where: {
-        doctorId_clinicId: {
-          doctorId: doctor.id,
-          clinicId: clinicId,
-        },
-      },
-    });
-
-    if (!doctorClinic) {
-      return { success: false, error: "No tienes acceso a esta clínica" };
-    }
-
-    // Update clinic
-    const clinic = await prisma.clinic.update({
-      where: { id: clinicId },
-      data: {
-        name: data.name,
-        address: data.address,
-        isVirtual: data.isVirtual,
-        country: data.country,
-        city: data.city,
-        neighborhood: data.neighborhood,
-        latitude: data.latitude,
-        longitude: data.longitude,
-      },
-    });
+    // Update clinic using service
+    const clinic = await clinicsService.updateClinic(session.user.id, clinicId, data);
 
     revalidatePath("/dashboard/doctor/clinics");
 
@@ -209,41 +125,8 @@ export async function createPricing(data: {
   try {
     const session = await requireDoctor();
 
-    const doctor = await prisma.doctor.findUnique({
-      where: { userId: session.user.id },
-    });
-
-    if (!doctor) {
-      return { success: false, error: "Doctor no encontrado" };
-    }
-
-    // Verify doctor has access to this clinic
-    const doctorClinic = await prisma.doctorClinic.findUnique({
-      where: {
-        doctorId_clinicId: {
-          doctorId: doctor.id,
-          clinicId: data.clinicId,
-        },
-      },
-    });
-
-    if (!doctorClinic) {
-      return { success: false, error: "No tienes acceso a esta clínica" };
-    }
-
-    // Create pricing
-    const pricing = await prisma.pricing.create({
-      data: {
-        doctorId: doctor.id,
-        clinicId: data.clinicId,
-        title: data.title,
-        price: data.price,
-        currency: data.currency,
-        durationMinutes: data.durationMinutes,
-        description: data.description,
-        isActive: data.isActive,
-      },
-    });
+    // Create pricing using service
+    const pricing = await clinicsService.createPricing(session.user.id, data);
 
     revalidatePath("/dashboard/doctor/clinics");
 
@@ -277,35 +160,8 @@ export async function updatePricing(
   try {
     const session = await requireDoctor();
 
-    const doctor = await prisma.doctor.findUnique({
-      where: { userId: session.user.id },
-    });
-
-    if (!doctor) {
-      return { success: false, error: "Doctor no encontrado" };
-    }
-
-    // Verify doctor owns this pricing
-    const existingPricing = await prisma.pricing.findUnique({
-      where: { id: pricingId },
-    });
-
-    if (!existingPricing || existingPricing.doctorId !== doctor.id) {
-      return { success: false, error: "No tienes acceso a esta tarifa" };
-    }
-
-    // Update pricing
-    const pricing = await prisma.pricing.update({
-      where: { id: pricingId },
-      data: {
-        title: data.title,
-        price: data.price,
-        currency: data.currency,
-        durationMinutes: data.durationMinutes,
-        description: data.description,
-        isActive: data.isActive,
-      },
-    });
+    // Update pricing using service
+    const pricing = await clinicsService.updatePricing(session.user.id, pricingId, data);
 
     revalidatePath("/dashboard/doctor/clinics");
 
@@ -353,30 +209,8 @@ export async function togglePricingStatus(pricingId: string) {
       };
     }
 
-    const doctor = await prisma.doctor.findUnique({
-      where: { userId: session.user.id },
-    });
-
-    if (!doctor) {
-      return { success: false, error: "Doctor no encontrado" };
-    }
-
-    // Verify doctor owns this pricing
-    const existingPricing = await prisma.pricing.findUnique({
-      where: { id: pricingId },
-    });
-
-    if (!existingPricing || existingPricing.doctorId !== doctor.id) {
-      return { success: false, error: "No tienes acceso a esta tarifa" };
-    }
-
-    // Toggle status
-    const pricing = await prisma.pricing.update({
-      where: { id: pricingId },
-      data: {
-        isActive: !existingPricing.isActive,
-      },
-    });
+    // Toggle pricing status using service
+    const pricing = await clinicsService.togglePricingStatus(session.user.id, pricingId);
 
     revalidatePath("/dashboard/doctor/clinics");
 
@@ -384,7 +218,7 @@ export async function togglePricingStatus(pricingId: string) {
       success: true,
       data: {
         ...pricing,
-        price: pricing.price.toNumber(),
+        price: typeof pricing.price === 'number' ? pricing.price : pricing.price.toNumber(),
         createdAt: pricing.createdAt.toISOString(),
         updatedAt: pricing.updatedAt.toISOString(),
         deletedAt: pricing.deletedAt?.toISOString() || null,
@@ -400,34 +234,8 @@ export async function deletePricing(pricingId: string) {
   try {
     const session = await requireDoctor();
 
-    const doctor = await prisma.doctor.findUnique({
-      where: { userId: session.user.id },
-    });
-
-    if (!doctor) {
-      return { success: false, error: "Doctor no encontrado" };
-    }
-
-    // First, verify that the pricing belongs to this doctor
-    const pricing = await prisma.pricing.findFirst({
-      where: {
-        id: pricingId,
-        doctorId: doctor.id,
-        deletedAt: null, // Make sure we're only trying to delete non-deleted pricing
-      },
-    });
-
-    if (!pricing) {
-      return { success: false, error: "Tarifa no encontrada" };
-    }
-
-    // Soft delete the pricing
-    const deletedPricing = await prisma.pricing.update({
-      where: { id: pricingId },
-      data: {
-        deletedAt: new Date(),
-      },
-    });
+    // Delete pricing using service
+    const deletedPricing = await clinicsService.deletePricing(session.user.id, pricingId);
 
     revalidatePath("/dashboard/doctor/clinics");
 
@@ -447,52 +255,8 @@ export async function deleteClinic(clinicId: string): Promise<ActionResult> {
   try {
     const session = await requireDoctor();
 
-    const doctor = await prisma.doctor.findUnique({
-      where: { userId: session.user.id },
-    });
-
-    if (!doctor) {
-      return { success: false, error: "Doctor no encontrado" };
-    }
-
-    // Verify doctor has access to this clinic
-    const doctorClinic = await prisma.doctorClinic.findUnique({
-      where: {
-        doctorId_clinicId: {
-          doctorId: doctor.id,
-          clinicId: clinicId,
-        },
-      },
-    });
-
-    if (!doctorClinic) {
-      return { success: false, error: "No tienes acceso a esta clínica" };
-    }
-
-    // Check if clinic has any active appointments
-    const activeAppointments = await prisma.appointment.findFirst({
-      where: {
-        clinicId: clinicId,
-        status: { in: ["PENDING", "CONFIRMED"] },
-        datetime: { gte: new Date() }, // Future appointments
-      },
-    });
-
-    if (activeAppointments) {
-      return {
-        success: false,
-        error:
-          "No se puede eliminar la clínica porque tiene citas pendientes o confirmadas",
-      };
-    }
-
-    // Soft delete the clinic
-    const deletedClinic = await prisma.clinic.update({
-      where: { id: clinicId },
-      data: {
-        deletedAt: new Date(),
-      },
-    });
+    // Delete clinic using service
+    const deletedClinic = await clinicsService.deleteClinic(session.user.id, clinicId);
 
     revalidatePath("/dashboard/doctor/clinics");
 

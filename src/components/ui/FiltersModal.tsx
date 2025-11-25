@@ -32,7 +32,7 @@ export default function FiltersModal({
     setFilters(currentFilters);
   }, [currentFilters]);
 
-  // Close modal with Escape key
+  // Close modal with Escape key and manage body scroll lock
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
@@ -41,13 +41,18 @@ export default function FiltersModal({
     };
 
     if (isOpen) {
+      // Calculate scrollbar width to prevent layout shift
+      const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
+      
       document.addEventListener("keydown", handleEscape);
       document.body.style.overflow = "hidden";
+      document.body.style.paddingRight = `${scrollbarWidth}px`;
     }
 
     return () => {
       document.removeEventListener("keydown", handleEscape);
-      document.body.style.overflow = "unset";
+      document.body.style.overflow = "";
+      document.body.style.paddingRight = "";
     };
   }, [isOpen, onClose]);
 

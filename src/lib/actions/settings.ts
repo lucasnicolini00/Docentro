@@ -1,8 +1,8 @@
 "use server";
 
-import prisma from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { validateDoctor, type ActionResult } from "./utils";
+import { settingsService } from "@/lib/services/settingsService";
 
 interface DoctorSettingsUpdate {
   emailNotifications?: boolean;
@@ -29,19 +29,11 @@ export async function updateDoctorSettings(
 
     const { doctor } = validation;
 
-    // Update doctor settings
-    const updatedDoctor = await prisma.doctor.update({
-      where: { id: doctor.id },
-      data: {
-        emailNotifications: settings.emailNotifications,
-        pushNotifications: settings.pushNotifications,
-        isPublic: settings.publicAvailability,
-        allowOnlineConsultations: settings.onlineConsultations,
-        autoBookingEnabled: settings.autoBooking,
-        remindersEnabled: settings.reminders,
-        consultationPrice: settings.consultationPrice,
-      },
-    });
+    // Delegate to service
+    const updatedDoctor = await settingsService.updateDoctorSettings(
+      doctor.id,
+      settings
+    );
 
     revalidatePath("/dashboard/doctor/profile");
     return { success: true, data: updatedDoctor };
@@ -120,49 +112,8 @@ export async function exportDoctorData(): Promise<ActionResult> {
 
     const { doctor } = validation;
 
-    // Get all doctor data
-    const doctorData = await prisma.doctor.findUnique({
-      where: { id: doctor.id },
-      include: {
-        user: {
-          select: {
-            firstName: true,
-            lastName: true,
-            email: true,
-            phone: true,
-            createdAt: true,
-          },
-        },
-        specialities: {
-          include: {
-            speciality: true,
-          },
-        },
-        experiences: true,
-        clinics: {
-          include: {
-            clinic: true,
-          },
-        },
-        schedules: {
-          include: {
-            timeSlots: true,
-          },
-        },
-        appointments: {
-          include: {
-            patient: {
-              select: {
-                name: true,
-                surname: true,
-                email: true,
-              },
-            },
-          },
-        },
-        pricings: true,
-      },
-    });
+    // Delegate to service
+    const doctorData = await settingsService.exportDoctorData(doctor.id);
 
     return { success: true, data: doctorData };
   } catch (error) {

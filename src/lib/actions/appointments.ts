@@ -1,6 +1,5 @@
 "use server";
 
-import prisma from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import {
   validateAuth,
@@ -9,6 +8,7 @@ import {
   type ActionResult,
 } from "./utils";
 import { AppointmentStatus, AppointmentType } from "@prisma/client";
+import { appointmentsService } from "@/lib/services/appointmentsService";
 
 /**
  * Create appointment via Server Action (replaces /api/appointments POST)
@@ -63,49 +63,23 @@ export async function getUserAppointments(): Promise<ActionResult> {
     }
 
     if (session.user.role === "PATIENT") {
-      const patient = await prisma.patient.findFirst({
-        where: { user: { email: session.user.email } },
-      });
+      const patient = await appointmentsService.getPatient(session.user.email);
 
       if (!patient) {
         return { success: false, error: "Paciente no encontrado" };
       }
 
-      const appointments = await prisma.appointment.findMany({
-        where: { patientId: patient.id },
-        include: {
-          doctor: {
-            include: { user: true },
-          },
-          clinic: true,
-          pricing: true,
-          timeSlot: true,
-        },
-        orderBy: { datetime: "asc" },
-      });
+      const appointments = await appointmentsService.getPatientAppointments(patient.id);
 
       return { success: true, data: appointments };
     } else if (session.user.role === "DOCTOR") {
-      const doctor = await prisma.doctor.findFirst({
-        where: { user: { email: session.user.email } },
-      });
+      const doctor = await appointmentsService.getDoctor(session.user.email);
 
       if (!doctor) {
         return { success: false, error: "Doctor no encontrado" };
       }
 
-      const appointments = await prisma.appointment.findMany({
-        where: { doctorId: doctor.id },
-        include: {
-          patient: {
-            include: { user: true },
-          },
-          clinic: true,
-          pricing: true,
-          timeSlot: true,
-        },
-        orderBy: { datetime: "asc" },
-      });
+      const appointments = await appointmentsService.getDoctorAppointments(doctor.id);
 
       return { success: true, data: appointments };
     }
@@ -146,51 +120,12 @@ export async function getDoctorAppointments(
       };
     }
 
-    const appointments = await prisma.appointment.findMany({
-      where: whereClause,
-      include: {
-        patient: {
-          select: {
-            id: true,
-            name: true,
-            surname: true,
-            email: true,
-            phone: true,
-          },
-        },
-        clinic: {
-          select: {
-            id: true,
-            name: true,
-            address: true,
-            city: true,
-          },
-        },
-        pricing: {
-          select: {
-            id: true,
-            title: true,
-            price: true,
-            currency: true,
-          },
-        },
-        doctor: {
-          select: {
-            id: true,
-            user: {
-              select: {
-                firstName: true,
-                lastName: true,
-                email: true,
-              },
-            },
-          },
-        },
-      },
-      orderBy: {
-        datetime: "asc",
-      },
-    });
+    const appointments = await appointmentsService.getDoctorAppointmentsForCalendar(
+      doctorId,
+      options?.startDate || new Date(),
+      options?.endDate || new Date(),
+      options?.status
+    );
 
     return appointments;
   } catch (error) {
@@ -230,46 +165,12 @@ export async function getPatientAppointments(
       };
     }
 
-    const appointments = await prisma.appointment.findMany({
-      where: whereClause,
-      include: {
-        timeSlot: {
-          select: {
-            id: true,
-            startTime: true,
-            endTime: true,
-            schedule: {
-              select: {
-                doctor: {
-                  select: {
-                    name: true,
-                    surname: true,
-                    // Note: specialty field needs to be checked in schema
-                  },
-                },
-                clinic: {
-                  select: {
-                    name: true,
-                    address: true,
-                  },
-                },
-              },
-            },
-          },
-        },
-        pricing: {
-          select: {
-            title: true,
-            price: true,
-          },
-        },
-      },
-      orderBy: {
-        timeSlot: {
-          startTime: "asc",
-        },
-      },
-    });
+    const appointments = await appointmentsService.getPatientAppointmentsForCalendar(
+      patientId,
+      options?.startDate || new Date(),
+      options?.endDate || new Date(),
+      options?.status
+    );
 
     return appointments;
   } catch (error) {
@@ -300,17 +201,7 @@ export async function createAppointmentWithTimeSlot(
     const notes = formData.get("notes") as string;
 
     // Get the time slot and verify it's available
-    const timeSlot = await prisma.timeSlot.findUnique({
-      where: { id: timeSlotId },
-      include: {
-        schedule: {
-          include: {
-            doctor: true,
-            clinic: true,
-          },
-        },
-      },
-    });
+    const timeSlot = await appointmentsService.getTimeSlotWithRelations(timeSlotId);
 
     if (!timeSlot) {
       return { success: false, error: "Horario no encontrado" };
@@ -323,48 +214,20 @@ export async function createAppointmentWithTimeSlot(
     // Calculate the datetime from schedule and time slot
     const datetime = new Date(); // This would be calculated from the selected date + time slot
 
-    // Create the appointment and mark time slot as booked in a transaction
-    const result = await prisma.$transaction(async (tx) => {
-      // Update time slot to mark as booked
-      await tx.timeSlot.update({
-        where: { id: timeSlotId },
-        data: { isBooked: true },
-      });
-
-      // Create the appointment
-      const appointment = await tx.appointment.create({
-        data: {
-          doctorId: timeSlot.schedule.doctorId,
-          patientId: patient.id,
-          clinicId: timeSlot.schedule.clinicId,
-          timeSlotId: timeSlotId,
-          pricingId: pricingId || null,
-          datetime,
-          durationMinutes:
-            parseInt(timeSlot.endTime.split(":")[1]) -
-              parseInt(timeSlot.startTime.split(":")[1]) || 30,
-          type: type || AppointmentType.IN_PERSON,
-          status: AppointmentStatus.PENDING,
-          notes: notes || null,
-        },
-        include: {
-          doctor: {
-            include: {
-              user: true,
-              specialities: {
-                include: {
-                  speciality: true,
-                },
-              },
-            },
-          },
-          clinic: true,
-          pricing: true,
-          timeSlot: true,
-        },
-      });
-
-      return appointment;
+    // Create the appointment and mark time slot as booked
+    const result = await appointmentsService.createAppointmentWithTimeSlot({
+      doctorId: timeSlot.schedule.doctorId,
+      patientId: patient.id,
+      clinicId: timeSlot.schedule.clinicId,
+      timeSlotId: timeSlotId,
+      pricingId: pricingId || null,
+      datetime,
+      durationMinutes:
+        parseInt(timeSlot.endTime.split(":")[1]) -
+          parseInt(timeSlot.startTime.split(":")[1]) || 30,
+      type: type || AppointmentType.IN_PERSON,
+      status: AppointmentStatus.PENDING,
+      notes: notes || null,
     });
 
     revalidatePath("/dashboard/patient");
@@ -418,47 +281,26 @@ export async function createAppointment(
     }
 
     // Check if the time slot is available
-    const conflictingAppointment = await prisma.appointment.findFirst({
-      where: {
-        doctorId,
-        datetime: appointmentDate,
-        status: {
-          not: AppointmentStatus.CANCELED,
-        },
-      },
-    });
+    const conflictingAppointment = await appointmentsService.checkConflictingAppointment(
+      doctorId,
+      appointmentDate
+    );
 
     if (conflictingAppointment) {
       return { success: false, error: "El horario no está disponible" };
     }
 
     // Create the appointment
-    const appointment = await prisma.appointment.create({
-      data: {
-        doctorId,
-        patientId: patient.id,
-        clinicId,
-        pricingId: pricingId || null,
-        datetime: appointmentDate,
-        durationMinutes,
-        type: type || AppointmentType.IN_PERSON,
-        status: AppointmentStatus.PENDING,
-        notes: notes || null,
-      },
-      include: {
-        doctor: {
-          include: {
-            user: true,
-            specialities: {
-              include: {
-                speciality: true,
-              },
-            },
-          },
-        },
-        clinic: true,
-        pricing: true,
-      },
+    const appointment = await appointmentsService.createAppointment({
+      doctorId,
+      patientId: patient.id,
+      clinicId,
+      pricingId: pricingId || null,
+      datetime: appointmentDate,
+      durationMinutes,
+      type: type || AppointmentType.IN_PERSON,
+      status: AppointmentStatus.PENDING,
+      notes: notes || null,
     });
 
     // Revalidate related pages
@@ -496,22 +338,11 @@ export async function getDoctorAvailability(
     endOfDay.setHours(23, 59, 59, 999);
 
     // Get all appointments for this doctor on this date
-    const appointments = await prisma.appointment.findMany({
-      where: {
-        doctorId,
-        datetime: {
-          gte: startOfDay,
-          lte: endOfDay,
-        },
-        status: {
-          not: AppointmentStatus.CANCELED,
-        },
-      },
-      select: {
-        datetime: true,
-        durationMinutes: true,
-      },
-    });
+    const appointments = await appointmentsService.getDoctorAppointmentsForAvailability(
+      doctorId,
+      startOfDay,
+      endOfDay
+    );
 
     // Generate available slots (9 AM to 6 PM, 30-minute slots)
     const availableSlots: Array<{ datetime: string; time: string }> = [];
@@ -571,30 +402,7 @@ export async function getDoctorClinicsAndPricing(
   doctorId: string
 ): Promise<ActionResult> {
   try {
-    const doctor = await prisma.doctor.findUnique({
-      where: { id: doctorId },
-      include: {
-        user: true,
-        specialities: {
-          include: {
-            speciality: true,
-          },
-        },
-        clinics: {
-          include: {
-            clinic: true,
-          },
-        },
-        pricings: {
-          where: {
-            isActive: true,
-          },
-          include: {
-            clinic: true,
-          },
-        },
-      },
-    });
+    const doctor = await appointmentsService.getDoctorWithRelations(doctorId);
 
     if (!doctor) {
       return { success: false, error: "Doctor no encontrado" };
@@ -664,30 +472,20 @@ export async function updateAppointmentStatus(
     const { doctor } = validation;
 
     // Verify the appointment belongs to this doctor
-    const appointment = await prisma.appointment.findFirst({
-      where: {
-        id: appointmentId,
-        doctorId: doctor.id,
-      },
-    });
+    const appointment = await appointmentsService.getAppointmentForStatusUpdate(
+      appointmentId,
+      doctor.id
+    );
 
     if (!appointment) {
       return { success: false, error: "Cita no encontrada" };
     }
 
     // Update the appointment status
-    const updatedAppointment = await prisma.appointment.update({
-      where: { id: appointmentId },
-      data: { status },
-      include: {
-        patient: {
-          include: {
-            user: true,
-          },
-        },
-        clinic: true,
-      },
-    });
+    const updatedAppointment = await appointmentsService.updateAppointmentStatus(
+      appointmentId,
+      status
+    );
 
     // Revalidate related pages
     revalidatePath("/dashboard/doctor");
@@ -718,21 +516,7 @@ export async function cancelAppointment(
     }
 
     // Get the appointment and verify ownership
-    const appointment = await prisma.appointment.findUnique({
-      where: { id: appointmentId },
-      include: {
-        patient: {
-          include: {
-            user: true,
-          },
-        },
-        doctor: {
-          include: {
-            user: true,
-          },
-        },
-      },
-    });
+    const appointment = await appointmentsService.getAppointmentForCancellation(appointmentId);
 
     if (!appointment) {
       return { success: false, error: "Cita no encontrada" };
@@ -751,13 +535,7 @@ export async function cancelAppointment(
     }
 
     // Update the appointment status to canceled
-    const updatedAppointment = await prisma.appointment.update({
-      where: { id: appointmentId },
-      data: {
-        status: AppointmentStatus.CANCELED,
-        updatedAt: new Date(),
-      },
-    });
+    const updatedAppointment = await appointmentsService.cancelAppointment(appointmentId);
 
     // Revalidate related pages
     revalidatePath("/dashboard/doctor");

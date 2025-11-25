@@ -1,9 +1,9 @@
 "use server";
 
-import prisma from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
-import { validateDoctor, validateAuth, type ActionResult } from "./utils";
+import { validateDoctor, type ActionResult } from "./utils";
 import { getImageUrl } from "./images-uploader";
+import { doctorsService } from "@/lib/services/doctorsService";
 
 /**
  * Server action for updating doctor profile
@@ -48,84 +48,32 @@ export async function updateDoctorProfile(
       experiences = [];
     }
 
-    // Start a transaction to update all related data
-    const result = await prisma.$transaction(async (tx) => {
-      // Update user data
-      const updatedUser = await tx.user.update({
-        where: { id: session.user.id },
-        data: {
-          firstName,
-          lastName,
-          email,
-          phone: phone || null,
-        },
-      });
-
-      // Update doctor data
-      const updatedDoctor = await tx.doctor.update({
-        where: { id: doctor.id },
-        data: {
-          name: doctorName,
-          surname: doctorSurname,
-          email: doctorEmail,
-          phone: doctorPhone || null,
-        },
-      });
-
-      // Update specialities
-      if (specialityIds.length > 0) {
-        // Remove existing specialities
-        await tx.doctorSpeciality.deleteMany({
-          where: { doctorId: doctor.id },
-        });
-
-        // Add new specialities
-        await tx.doctorSpeciality.createMany({
-          data: specialityIds.map((specialityId) => ({
-            doctorId: doctor.id,
-            specialityId,
-          })),
-        });
-      }
-
-      // Update experiences
-      if (experiences.length > 0) {
-        // Remove existing experiences
-        await tx.experience.deleteMany({
-          where: { doctorId: doctor.id },
-        });
-
-        // Add new experiences
-        await tx.experience.createMany({
-          data: experiences.map((exp: any) => ({
-            doctorId: doctor.id,
-            title: exp.title,
-            company: exp.company,
-            location: exp.location || null,
-            startDate: exp.startDate ? new Date(exp.startDate) : new Date(),
-            endDate: exp.endDate ? new Date(exp.endDate) : null,
-            description: exp.description || null,
-          })),
-        });
-      }
-
-      return { updatedUser, updatedDoctor };
+    // Delegate to service
+    await doctorsService.updateDoctorProfile(session.user.id, doctor.id, {
+      firstName,
+      lastName,
+      email,
+      phone,
+      doctorName,
+      doctorSurname,
+      doctorEmail,
+      doctorPhone,
+      specialityIds,
+      experiences,
     });
 
-    // Revalidate the profile page to show updated data
     revalidatePath("/dashboard/doctor/profile");
 
     return {
       success: true,
-      message: "Perfil actualizado exitosamente",
-      data: {
-        user: result.updatedUser,
-        doctor: result.updatedDoctor,
-      },
+      message: "Perfil actualizado correctamente",
     };
   } catch (error) {
     console.error("Error updating doctor profile:", error);
-    return { success: false, error: "Error interno del servidor" };
+    return {
+      success: false,
+      error: "Error al actualizar el perfil",
+    };
   }
 }
 
@@ -134,17 +82,14 @@ export async function updateDoctorProfile(
  */
 export async function getDoctorSpecialities() {
   try {
-    const specialities = await prisma.speciality.findMany({
-      orderBy: { name: "asc" },
-    });
-
-    return {
-      success: true,
-      data: specialities,
-    };
+    const specialities = await doctorsService.getAllSpecialities();
+    return { success: true, data: specialities };
   } catch (error) {
     console.error("Error fetching specialities:", error);
-    return { success: false, error: "Error al obtener especialidades" };
+    return {
+      success: false,
+      error: "Error al cargar las especialidades",
+    };
   }
 }
 
@@ -153,95 +98,71 @@ export async function getDoctorSpecialities() {
  */
 export async function getDoctorProfile(): Promise<ActionResult> {
   try {
-    const session = await validateAuth();
+    const validation = await validateDoctor();
 
-    if (!session || !session.user?.id) {
-      return { success: false, error: "No autorizado" };
+    if ("error" in validation) {
+      return { success: false, error: validation.error };
     }
 
-    // Get doctor with all related information. Use userId from session to avoid
-    // doing an extra doctor lookup (validateDoctor previously fetched the
-    // doctor record which caused two DB calls). Also limit images returned to
-    // the most recent 6 to reduce payload for the profile page.
-    const fullDoctor = await prisma.doctor.findUnique({
-      where: { userId: session.user.id },
-      select: {
-        id: true,
-        name: true,
-        surname: true,
-        email: true,
-        phone: true,
-        user: {
-          select: {
-            firstName: true,
-            lastName: true,
-            email: true,
-            phone: true,
-          },
-        },
-        specialities: {
-          include: {
-            speciality: {
-              select: { id: true, name: true },
-            },
-          },
-        },
-        // Limit experiences to recent ones to avoid loading large histories
-        experiences: {
-          orderBy: { startDate: "desc" },
-          take: 10,
-        },
-        profileImage: {
-          select: { id: true, url: true, createdAt: true },
-        },
-        images: {
-          orderBy: { createdAt: "desc" },
-          take: 6,
-          select: { id: true, url: true, createdAt: true },
-        },
-      },
-    });
+    const { session } = validation;
+
+    const fullDoctor = await doctorsService.getDoctorProfile(session.user.id);
 
     if (!fullDoctor) {
-      return { success: false, error: "Doctor no encontrado" };
+      return {
+        success: false,
+        error: "Doctor no encontrado",
+      };
     }
+
+    // Get signed URLs for images
+    const profileImageUrl = fullDoctor.profileImage
+      ? await getImageUrl(fullDoctor.profileImage.id)
+      : null;
+
+    const imagesWithUrls = await Promise.all(
+      fullDoctor.images.map(async (img) => ({
+        id: img.id,
+        url: await getImageUrl(img.id),
+        createdAt: img.createdAt,
+      }))
+    );
 
     return {
       success: true,
-      data: fullDoctor,
+      data: {
+        ...fullDoctor,
+        profileImageUrl,
+        images: imagesWithUrls,
+      },
     };
   } catch (error) {
     console.error("Error fetching doctor profile:", error);
-    return { success: false, error: "Error al obtener el perfil del doctor" };
+    return {
+      success: false,
+      error: "Error al cargar el perfil del doctor",
+    };
   }
 }
+
 export async function getAllDoctorImages(): Promise<ActionResult> {
   try {
-    const session = await validateAuth();
+    const validation = await validateDoctor();
 
-    if (!session || !session.user?.id) {
-      return { success: false, error: "No autorizado" };
+    if ("error" in validation) {
+      return { success: false, error: validation.error };
     }
 
-    const images = await prisma.image.findMany({
-      where: {
-        doctorId: await getDoctorIdFromUserId(session.user.id),
-        profileForDoctor: null, // Exclude profile images from gallery
-      },
-      orderBy: { createdAt: "desc" },
-      select: { id: true, createdAt: true },
-    });
+    const { doctor } = validation;
 
-    // Generate fresh signed URLs for each image
+    const images = await doctorsService.getDoctorImages(doctor.id);
+
     const imagesWithUrls = await Promise.all(
-      images.map(async (img) => {
-        const urlResult = await getImageUrl(img.id);
-        return {
-          id: img.id,
-          url: urlResult.success ? urlResult.data : "", // should always succeed
-          createdAt: img.createdAt,
-        };
-      })
+      images.map(async (img) => ({
+        id: img.id,
+        url: await getImageUrl(img.id),
+        createdAt: img.createdAt,
+      }))
     );
 
     return {
@@ -250,20 +171,18 @@ export async function getAllDoctorImages(): Promise<ActionResult> {
     };
   } catch (error) {
     console.error("Error fetching doctor images:", error);
-    return { success: false, error: "Error al obtener imágenes" };
+    return {
+      success: false,
+      error: "Error al cargar las imágenes del doctor",
+    };
   }
 }
 
 /**
  * Helper to get doctor id from user id
  */
-async function getDoctorIdFromUserId(userId: string): Promise<string> {
-  const doctor = await prisma.doctor.findUnique({
-    where: { userId },
-    select: { id: true },
-  });
-  if (!doctor) throw new Error("Doctor not found");
-  return doctor.id;
+export async function getDoctorIdFromUserId(userId: string): Promise<string> {
+  return doctorsService.getDoctorIdFromUserId(userId);
 }
 
 /**
@@ -277,17 +196,14 @@ async function getDoctorIdFromUserId(userId: string): Promise<string> {
  */
 export async function getAllSpecialities(): Promise<ActionResult> {
   try {
-    const specialities = await prisma.speciality.findMany({
-      orderBy: { name: "asc" },
-    });
-
-    return {
-      success: true,
-      data: specialities,
-    };
+    const specialities = await doctorsService.getAllSpecialities();
+    return { success: true, data: specialities };
   } catch (error) {
-    console.error("Error fetching all specialities:", error);
-    return { success: false, error: "Error al obtener especialidades" };
+    console.error("Error fetching specialities:", error);
+    return {
+      success: false,
+      error: "Error al cargar las especialidades",
+    };
   }
 }
 
@@ -302,102 +218,26 @@ export async function getDoctorDashboard(): Promise<ActionResult> {
       return { success: false, error: validation.error };
     }
 
-    const { doctor: validatedDoctor, session } = validation;
+    const { doctor } = validation;
 
-    // Get doctor data with all appointments
-    const doctor = await prisma.doctor.findUnique({
-      where: { id: validatedDoctor.id },
-      include: {
-        appointments: {
-          include: {
-            patient: {
-              select: {
-                id: true,
-                name: true,
-                surname: true,
-                email: true,
-                phone: true,
-              },
-            },
-            clinic: {
-              select: {
-                id: true,
-                name: true,
-                address: true,
-              },
-            },
-          },
-          orderBy: {
-            datetime: "desc",
-          },
-        },
-        specialities: {
-          include: {
-            speciality: true,
-          },
-        },
-      },
-    });
+    const doctorData = await doctorsService.getDoctorDashboard(doctor.id);
 
-    if (!doctor) {
-      return { success: false, error: "Doctor no encontrado" };
+    if (!doctorData) {
+      return {
+        success: false,
+        error: "Doctor no encontrado",
+      };
     }
-
-    // Separate appointments into categories
-    const now = new Date();
-    const todayStart = new Date(
-      now.getFullYear(),
-      now.getMonth(),
-      now.getDate()
-    );
-    const todayEnd = new Date(todayStart.getTime() + 24 * 60 * 60 * 1000);
-
-    const pendingAppointments = doctor.appointments.filter(
-      (apt) => apt.status === "PENDING" && new Date(apt.datetime) > now
-    );
-
-    const todayAppointments = doctor.appointments.filter(
-      (apt) =>
-        new Date(apt.datetime) >= todayStart &&
-        new Date(apt.datetime) < todayEnd
-    );
-
-    const upcomingAppointments = doctor.appointments.filter(
-      (apt) =>
-        new Date(apt.datetime) > todayEnd &&
-        (apt.status === "CONFIRMED" || apt.status === "PENDING")
-    );
-
-    const pastAppointments = doctor.appointments.filter(
-      (apt) =>
-        new Date(apt.datetime) < now &&
-        (apt.status === "COMPLETED" || apt.status === "CANCELED")
-    );
 
     return {
       success: true,
-      data: {
-        doctor,
-        session,
-        stats: {
-          total: doctor.appointments.length,
-          today: todayAppointments.length,
-          pending: pendingAppointments.length,
-          specialties: doctor.specialities.length,
-        },
-        appointments: {
-          pending: pendingAppointments,
-          today: todayAppointments,
-          upcoming: upcomingAppointments,
-          past: pastAppointments,
-        },
-      },
+      data: doctorData,
     };
   } catch (error) {
     console.error("Error fetching doctor dashboard:", error);
     return {
       success: false,
-      error: "Error al obtener el dashboard del doctor",
+      error: "Error al cargar el dashboard del doctor",
     };
   }
 }
@@ -409,42 +249,7 @@ export async function getDoctorPublicProfile(
   id: string
 ): Promise<ActionResult> {
   try {
-    const doctor = await prisma.doctor.findUnique({
-      where: { id },
-      include: {
-        user: {
-          select: {
-            firstName: true,
-            lastName: true,
-            email: true,
-          },
-        },
-        specialities: {
-          include: {
-            speciality: true,
-          },
-        },
-        clinics: {
-          include: {
-            clinic: {
-              select: {
-                id: true,
-                name: true,
-                address: true,
-                city: true,
-                neighborhood: true,
-                isVirtual: true,
-              },
-            },
-          },
-        },
-        experiences: {
-          orderBy: {
-            startDate: "desc",
-          },
-        },
-      },
-    });
+    const doctor = await doctorsService.getDoctorPublicProfile(id);
 
     if (!doctor) {
       return {
@@ -453,29 +258,15 @@ export async function getDoctorPublicProfile(
       };
     }
 
-    // Get profile image URL
-    let profileImageUrl = null;
-    try {
-      const imageResult = await getImageUrl(`doctors/${id}/profile.jpg`);
-      if (imageResult.success && imageResult.data) {
-        profileImageUrl = imageResult.data;
-      }
-    } catch {
-      console.warn("Profile image not found for doctor:", id);
-    }
-
     return {
       success: true,
-      data: {
-        ...doctor,
-        profileImageUrl,
-      },
+      data: doctor,
     };
   } catch (error) {
     console.error("Error fetching doctor public profile:", error);
     return {
       success: false,
-      error: "Error al obtener el perfil del doctor",
+      error: "Error al cargar el perfil del doctor",
     };
   }
 }
@@ -487,25 +278,14 @@ export async function getDoctorImagesById(
   doctorId: string
 ): Promise<ActionResult> {
   try {
-    const images = await prisma.image.findMany({
-      where: {
-        doctorId: doctorId,
-        profileForDoctor: null, // Exclude profile images from gallery
-      },
-      orderBy: { createdAt: "desc" },
-      select: { id: true, createdAt: true },
-    });
+    const images = await doctorsService.getDoctorImages(doctorId);
 
-    // Generate fresh signed URLs for each image
     const imagesWithUrls = await Promise.all(
-      images.map(async (img) => {
-        const urlResult = await getImageUrl(img.id);
-        return {
-          id: img.id,
-          url: urlResult.success ? urlResult.data : "", // should always succeed
-          createdAt: img.createdAt,
-        };
-      })
+      images.map(async (img) => ({
+        id: img.id,
+        url: await getImageUrl(img.id),
+        createdAt: img.createdAt,
+      }))
     );
 
     return {
@@ -516,7 +296,7 @@ export async function getDoctorImagesById(
     console.error("Error fetching doctor images by ID:", error);
     return {
       success: false,
-      error: "Error al obtener las imágenes del doctor",
+      error: "Error al cargar las imágenes del doctor",
     };
   }
 }
@@ -536,65 +316,35 @@ export async function saveDoctorProfileExperience(
 
     const { doctor } = validation;
 
-    let description = (formData.get("description") as string) || "";
+    const description = formData.get("description") as string;
 
-    // Simple server-side validation
-    const minLen = 10;
-    const maxLen = 5000;
-    if (description.trim().length < minLen) {
+    if (!description || description.trim() === "") {
       return {
         success: false,
-        error: `La descripción debe tener al menos ${minLen} caracteres.`,
-      };
-    }
-    if (description.length > maxLen) {
-      return {
-        success: false,
-        error: `La descripción no puede exceder ${maxLen} caracteres.`,
+        error: "La descripción no puede estar vacía",
       };
     }
 
-    // Simple sanitization: remove script tags and on* attributes
-    description = description.replace(
-      /<script[\s\S]*?>[\s\S]*?<\/script>/gi,
-      ""
-    );
-    description = description.replace(/on\w+\s*=\s*\"[^"]*\"/gi, "");
-    description = description.replace(/on\w+\s*=\s*'[^']*'/gi, "");
-
-    // Find an existing profile experience with a reserved title
-    const existing = await prisma.experience.findFirst({
-      where: {
-        doctorId: doctor.id,
-        title: "Perfil profesional",
-        experienceType: "OTHER",
-      },
-    });
+    // Check if profile experience already exists
+    const existing = await doctorsService.getProfileExperience(doctor.id);
 
     if (existing) {
-      await prisma.experience.update({
-        where: { id: existing.id },
-        data: { description },
-      });
+      await doctorsService.updateProfileExperience(existing.id, description);
     } else {
-      await prisma.experience.create({
-        data: {
-          doctorId: doctor.id,
-          experienceType: "OTHER",
-          title: "Perfil profesional",
-          institution: null,
-          startDate: null,
-          endDate: null,
-          description,
-        },
-      });
+      await doctorsService.createProfileExperience(doctor.id, description);
     }
 
-    revalidatePath("/dashboard/doctor/profile");
+    revalidatePath("/dashboard/doctor/profile/experience");
 
-    return { success: true, message: "Experiencia guardada" };
+    return {
+      success: true,
+      message: "Perfil profesional guardado correctamente",
+    };
   } catch (error) {
-    console.error("Error saving profile experience:", error);
-    return { success: false, error: "Error guardando la experiencia" };
+    console.error("Error saving doctor profile experience:", error);
+    return {
+      success: false,
+      error: "Error al guardar el perfil profesional",
+    };
   }
 }

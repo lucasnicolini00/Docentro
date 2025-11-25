@@ -254,6 +254,7 @@
   "appointmentsPageHeader": "My Appointments",
   "appointmentsPageDescription": "Manage all your medical appointments in one place.",
   "appointmentsStatToday": "Today",
+  "tomorrow": "Tomorrow",
   "appointmentsStatPending": "Pending",
   "appointmentsStatUpcoming": "Upcoming",
   "appointmentsStatHistory": "History",
@@ -433,5 +434,11 @@
   "analyticsHeaderSubtitle": "Information and metrics about your medical practice",
   "retryAction": "Retry",
   "thisYear": "This year",
-  "scheduleStatsLoadError": "Statistics could not be loaded."
+  "scheduleStatsLoadError": "Statistics could not be loaded.",
+  "timeAgo": {
+    "justNow": "Just now",
+    "minutes": "{count} minute(s) ago",
+    "hours": "{count} hour(s) ago",
+    "days": "{count} day(s) ago"
+  }
 }

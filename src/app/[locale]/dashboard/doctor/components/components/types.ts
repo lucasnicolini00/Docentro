@@ -9,27 +9,22 @@ export interface DashboardStats {
     appointmentDay: {
       value: number;
       type: "increase" | "decrease" | "neutral";
-      text: string;
     };
     appointmentWeek: {
       value: number;
       type: "increase" | "decrease" | "neutral";
-      text: string;
     };
     revenue: {
       value: number;
       type: "increase" | "decrease" | "neutral";
-      text: string;
     };
     utilization: {
       value: number;
       type: "increase" | "decrease" | "neutral";
-      text: string;
     };
     patients: {
       value: number;
       type: "increase" | "decrease" | "neutral";
-      text: string;
     };
   };
 }
@@ -48,16 +43,14 @@ export interface Activity {
   type: string;
   icon: string;
   title: string;
-  timeAgo: string;
+  timestamp: Date;
   iconColor: string;
 }
 
 export interface UpcomingAppointment {
   id: string;
   patientName: string;
-  type: string;
-  time: string;
-  date: string;
+  pricingTitle: string | null;
   status: string;
   datetime: Date;
 }

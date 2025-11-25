@@ -1,76 +1,27 @@
-"use client";
-import { useEffect, useState } from "react";
-import { useTranslations } from "next-intl";
+import { getT } from "@/lib/getT";
 import { Navbar } from "@/components/ui/navigation";
 import { getDoctorPublicProfile } from "@/lib/actions/doctors";
 import { Map } from "@/components/ui";
 import Link from "next/link";
+import { notFound } from "next/navigation";
 
 interface DoctorProfilePageProps {
   params: Promise<{ id: string; locale: string }>;
 }
 
-export default function DoctorProfilePage({ params }: DoctorProfilePageProps) {
-  const t = useTranslations("doctorProfile");
-  const tCommon = useTranslations("common");
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [doctor, setDoctor] = useState<any>(null);
-  const [locale, setLocale] = useState<string>("es");
+export default async function DoctorProfilePage({
+  params,
+}: DoctorProfilePageProps) {
+  const { id, locale } = await params;
+  const t = await getT("doctorProfile");
 
-  useEffect(() => {
-    async function fetchDoctor() {
-      setLoading(true);
-      setError(null);
-      const { id, locale } = await params;
-      setLocale(locale || "es");
-      const result = await getDoctorPublicProfile(id);
-      if (result.success) {
-        setDoctor(result.data);
-      } else {
-        setError(result.error || "Error al cargar el perfil del doctor");
-      }
-      setLoading(false);
-    }
-    fetchDoctor();
-  }, [params]);
+  const result = await getDoctorPublicProfile(id);
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-50">
-        <Navbar />
-        <div className="flex-1 flex items-center justify-center min-h-[calc(100vh-80px)]">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-            <h2 className="text-xl font-semibold text-gray-900">
-              {tCommon("loading")}
-            </h2>
-          </div>
-        </div>
-      </div>
-    );
+  if (!result.success || !result.data) {
+    notFound();
   }
 
-  if (error || !doctor) {
-    return (
-      <div className="min-h-screen bg-gray-50">
-        <Navbar />
-        <div className="max-w-3xl mx-auto px-4 py-12">
-          <h1 className="text-2xl font-bold text-red-600 mb-4">
-            {tCommon("errorSomethingWentWrong")}
-          </h1>
-          <p className="text-gray-600">{error || t("doctorNotFound")}</p>
-          <Link
-            href={`/${locale}/search`}
-            className="inline-block mt-6 text-blue-600 hover:text-blue-700 font-medium"
-          >
-            ← {t("backToSearch")}
-          </Link>
-        </div>
-      </div>
-    );
-  }
-
+  const doctor = result.data;
   const { profile, opinions, clinics, specialities, experiences, pricings } =
     doctor;
 

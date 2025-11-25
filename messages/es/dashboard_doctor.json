@@ -254,6 +254,7 @@
   "appointmentsPageHeader": "Mis Citas",
   "appointmentsPageDescription": "Gestiona todas tus citas médicas en un solo lugar.",
   "appointmentsStatToday": "Hoy",
+  "tomorrow": "Mañana",
   "appointmentsStatPending": "Pendientes",
   "appointmentsStatUpcoming": "Próximas",
   "appointmentsStatHistory": "Historial",
@@ -433,5 +434,11 @@
   "analyticsHeaderSubtitle": "Información y métricas de tu práctica médica",
   "retryAction": "Reintentar",
   "thisYear": "Este año",
-  "scheduleStatsLoadError": "No se pudieron cargar las estadísticas."
+  "scheduleStatsLoadError": "No se pudieron cargar las estadísticas.",
+  "timeAgo": {
+    "justNow": "Hace un momento",
+    "minutes": "Hace {count} minuto(s)",
+    "hours": "Hace {count} hora(s)",
+    "days": "Hace {count} día(s)"
+  }
 }

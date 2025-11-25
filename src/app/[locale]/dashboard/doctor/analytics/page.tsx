@@ -2,6 +2,12 @@ import { requireDoctor } from "@/lib/auth-guards";
 import AnalyticsDashboard from "./components/AnalyticsDashboard";
 import { getT } from "@/lib/getT";
 import { BarChart3 } from "lucide-react";
+import {
+  getDashboardStats,
+  getScheduleAnalytics,
+  getPatientAnalytics,
+  getRevenueAnalytics,
+} from "@/lib/actions";
 
 export const dynamic = "force-dynamic"; // analytics depend on live data
 
@@ -14,6 +20,22 @@ export default async function DoctorAnalyticsPage({
   await requireDoctor();
 
   const t = await getT("dashboard_doctor");
+
+  // Pre-fetch data for the default view (month)
+  const [statsResult, scheduleResult, patientResult, revenueResult] =
+    await Promise.all([
+      getDashboardStats(),
+      getScheduleAnalytics("month"),
+      getPatientAnalytics(undefined, "month"),
+      getRevenueAnalytics(undefined, "month"),
+    ]);
+
+  const initialData = {
+    stats: statsResult.success ? statsResult.data : null,
+    schedule: scheduleResult.success ? scheduleResult.data : null,
+    patient: patientResult.success ? patientResult.data : null,
+    revenue: revenueResult.success ? revenueResult.data : null,
+  };
 
   return (
     <>
@@ -33,7 +55,7 @@ export default async function DoctorAnalyticsPage({
         </div>
       </div>
 
-      <AnalyticsDashboard />
+      <AnalyticsDashboard initialData={initialData} />
     </>
   );
 }

@@ -1,20 +1,14 @@
 "use server";
 
-import prisma from "@/lib/prisma";
 import type { ActionResult } from "./utils";
+import { searchService } from "@/lib/services/searchService";
 
 /**
  * Server action for getting all available specialities for autocomplete
  */
 export async function getAllSpecialities(): Promise<ActionResult> {
   try {
-    const specialities = await prisma.speciality.findMany({
-      orderBy: { name: "asc" },
-      select: {
-        id: true,
-        name: true,
-      },
-    });
+    const specialities = await searchService.getAllSpecialities();
 
     return {
       success: true,
@@ -34,25 +28,7 @@ export async function getAllSpecialities(): Promise<ActionResult> {
  */
 export async function getAllCities(): Promise<ActionResult> {
   try {
-    const cities = await prisma.clinic.findMany({
-      where: {
-        city: {
-          not: null,
-        },
-      },
-      select: {
-        city: true,
-      },
-      distinct: ["city"],
-      orderBy: {
-        city: "asc",
-      },
-    });
-
-    // Filter out null values and map to simple string array
-    const cityNames = cities
-      .filter((clinic) => clinic.city)
-      .map((clinic) => clinic.city as string);
+    const cityNames = await searchService.getAllCities();
 
     return {
       success: true,
@@ -72,10 +48,7 @@ export async function getAllCities(): Promise<ActionResult> {
  */
 export async function getPopularSpecialities(): Promise<ActionResult> {
   try {
-    const specialities = await prisma.speciality.findMany({
-      take: 4,
-      orderBy: { name: "asc" },
-    });
+    const specialities = await searchService.getPopularSpecialities();
 
     return {
       success: true,
@@ -95,36 +68,7 @@ export async function getPopularSpecialities(): Promise<ActionResult> {
  */
 export async function getFeaturedDoctors(): Promise<ActionResult> {
   try {
-    const doctors = await prisma.doctor.findMany({
-      include: {
-        specialities: {
-          include: {
-            speciality: true,
-          },
-        },
-        opinions: true,
-        clinics: {
-          include: {
-            clinic: true,
-          },
-        },
-        pricings: {
-          include: {
-            clinic: true,
-          },
-          where: {
-            isActive: true,
-          },
-        },
-        profileImage: {
-          select: {
-            id: true,
-            url: true,
-          },
-        },
-      },
-      take: 3,
-    });
+    const doctors = await searchService.getFeaturedDoctors();
 
     return {
       success: true,
@@ -144,86 +88,7 @@ export async function searchDoctors(
   location?: string
 ): Promise<ActionResult> {
   try {
-    const doctors = await prisma.doctor.findMany({
-      where: {
-        ...(specialty && {
-          specialities: {
-            some: {
-              speciality: {
-                name: {
-                  contains: specialty,
-                  mode: "insensitive",
-                },
-              },
-            },
-          },
-        }),
-        ...(location && {
-          clinics: {
-            some: {
-              clinic: {
-                OR: [
-                  {
-                    name: {
-                      contains: location,
-                      mode: "insensitive",
-                    },
-                  },
-                  {
-                    address: {
-                      contains: location,
-                      mode: "insensitive",
-                    },
-                  },
-                ],
-              },
-            },
-          },
-        }),
-      },
-      include: {
-        specialities: {
-          include: {
-            speciality: true,
-          },
-        },
-        opinions: {
-          select: {
-            id: true,
-            rating: true,
-            title: true,
-            description: true,
-          },
-        },
-        clinics: {
-          include: {
-            clinic: true,
-          },
-        },
-        pricings: {
-          include: {
-            clinic: {
-              select: {
-                id: true,
-                name: true,
-              },
-            },
-          },
-          where: {
-            isActive: true,
-          },
-        },
-        experiences: {
-          select: {
-            id: true,
-            title: true,
-            institution: true,
-            startDate: true,
-            endDate: true,
-          },
-        },
-      },
-    });
+    const doctors = await searchService.searchDoctors(specialty, location);
 
     // Transform Decimal to number for client compatibility using JSON serialization
     const serializedDoctors = JSON.parse(
@@ -251,50 +116,7 @@ export async function searchDoctors(
  */
 export async function getAllDoctors(): Promise<ActionResult> {
   try {
-    const doctors = await prisma.doctor.findMany({
-      include: {
-        specialities: {
-          include: {
-            speciality: true,
-          },
-        },
-        opinions: {
-          select: {
-            id: true,
-            rating: true,
-            title: true,
-            description: true,
-          },
-        },
-        clinics: {
-          include: {
-            clinic: true,
-          },
-        },
-        pricings: {
-          include: {
-            clinic: {
-              select: {
-                id: true,
-                name: true,
-              },
-            },
-          },
-          where: {
-            isActive: true,
-          },
-        },
-        experiences: {
-          select: {
-            id: true,
-            title: true,
-            institution: true,
-            startDate: true,
-            endDate: true,
-          },
-        },
-      },
-    });
+    const doctors = await searchService.getAllDoctors();
 
     // Transform Decimal to number for client compatibility using JSON serialization
     const serializedDoctors = JSON.parse(

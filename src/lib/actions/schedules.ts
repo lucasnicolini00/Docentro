@@ -1,9 +1,9 @@
 "use server";
 
-import prisma from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { validateDoctor, type ActionResult } from "./utils";
 import { DayOfWeek } from "@prisma/client";
+import { schedulesService } from "@/lib/services/schedulesService";
 
 /**
  * Server action for creating a doctor's schedule
@@ -27,15 +27,11 @@ export async function createSchedule(
     const { doctor } = validation;
 
     // Check if schedule already exists for this day
-    const existingSchedule = await prisma.schedule.findUnique({
-      where: {
-        doctorId_clinicId_dayOfWeek: {
-          doctorId: doctor.id,
-          clinicId: clinicId,
-          dayOfWeek: data.dayOfWeek,
-        },
-      },
-    });
+    const existingSchedule = await schedulesService.getSchedule(
+      doctor.id,
+      clinicId,
+      data.dayOfWeek
+    );
 
     if (existingSchedule) {
       return {
@@ -45,32 +41,12 @@ export async function createSchedule(
     }
 
     // Create the schedule
-    const schedule = await prisma.schedule.create({
-      data: {
-        doctorId: doctor.id,
-        clinicId: clinicId,
-        dayOfWeek: data.dayOfWeek,
-        startTime: data.startTime,
-        endTime: data.endTime,
-      },
-      include: {
-        clinic: {
-          select: {
-            id: true,
-            name: true,
-            address: true,
-          },
-        },
-        timeSlots: {
-          where: {
-            isBooked: false,
-            isBlocked: false,
-          },
-          orderBy: {
-            startTime: "asc",
-          },
-        },
-      },
+    const schedule = await schedulesService.createSchedule({
+      doctorId: doctor.id,
+      clinicId: clinicId,
+      dayOfWeek: data.dayOfWeek,
+      startTime: data.startTime,
+      endTime: data.endTime,
     });
 
     // Generate time slots
@@ -82,27 +58,7 @@ export async function createSchedule(
     );
 
     // Fetch the schedule again with time slots included
-    const scheduleWithSlots = await prisma.schedule.findUnique({
-      where: { id: schedule.id },
-      include: {
-        clinic: {
-          select: {
-            id: true,
-            name: true,
-            address: true,
-          },
-        },
-        timeSlots: {
-          where: {
-            isBooked: false,
-            isBlocked: false,
-          },
-          orderBy: {
-            startTime: "asc",
-          },
-        },
-      },
-    });
+    const scheduleWithSlots = await schedulesService.getScheduleById(schedule.id);
 
     revalidatePath("/dashboard/doctor/schedules");
     return { success: true, data: scheduleWithSlots || schedule };
@@ -134,25 +90,17 @@ export async function updateSchedule(
     const { doctor } = validation;
 
     // Verify ownership
-    const schedule = await prisma.schedule.findFirst({
-      where: {
-        id: scheduleId,
-        doctorId: doctor.id,
-      },
-    });
+    const schedule = await schedulesService.getScheduleByIdAndDoctor(scheduleId, doctor.id);
 
     if (!schedule) {
       return { success: false, error: "Horario no encontrado" };
     }
 
     // Update the schedule
-    const updatedSchedule = await prisma.schedule.update({
-      where: { id: scheduleId },
-      data: {
-        startTime: data.startTime,
-        endTime: data.endTime,
-        isActive: data.isActive,
-      },
+    const updatedSchedule = await schedulesService.updateSchedule(scheduleId, {
+      startTime: data.startTime,
+      endTime: data.endTime,
+      isActive: data.isActive,
     });
 
     // Regenerate time slots if times changed
@@ -161,12 +109,7 @@ export async function updateSchedule(
       data.endTime !== schedule.endTime
     ) {
       // Delete existing time slots that aren't booked
-      await prisma.timeSlot.deleteMany({
-        where: {
-          scheduleId: scheduleId,
-          isBooked: false,
-        },
-      });
+      await schedulesService.deleteTimeSlots(scheduleId);
 
       // Generate new time slots
       await generateTimeSlots(
@@ -201,25 +144,7 @@ export async function deleteSchedule(
     const { doctor } = validation;
 
     // Optimized: Single query with ownership validation
-    const schedule = await prisma.schedule.findFirst({
-      where: {
-        id: scheduleId,
-        doctorId: doctor.id, // ✅ Filter by doctor upfront for security & performance
-      },
-      select: {
-        id: true,
-        doctorId: true,
-        _count: {
-          select: {
-            timeSlots: {
-              where: {
-                isBooked: true, // ✅ Only count booked slots
-              },
-            },
-          },
-        },
-      },
-    });
+    const schedule = await schedulesService.getScheduleForDeletion(scheduleId, doctor.id);
 
     if (!schedule) {
       return {
@@ -237,12 +162,7 @@ export async function deleteSchedule(
     }
 
     // Delete the schedule (cascade will delete time slots)
-    await prisma.schedule.delete({
-      where: {
-        id: scheduleId,
-        // doctorId already validated above, no need to double-check
-      },
-    });
+    await schedulesService.deleteSchedule(scheduleId);
 
     revalidatePath("/dashboard/doctor/schedules");
     return { success: true };
@@ -266,28 +186,7 @@ export async function getDoctorSchedules(): Promise<ActionResult> {
 
     // Optimized query with proper indexing on doctorId and dayOfWeek
     // Recommended indexes: (doctorId), (doctorId, dayOfWeek), (scheduleId, isBooked, isBlocked)
-    const schedules = await prisma.schedule.findMany({
-      where: {
-        doctorId: doctor.id,
-      },
-      include: {
-        clinic: {
-          select: {
-            id: true,
-            name: true,
-            address: true,
-          },
-        },
-        timeSlots: {
-          orderBy: {
-            startTime: "asc",
-          },
-          // Include all time slots for proper management
-          take: 100, // Reasonable limit for UI display
-        },
-      },
-      orderBy: [{ dayOfWeek: "asc" }, { startTime: "asc" }],
-    });
+    const schedules = await schedulesService.getDoctorSchedules(doctor.id);
 
     return { success: true, data: schedules };
   } catch (error) {
@@ -319,27 +218,12 @@ export async function createBulkSchedules(
     const { doctor } = validation;
 
     // Check for existing schedules first
-    const existingSchedules = await prisma.schedule.findMany({
-      where: {
-        doctorId: doctor.id,
-        clinicId: clinicId,
-        dayOfWeek: {
-          in: scheduleData.map((data) => data.dayOfWeek),
-        },
-      },
-      select: {
-        dayOfWeek: true,
-        id: true,
-        startTime: true,
-        endTime: true,
-        // Pre-load time slot count for performance tracking
-        _count: {
-          select: {
-            timeSlots: true,
-          },
-        },
-      },
-    });
+    // Check for existing schedules first
+    const existingSchedules = await schedulesService.getExistingSchedules(
+      doctor.id,
+      clinicId,
+      scheduleData.map((data) => data.dayOfWeek)
+    );
 
     if (existingSchedules.length > 0 && !replaceExisting) {
       const existingDays = existingSchedules.map((s) => s.dayOfWeek);
@@ -355,120 +239,17 @@ export async function createBulkSchedules(
 
     // Use a single atomic transaction for all operations (delete + create)
     // This ensures data consistency and better performance
-    const result = await prisma.$transaction(
-      async (tx) => {
-        // If replacing, delete existing schedules and time slots first
-        if (replaceExisting && existingSchedules.length > 0) {
-          // Get the schedule IDs for direct deletion (more efficient than nested queries)
-          const scheduleIdsToDelete = existingSchedules.map((s) => s.id);
-
-          // Delete time slots first using direct schedule IDs (much faster)
-          await tx.timeSlot.deleteMany({
-            where: {
-              scheduleId: {
-                in: scheduleIdsToDelete,
-              },
-            },
-          });
-
-          // Then delete schedules using direct IDs
-          await tx.schedule.deleteMany({
-            where: {
-              id: {
-                in: scheduleIdsToDelete,
-              },
-            },
-          });
-        }
-
-        // Create all schedules in parallel for maximum performance
-        const scheduleCreationPromises = scheduleData.map((data) =>
-          tx.schedule.create({
-            data: {
-              doctorId: doctor.id,
-              clinicId: clinicId,
-              dayOfWeek: data.dayOfWeek,
-              startTime: data.startTime,
-              endTime: data.endTime,
-            },
-          })
-        );
-
-        const createdSchedules = await Promise.all(scheduleCreationPromises);
-
-        // Prepare all time slots for bulk creation to minimize database round trips
-        const allSlots: Array<{
-          scheduleId: string;
-          startTime: string;
-          endTime: string;
-        }> = [];
-
-        for (let i = 0; i < createdSchedules.length; i++) {
-          const schedule = createdSchedules[i];
-          const data = scheduleData[i];
-          const start = parseTime(data.startTime);
-          const end = parseTime(data.endTime);
-          const slotDuration = data.slotDuration || 30;
-
-          let current = start;
-          while (current < end) {
-            const slotStart = formatTime(current);
-            current += slotDuration;
-            const slotEnd = formatTime(current);
-
-            allSlots.push({
-              scheduleId: schedule.id,
-              startTime: slotStart,
-              endTime: slotEnd,
-            });
-          }
-        }
-
-        // Create all time slots in a single batch operation for optimal performance
-        // This can handle hundreds of slots efficiently
-        if (allSlots.length > 0) {
-          await tx.timeSlot.createMany({
-            data: allSlots,
-          });
-        }
-
-        return createdSchedules.map((s) => s.id);
-      },
-      {
-        // Shorter timeout for replacements, longer for initial creation
-        timeout: replaceExisting ? 15000 : 30000, // 15s for replace, 30s for create
-      }
+    // Use service for bulk creation
+    const result = await schedulesService.bulkCreateSchedules(
+      doctor.id,
+      clinicId,
+      scheduleData,
+      replaceExisting,
+      existingSchedules
     );
 
-    // Fetch all created schedules with their relations in a single optimized query
-    const createdSchedules = await prisma.schedule.findMany({
-      where: {
-        id: {
-          in: result,
-        },
-      },
-      include: {
-        clinic: {
-          select: {
-            id: true,
-            name: true,
-            address: true,
-          },
-        },
-        timeSlots: {
-          orderBy: {
-            startTime: "asc", // Order time slots for better UX
-          },
-          // Limit time slots in response to improve network transfer
-          // UI typically doesn't need all slots immediately
-          take: replaceExisting ? 50 : undefined, // Fewer slots when replacing for faster response
-        },
-      },
-      orderBy: [
-        { dayOfWeek: "asc" }, // Order by day of week for consistency
-        { startTime: "asc" },
-      ],
-    });
+    // Fetch all created schedules with their relations using service
+    const createdSchedules = await schedulesService.getSchedulesByIds(result, replaceExisting);
 
     revalidatePath("/dashboard/doctor/schedules");
     return { success: true, data: createdSchedules };
@@ -486,28 +267,12 @@ export async function getAvailableTimeSlots(
     const appointmentDate = new Date(date);
     const dayOfWeek = getDayOfWeekFromDate(appointmentDate);
 
-    // Get the schedule for this day
-    const schedule = await prisma.schedule.findUnique({
-      where: {
-        doctorId_clinicId_dayOfWeek: {
-          doctorId: doctorId,
-          clinicId: clinicId,
-          dayOfWeek: dayOfWeek,
-        },
-        isActive: true,
-      },
-      include: {
-        timeSlots: {
-          where: {
-            isBooked: false,
-            isBlocked: false,
-          },
-          orderBy: {
-            startTime: "asc",
-          },
-        },
-      },
-    });
+    // Get the schedule for this day using service
+    const schedule = await schedulesService.getScheduleForTimeSlots(
+      doctorId,
+      clinicId,
+      dayOfWeek
+    );
 
     if (!schedule) {
       return {
@@ -543,19 +308,7 @@ export async function toggleTimeSlotBlock(
     const { doctor } = validation;
 
     // Optimized: Single query with ownership validation and select only what we need
-    const timeSlot = await prisma.timeSlot.findFirst({
-      where: {
-        id: timeSlotId,
-        schedule: {
-          doctorId: doctor.id,
-        },
-        isBooked: false, // Can't block booked slots
-      },
-      select: {
-        id: true,
-        isBlocked: true,
-      },
-    });
+    const timeSlot = await schedulesService.getTimeSlotForToggle(timeSlotId, doctor.id);
 
     if (!timeSlot) {
       return { success: false, error: "Horario no encontrado o ya reservado" };
@@ -570,17 +323,7 @@ export async function toggleTimeSlotBlock(
       };
     }
 
-    const updatedSlot = await prisma.timeSlot.update({
-      where: { id: timeSlotId },
-      data: { isBlocked },
-      select: {
-        id: true,
-        startTime: true,
-        endTime: true,
-        isBlocked: true,
-        isBooked: true,
-      },
-    });
+    const updatedSlot = await schedulesService.updateTimeSlotBlock(timeSlotId, isBlocked);
 
     revalidatePath("/dashboard/doctor/schedules");
     return { success: true, data: updatedSlot };
@@ -621,9 +364,7 @@ async function generateTimeSlots(
   }
 
   if (slots.length > 0) {
-    await prisma.timeSlot.createMany({
-      data: slots,
-    });
+    await schedulesService.createTimeSlots(slots);
   }
 }
 
@@ -679,47 +420,12 @@ export async function getTimeSlotsForCalendar(
     const endDate =
       options?.endDate || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); // 30 days from now
 
-    const timeSlots = await prisma.timeSlot.findMany({
-      where: {
-        schedule: {
-          doctorId: doctorId,
-          clinicId: clinicId,
-          isActive: true,
-        },
-        startTime: {
-          gte: startDate.toISOString(),
-          lte: endDate.toISOString(),
-        },
-      },
-      include: {
-        schedule: {
-          select: {
-            dayOfWeek: true,
-            doctor: {
-              select: {
-                name: true,
-                surname: true,
-              },
-            },
-            clinic: {
-              select: {
-                name: true,
-                address: true,
-              },
-            },
-          },
-        },
-        appointment: {
-          select: {
-            id: true,
-            status: true,
-          },
-        },
-      },
-      orderBy: {
-        startTime: "asc",
-      },
-    });
+    const timeSlots = await schedulesService.getTimeSlotsForCalendar(
+      doctorId,
+      clinicId,
+      startDate,
+      endDate
+    );
 
     return timeSlots;
   } catch (error) {
@@ -744,51 +450,12 @@ export async function getDoctorSchedulesWithSlots(
     const endDate =
       options?.endDate || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
 
-    const whereClause: any = {
-      doctorId: doctorId,
-      isActive: true,
-    };
-
-    if (options?.clinicId) {
-      whereClause.clinicId = options.clinicId;
-    }
-
-    const schedules = await prisma.schedule.findMany({
-      where: whereClause,
-      include: {
-        clinic: {
-          select: {
-            name: true,
-            address: true,
-          },
-        },
-        timeSlots: {
-          where: {
-            startTime: {
-              gte: startDate.toISOString(),
-              lte: endDate.toISOString(),
-            },
-          },
-          include: {
-            appointment: {
-              select: {
-                id: true,
-                status: true,
-                patient: {
-                  select: {
-                    name: true,
-                    surname: true,
-                  },
-                },
-              },
-            },
-          },
-          orderBy: {
-            startTime: "asc",
-          },
-        },
-      },
-    });
+    const schedules = await schedulesService.getDoctorSchedulesWithSlots(
+      doctorId,
+      startDate,
+      endDate,
+      options?.clinicId
+    );
 
     return schedules;
   } catch (error) {
