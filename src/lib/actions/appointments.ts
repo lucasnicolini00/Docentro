@@ -350,6 +350,22 @@ export async function getDoctorAvailability(
     const workEnd = 18; // 6 PM
     const slotDuration = 30; // 30 minutes
 
+    // Pre-build a Set of occupied time ranges for O(1) conflict detection
+    const occupiedSlots = new Set<number>();
+    for (const apt of appointments) {
+      const aptStart = new Date(apt.datetime);
+      const aptEnd = new Date(aptStart.getTime() + apt.durationMinutes * 60000);
+      
+      // Mark all 30-minute slots that overlap with this appointment
+      let current = new Date(aptStart);
+      current.setMinutes(Math.floor(current.getMinutes() / slotDuration) * slotDuration, 0, 0);
+      
+      while (current < aptEnd) {
+        occupiedSlots.add(current.getTime());
+        current = new Date(current.getTime() + slotDuration * 60000);
+      }
+    }
+
     for (let hour = workStart; hour < workEnd; hour++) {
       for (let minute = 0; minute < 60; minute += slotDuration) {
         const slotTime = new Date(targetDate);
@@ -358,22 +374,8 @@ export async function getDoctorAvailability(
         // Skip if slot is in the past
         if (slotTime <= new Date()) continue;
 
-        // Check if this slot conflicts with existing appointments
-        const isConflict = appointments.some((apt) => {
-          const aptStart = new Date(apt.datetime);
-          const aptEnd = new Date(
-            aptStart.getTime() + apt.durationMinutes * 60000
-          );
-          const slotEnd = new Date(slotTime.getTime() + slotDuration * 60000);
-
-          return (
-            (slotTime >= aptStart && slotTime < aptEnd) ||
-            (slotEnd > aptStart && slotEnd <= aptEnd) ||
-            (slotTime <= aptStart && slotEnd >= aptEnd)
-          );
-        });
-
-        if (!isConflict) {
+        // O(1) conflict check instead of O(n) some()
+        if (!occupiedSlots.has(slotTime.getTime())) {
           availableSlots.push({
             datetime: slotTime.toISOString(),
             time: slotTime.toLocaleTimeString("es-ES", {
