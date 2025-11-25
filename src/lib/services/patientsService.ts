@@ -1,4 +1,5 @@
 import prisma from "@/lib/prisma";
+import { withErrorHandling } from "./errorHandler";
 
 export const patientsService = {
   async updatePatientProfile(
@@ -17,60 +18,62 @@ export const patientsService = {
       gender: string;
     }
   ) {
-    return prisma.$transaction(async (tx) => {
-      // Update user data
-      const updatedUser = await tx.user.update({
-        where: { id: userId },
-        data: {
-          firstName: data.firstName,
-          lastName: data.lastName,
-          email: data.email,
-          phone: data.phone || null,
-        },
-      });
+    return withErrorHandling(
+      () => prisma.$transaction(async (tx) => {
+        const updatedUser = await tx.user.update({
+          where: { id: userId },
+          data: {
+            firstName: data.firstName,
+            lastName: data.lastName,
+            email: data.email,
+            phone: data.phone || null,
+          },
+        });
 
-      // Update patient data
-      const updatedPatient = await tx.patient.update({
-        where: { id: patientId },
-        data: {
-          name: data.patientName,
-          surname: data.patientSurname,
-          email: data.patientEmail,
-          phone: data.patientPhone || null,
-          birthdate: data.birthdate ? new Date(data.birthdate) : null,
-          gender: data.gender || null,
-        },
-      });
+        const updatedPatient = await tx.patient.update({
+          where: { id: patientId },
+          data: {
+            name: data.patientName,
+            surname: data.patientSurname,
+            email: data.patientEmail,
+            phone: data.patientPhone || null,
+            birthdate: data.birthdate ? new Date(data.birthdate) : null,
+            gender: data.gender || null,
+          },
+        });
 
-      return { updatedUser, updatedPatient };
-    });
+        return { updatedUser, updatedPatient };
+      }),
+      { service: "patientsService", method: "updatePatientProfile", params: { userId, patientId } }
+    );
   },
 
   async getPatientDashboard(patientId: string) {
-    const patient = await prisma.patient.findUnique({
-      where: { id: patientId },
-      include: {
-        appointments: {
-          include: {
-            doctor: {
-              include: {
-                user: {
-                  select: {
-                    firstName: true,
-                    lastName: true,
+    return withErrorHandling(
+      () => prisma.patient.findUnique({
+        where: { id: patientId },
+        include: {
+          appointments: {
+            include: {
+              doctor: {
+                include: {
+                  user: {
+                    select: {
+                      firstName: true,
+                      lastName: true,
+                    },
                   },
                 },
               },
+              clinic: true,
             },
-            clinic: true,
-          },
-          orderBy: {
-            datetime: "desc",
+            orderBy: {
+              datetime: "desc",
+            },
           },
         },
-      },
-    });
-
-    return patient;
+      }),
+      { service: "patientsService", method: "getPatientDashboard", params: { patientId } }
+    );
   },
 };

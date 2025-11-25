@@ -1,9 +1,9 @@
 "use server";
 
-import prisma from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { validateDoctor, type ActionResult } from "./utils";
 import { Storage } from "@google-cloud/storage";
+import { imagesService } from "@/lib/services/imagesService";
 
 // Single storage client (optionally configured from env JSON credentials)
 const storage = new Storage(
@@ -62,24 +62,12 @@ export async function uploadDoctorProfileImage(
       // ignore
     }
 
-    // Save Image row and link as profile image in a transaction
-    const result = await prisma.$transaction(async (tx) => {
-      const image = await tx.image.create({
-        data: {
-          url: publicUrl,
-          filename: safeName,
-          mime: file.type || null,
-          size: buffer.length,
-          doctorId: doctor.id,
-        },
-      });
-
-      await tx.doctor.update({
-        where: { id: doctor.id },
-        data: { profileImageId: image.id },
-      });
-
-      return image;
+    // Save Image row and link as profile image using service
+    const result = await imagesService.createDoctorProfileImage(doctor.id, {
+      url: publicUrl,
+      filename: safeName,
+      mime: file.type || null,
+      size: buffer.length,
     });
 
     revalidatePath("/dashboard/doctor/profile");
@@ -110,21 +98,10 @@ export async function removeDoctorProfileImage(): Promise<ActionResult> {
     }
 
     // Get the image row so we can attempt to delete the file from storage
-    const image = await prisma.image.findUnique({
-      where: { id: doctor.profileImageId },
-    });
+    const image = await imagesService.getImage(doctor.profileImageId);
 
-    // Remove DB references and delete the Image row in a transaction
-    await prisma.$transaction(async (tx) => {
-      await tx.doctor.update({
-        where: { id: doctor.id },
-        data: { profileImageId: null },
-      });
-
-      if (image) {
-        await tx.image.delete({ where: { id: image.id } });
-      }
-    });
+    // Remove DB references and delete the Image row using service
+    await imagesService.deleteDoctorProfileImage(doctor.id, doctor.profileImageId);
 
     // Try to remove from GCS when possible
     const bucketName = process.env.GCLOUD_BUCKET;
@@ -180,10 +157,7 @@ export async function removeDoctorImage(
     const { doctor } = validation;
 
     // Verify the image belongs to this doctor and is not a profile image
-    const image = await prisma.image.findUnique({
-      where: { id: imageId },
-      include: { profileForDoctor: true },
-    });
+    const image = await imagesService.getImage(imageId);
 
     if (!image || image.doctorId !== doctor.id) {
       return { success: false, error: "Imagen no encontrada o no autorizada" };
@@ -198,7 +172,7 @@ export async function removeDoctorImage(
     }
 
     // Delete the Image row
-    await prisma.image.delete({ where: { id: imageId } });
+    await imagesService.deleteImage(imageId);
 
     // Try to remove from GCS when possible
     const bucketName = process.env.GCLOUD_BUCKET;
@@ -292,9 +266,7 @@ export async function uploadDoctorImages(
     }
 
     // Count existing images
-    const existingCount = await prisma.image.count({
-      where: { doctorId: doctor.id },
-    });
+    const existingCount = await imagesService.countDoctorImages(doctor.id);
     const MAX = 10;
     if (existingCount + files.length > MAX) {
       return {
@@ -330,14 +302,12 @@ export async function uploadDoctorImages(
         });
       } catch {}
 
-      const image = await prisma.image.create({
-        data: {
-          url: publicUrl,
-          filename: safeName,
-          mime: file.type || null,
-          size: buffer.length,
-          doctorId: doctor.id,
-        },
+      const image = await imagesService.createImage({
+        url: publicUrl,
+        filename: safeName,
+        mime: file.type || null,
+        size: buffer.length,
+        doctorId: doctor.id,
       });
 
       created.push(image);
@@ -358,7 +328,7 @@ export async function uploadDoctorImages(
  */
 export async function getImageUrl(imageId: string): Promise<ActionResult> {
   try {
-    const img = await prisma.image.findUnique({ where: { id: imageId } });
+    const img = await imagesService.getImage(imageId);
     if (!img) return { success: false, error: "Imagen no encontrada" };
 
     const bucketName = process.env.GCLOUD_BUCKET;
@@ -397,10 +367,7 @@ export async function getBatchImageUrls(
     }
 
     // Fetch all images in one query
-    const images = await prisma.image.findMany({
-      where: { id: { in: imageIds } },
-      select: { id: true, url: true },
-    });
+    const images = await imagesService.getBatchImages(imageIds);
 
     const bucketName = process.env.GCLOUD_BUCKET;
     const imageMap: Record<string, string> = {};
@@ -451,18 +418,7 @@ export async function getUserProfileImageUrl(): Promise<ActionResult> {
     }
 
     // Get user with profile image
-    const user = await prisma.user.findUnique({
-      where: { id: session.user.id },
-      include: {
-        profileImage: true,
-        doctor: {
-          include: {
-            profileImage: true,
-          },
-        },
-        patient: true,
-      },
-    });
+    const user = await imagesService.getUserWithProfileImages(session.user.id);
 
     if (!user) {
       return { success: false, error: "Usuario no encontrado" };
