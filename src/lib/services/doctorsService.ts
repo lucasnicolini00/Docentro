@@ -153,6 +153,7 @@ export const doctorsService = {
       where: { id: doctorId },
       include: {
         appointments: {
+          take: 100, // Limit to 100 most recent appointments for performance
           include: {
             patient: {
               select: {

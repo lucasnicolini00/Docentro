@@ -452,11 +452,24 @@ export const schedulesService = {
       "SATURDAY",
     ];
 
+    // Create a Map for O(1) appointment lookups
+    const appointmentMap = new Map<number, any>();
+    for (const apt of appointments) {
+      appointmentMap.set(apt.datetime.getTime(), apt);
+    }
+
+    // Pre-group schedules by day of week to avoid repeated find
+    const schedulesByDay = new Map<string, any>();
+    for (const schedule of schedules) {
+      schedulesByDay.set(schedule.dayOfWeek, schedule);
+    }
+
     // Iterate through each day in the range
     const currentDate = new Date(startDate);
     while (currentDate <= endDate) {
       const dayOfWeek = dayMapping[currentDate.getDay()];
-      const scheduleForDay = schedules.find((s) => s.dayOfWeek === dayOfWeek);
+      // O(1) lookup instead of O(n) find
+      const scheduleForDay = schedulesByDay.get(dayOfWeek);
 
       if (scheduleForDay) {
         // For each template slot in the schedule
@@ -466,10 +479,8 @@ export const schedulesService = {
           const slotDateTime = new Date(currentDate);
           slotDateTime.setHours(hours, minutes, 0, 0);
 
-          // Check if there's an appointment at this time
-          const appointment = appointments.find(
-            (apt) => apt.datetime.getTime() === slotDateTime.getTime()
-          );
+          // O(1) lookup instead of O(n) find
+          const appointment = appointmentMap.get(slotDateTime.getTime());
 
           // Check if slot is in the past
           // const isPast = slotDateTime < new Date();
@@ -598,12 +609,27 @@ export const schedulesService = {
     ];
 
     const currentDate = new Date(startDate);
+    
+    // Create a Map for O(1) appointment lookups instead of O(n) find
+    // Key format: "timestamp_clinicId"
+    const appointmentMap = new Map<string, any>();
+    for (const apt of appointments) {
+      const key = `${apt.datetime.getTime()}_${apt.clinicId}`;
+      appointmentMap.set(key, apt);
+    }
+    
+    // Pre-group schedules by day of week to avoid repeated filtering
+    const schedulesByDay = new Map<string, typeof schedules>();
+    for (const schedule of schedules) {
+      const existing = schedulesByDay.get(schedule.dayOfWeek) || [];
+      existing.push(schedule);
+      schedulesByDay.set(schedule.dayOfWeek, existing);
+    }
+    
     while (currentDate <= endDate) {
       const dayOfWeek = dayMapping[currentDate.getDay()];
-      // Find all schedules for this day (could be multiple if multiple clinics?)
-      // The unique constraint is [doctorId, clinicId, dayOfWeek], so for a specific clinic there's only 1.
-      // But if clinicId is undefined, we might have multiple schedules (one per clinic) for this day.
-      const daySchedules = schedules.filter((s) => s.dayOfWeek === dayOfWeek);
+      // O(1) lookup instead of O(n) filter
+      const daySchedules = schedulesByDay.get(dayOfWeek) || [];
 
       for (const schedule of daySchedules) {
         const slotsForDay: any[] = [];
@@ -613,9 +639,9 @@ export const schedulesService = {
           const slotDateTime = new Date(currentDate);
           slotDateTime.setHours(hours, minutes, 0, 0);
 
-          const appointment = appointments.find(
-            (apt) => apt.datetime.getTime() === slotDateTime.getTime() && apt.clinicId === schedule.clinicId
-          );
+          // O(1) lookup instead of O(n) find
+          const appointmentKey = `${slotDateTime.getTime()}_${schedule.clinicId}`;
+          const appointment = appointmentMap.get(appointmentKey);
 
           slotsForDay.push({
             id: templateSlot.id, // Keep template ID or virtual?

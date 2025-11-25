@@ -81,18 +81,25 @@ export async function getFeaturedDoctors(): Promise<ActionResult> {
 }
 
 /**
- * Server action for searching doctors
+ * Server action for searching doctors with pagination
  */
 export async function searchDoctors(
   specialty?: string,
-  location?: string
+  location?: string,
+  page: number = 1,
+  pageSize: number = 20
 ): Promise<ActionResult> {
   try {
-    const doctors = await searchService.searchDoctors(specialty, location);
+    const result = await searchService.searchDoctors(
+      specialty,
+      location,
+      page,
+      pageSize
+    );
 
     // Transform Decimal to number for client compatibility using JSON serialization
     const serializedDoctors = JSON.parse(
-      JSON.stringify(doctors, (key, value) =>
+      JSON.stringify(result.doctors, (key, value) =>
         typeof value === "object" &&
         value !== null &&
         value.constructor?.name === "Decimal"
@@ -103,7 +110,13 @@ export async function searchDoctors(
 
     return {
       success: true,
-      data: serializedDoctors,
+      data: {
+        doctors: serializedDoctors,
+        total: result.total,
+        page: result.page,
+        pageSize: result.pageSize,
+        totalPages: result.totalPages,
+      },
     };
   } catch (error) {
     console.error("Error searching doctors:", error);
@@ -112,15 +125,18 @@ export async function searchDoctors(
 }
 
 /**
- * Server action for getting all doctors
+ * Server action for getting all doctors with pagination
  */
-export async function getAllDoctors(): Promise<ActionResult> {
+export async function getAllDoctors(
+  page: number = 1,
+  pageSize: number = 20
+): Promise<ActionResult> {
   try {
-    const doctors = await searchService.getAllDoctors();
+    const result = await searchService.getAllDoctors(page, pageSize);
 
     // Transform Decimal to number for client compatibility using JSON serialization
     const serializedDoctors = JSON.parse(
-      JSON.stringify(doctors, (key, value) =>
+      JSON.stringify(result.doctors, (key, value) =>
         typeof value === "object" &&
         value !== null &&
         value.constructor?.name === "Decimal"
@@ -131,7 +147,13 @@ export async function getAllDoctors(): Promise<ActionResult> {
 
     return {
       success: true,
-      data: serializedDoctors,
+      data: {
+        doctors: serializedDoctors,
+        total: result.total,
+        page: result.page,
+        pageSize: result.pageSize,
+        totalPages: result.totalPages,
+      },
     };
   } catch (error) {
     console.error("Error fetching all doctors:", error);

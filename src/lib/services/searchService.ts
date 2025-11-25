@@ -73,133 +73,174 @@ export const searchService = {
     });
   },
 
-  async searchDoctors(specialty?: string, location?: string) {
-    return prisma.doctor.findMany({
-      where: {
-        ...(specialty && {
-          specialities: {
-            some: {
-              speciality: {
-                name: {
-                  contains: specialty,
-                  mode: "insensitive",
-                },
-              },
-            },
-          },
-        }),
-        ...(location && {
-          clinics: {
-            some: {
-              clinic: {
-                OR: [
-                  {
-                    name: {
-                      contains: location,
-                      mode: "insensitive",
-                    },
-                  },
-                  {
-                    address: {
-                      contains: location,
-                      mode: "insensitive",
-                    },
-                  },
-                ],
-              },
-            },
-          },
-        }),
-      },
-      include: {
+  async searchDoctors(
+    specialty?: string,
+    location?: string,
+    page: number = 1,
+    pageSize: number = 20
+  ) {
+    const skip = (page - 1) * pageSize;
+
+    const where = {
+      ...(specialty && {
         specialities: {
-          include: {
-            speciality: true,
-          },
-        },
-        opinions: {
-          select: {
-            id: true,
-            rating: true,
-            title: true,
-            description: true,
-          },
-        },
-        clinics: {
-          include: {
-            clinic: true,
-          },
-        },
-        pricings: {
-          include: {
-            clinic: {
-              select: {
-                id: true,
-                name: true,
+          some: {
+            speciality: {
+              name: {
+                contains: specialty,
+                mode: "insensitive" as const,
               },
             },
           },
-          where: {
-            isActive: true,
+        },
+      }),
+      ...(location && {
+        clinics: {
+          some: {
+            clinic: {
+              OR: [
+                {
+                  name: {
+                    contains: location,
+                    mode: "insensitive" as const,
+                  },
+                },
+                {
+                  address: {
+                    contains: location,
+                    mode: "insensitive" as const,
+                  },
+                },
+              ],
+            },
           },
         },
-        experiences: {
-          select: {
-            id: true,
-            title: true,
-            institution: true,
-            startDate: true,
-            endDate: true,
-          },
+      }),
+    };
+
+    const include = {
+      specialities: {
+        include: {
+          speciality: true,
         },
       },
-    });
+      opinions: {
+        select: {
+          id: true,
+          rating: true,
+          title: true,
+          description: true,
+        },
+      },
+      clinics: {
+        include: {
+          clinic: true,
+        },
+      },
+      pricings: {
+        include: {
+          clinic: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
+        },
+        where: {
+          isActive: true,
+        },
+      },
+      experiences: {
+        select: {
+          id: true,
+          title: true,
+          institution: true,
+          startDate: true,
+          endDate: true,
+        },
+      },
+    };
+
+    const [doctors, total] = await Promise.all([
+      prisma.doctor.findMany({
+        where,
+        include,
+        skip,
+        take: pageSize,
+      }),
+      prisma.doctor.count({ where }),
+    ]);
+
+    return {
+      doctors,
+      total,
+      page,
+      pageSize,
+      totalPages: Math.ceil(total / pageSize),
+    };
   },
 
-  async getAllDoctors() {
-    return prisma.doctor.findMany({
-      include: {
-        specialities: {
-          include: {
-            speciality: true,
-          },
-        },
-        opinions: {
-          select: {
-            id: true,
-            rating: true,
-            title: true,
-            description: true,
-          },
-        },
-        clinics: {
-          include: {
-            clinic: true,
-          },
-        },
-        pricings: {
-          include: {
-            clinic: {
-              select: {
-                id: true,
-                name: true,
-              },
-            },
-          },
-          where: {
-            isActive: true,
-          },
-        },
-        experiences: {
-          select: {
-            id: true,
-            title: true,
-            institution: true,
-            startDate: true,
-            endDate: true,
-          },
+  async getAllDoctors(page: number = 1, pageSize: number = 20) {
+    const skip = (page - 1) * pageSize;
+
+    const include = {
+      specialities: {
+        include: {
+          speciality: true,
         },
       },
-    });
+      opinions: {
+        select: {
+          id: true,
+          rating: true,
+          title: true,
+          description: true,
+        },
+      },
+      clinics: {
+        include: {
+          clinic: true,
+        },
+      },
+      pricings: {
+        include: {
+          clinic: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
+        },
+        where: {
+          isActive: true,
+        },
+      },
+      experiences: {
+        select: {
+          id: true,
+          title: true,
+          institution: true,
+          startDate: true,
+          endDate: true,
+        },
+      },
+    };
+
+    const [doctors, total] = await Promise.all([
+      prisma.doctor.findMany({
+        include,
+        skip,
+        take: pageSize,
+      }),
+      prisma.doctor.count(),
+    ]);
+
+    return {
+      doctors,
+      total,
+      page,
+      pageSize,
+      totalPages: Math.ceil(total / pageSize),
+    };
   },
 };

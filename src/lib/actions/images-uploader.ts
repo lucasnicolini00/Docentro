@@ -385,6 +385,59 @@ export async function getImageUrl(imageId: string): Promise<ActionResult> {
 }
 
 /**
+ * Batch process multiple image URLs to avoid N+1 queries
+ * Returns a map of imageId -> URL
+ */
+export async function getBatchImageUrls(
+  imageIds: string[]
+): Promise<Record<string, string>> {
+  try {
+    if (imageIds.length === 0) {
+      return {};
+    }
+
+    // Fetch all images in one query
+    const images = await prisma.image.findMany({
+      where: { id: { in: imageIds } },
+      select: { id: true, url: true },
+    });
+
+    const bucketName = process.env.GCLOUD_BUCKET;
+    const imageMap: Record<string, string> = {};
+
+    // Process all images
+    for (const img of images) {
+      // If no bucket configured, use direct URL
+      if (!bucketName) {
+        imageMap[img.id] = img.url;
+        continue;
+      }
+
+      // Try to generate signed URL
+      try {
+        const url = new URL(img.url);
+        const parts = url.pathname.split("/").filter(Boolean);
+        if (parts.length >= 2 && parts[0] === bucketName) {
+          const key = parts.slice(1).join("/");
+          const signed = await getSignedReadUrl(key).catch(() => img.url);
+          imageMap[img.id] = signed;
+        } else {
+          imageMap[img.id] = img.url;
+        }
+      } catch {
+        // If URL parsing fails, use direct URL
+        imageMap[img.id] = img.url;
+      }
+    }
+
+    return imageMap;
+  } catch (error) {
+    console.error("Error getting batch image urls:", error);
+    return {};
+  }
+}
+
+/**
  * Get the profile image URL for the current user (works for both doctors and patients)
  */
 export async function getUserProfileImageUrl(): Promise<ActionResult> {

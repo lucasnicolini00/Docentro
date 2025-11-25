@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { validateDoctor, type ActionResult } from "./utils";
-import { getImageUrl } from "./images-uploader";
+import { getBatchImageUrls } from "./images-uploader";
 import { doctorsService } from "@/lib/services/doctorsService";
 
 /**
@@ -115,18 +115,23 @@ export async function getDoctorProfile(): Promise<ActionResult> {
       };
     }
 
-    // Get signed URLs for images
+    // Get signed URLs for images using batch processing
+    const imageIds = fullDoctor.images.map((img) => img.id);
+    if (fullDoctor.profileImage) {
+      imageIds.push(fullDoctor.profileImage.id);
+    }
+    
+    const imageUrlMap = await getBatchImageUrls(imageIds);
+    
     const profileImageUrl = fullDoctor.profileImage
-      ? await getImageUrl(fullDoctor.profileImage.id)
+      ? imageUrlMap[fullDoctor.profileImage.id] || null
       : null;
 
-    const imagesWithUrls = await Promise.all(
-      fullDoctor.images.map(async (img) => ({
-        id: img.id,
-        url: await getImageUrl(img.id),
-        createdAt: img.createdAt,
-      }))
-    );
+    const imagesWithUrls = fullDoctor.images.map((img) => ({
+      id: img.id,
+      url: imageUrlMap[img.id] || img.url,
+      createdAt: img.createdAt,
+    }));
 
     return {
       success: true,
@@ -157,13 +162,15 @@ export async function getAllDoctorImages(): Promise<ActionResult> {
 
     const images = await doctorsService.getDoctorImages(doctor.id);
 
-    const imagesWithUrls = await Promise.all(
-      images.map(async (img) => ({
-        id: img.id,
-        url: await getImageUrl(img.id),
-        createdAt: img.createdAt,
-      }))
-    );
+    // Batch process image URLs
+    const imageIds = images.map((img) => img.id);
+    const imageUrlMap = await getBatchImageUrls(imageIds);
+    
+    const imagesWithUrls = images.map((img) => ({
+      id: img.id,
+      url: imageUrlMap[img.id] || "",
+      createdAt: img.createdAt,
+    }));
 
     return {
       success: true,
@@ -280,13 +287,15 @@ export async function getDoctorImagesById(
   try {
     const images = await doctorsService.getDoctorImages(doctorId);
 
-    const imagesWithUrls = await Promise.all(
-      images.map(async (img) => ({
-        id: img.id,
-        url: await getImageUrl(img.id),
-        createdAt: img.createdAt,
-      }))
-    );
+    // Batch process image URLs
+    const imageIds = images.map((img) => img.id);
+    const imageUrlMap = await getBatchImageUrls(imageIds);
+    
+    const imagesWithUrls = images.map((img) => ({
+      id: img.id,
+      url: imageUrlMap[img.id] || "",
+      createdAt: img.createdAt,
+    }));
 
     return {
       success: true,
