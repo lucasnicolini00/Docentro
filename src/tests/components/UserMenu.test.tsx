@@ -2,13 +2,10 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import UserMenu from '@/components/ui/navigation/UserMenu'
-import { signOut } from 'next-auth/react'
+import { signOut, useSession } from 'next-auth/react'
 
 // Mock next-auth
-vi.mock('next-auth/react', () => ({
-  useSession: vi.fn(),
-  signOut: vi.fn(),
-}))
+vi.mock('next-auth/react')
 
 // Mock image uploader
 vi.mock('@/lib/actions/images-uploader', () => ({
@@ -34,8 +31,7 @@ describe('UserMenu', () => {
 
   describe('Loading State', () => {
     it('should show loading skeleton when session is loading', () => {
-      const { useSession } = require('next-auth/react')
-      useSession.mockReturnValue({ data: null, status: 'loading' })
+      vi.mocked(useSession).mockReturnValue({ data: null, status: 'loading' } as any)
 
       const { container } = render(<UserMenu />)
 
@@ -46,8 +42,7 @@ describe('UserMenu', () => {
 
   describe('Unauthenticated State', () => {
     it('should show login and register links when not authenticated', () => {
-      const { useSession } = require('next-auth/react')
-      useSession.mockReturnValue({ data: null, status: 'unauthenticated' })
+      vi.mocked(useSession).mockReturnValue({ data: null, status: 'unauthenticated' } as any)
 
       render(<UserMenu />)
 
@@ -56,8 +51,7 @@ describe('UserMenu', () => {
     })
 
     it('should have correct links for register and login', () => {
-      const { useSession } = require('next-auth/react')
-      useSession.mockReturnValue({ data: null, status: 'unauthenticated' })
+      vi.mocked(useSession).mockReturnValue({ data: null, status: 'unauthenticated' } as any)
 
       render(<UserMenu />)
 
@@ -80,8 +74,7 @@ describe('UserMenu', () => {
     }
 
     it('should display doctor name and role', () => {
-      const { useSession } = require('next-auth/react')
-      useSession.mockReturnValue({ data: mockDoctorSession, status: 'authenticated' })
+      vi.mocked(useSession).mockReturnValue({ data: mockDoctorSession, status: 'authenticated' } as any)
 
       render(<UserMenu />)
 
@@ -89,8 +82,7 @@ describe('UserMenu', () => {
     })
 
     it('should show user avatar with initial when no profile image', () => {
-      const { useSession } = require('next-auth/react')
-      useSession.mockReturnValue({ data: mockDoctorSession, status: 'authenticated' })
+      vi.mocked(useSession).mockReturnValue({ data: mockDoctorSession, status: 'authenticated' } as any)
 
       render(<UserMenu />)
 
@@ -98,8 +90,7 @@ describe('UserMenu', () => {
     })
 
     it('should toggle dropdown menu on button click', async () => {
-      const { useSession } = require('next-auth/react')
-      useSession.mockReturnValue({ data: mockDoctorSession, status: 'authenticated' })
+      vi.mocked(useSession).mockReturnValue({ data: mockDoctorSession, status: 'authenticated' } as any)
 
       render(<UserMenu />)
       const user = userEvent.setup()
@@ -111,8 +102,7 @@ describe('UserMenu', () => {
     })
 
     it('should show doctor menu items when dropdown is open', async () => {
-      const { useSession } = require('next-auth/react')
-      useSession.mockReturnValue({ data: mockDoctorSession, status: 'authenticated' })
+      vi.mocked(useSession).mockReturnValue({ data: mockDoctorSession, status: 'authenticated' } as any)
 
       render(<UserMenu />)
       const user = userEvent.setup()
@@ -127,8 +117,7 @@ describe('UserMenu', () => {
     })
 
     it('should call signOut when logout button is clicked', async () => {
-      const { useSession } = require('next-auth/react')
-      useSession.mockReturnValue({ data: mockDoctorSession, status: 'authenticated' })
+      vi.mocked(useSession).mockReturnValue({ data: mockDoctorSession, status: 'authenticated' } as any)
 
       render(<UserMenu />)
       const user = userEvent.setup()
@@ -154,8 +143,7 @@ describe('UserMenu', () => {
     }
 
     it('should display patient name and role', () => {
-      const { useSession } = require('next-auth/react')
-      useSession.mockReturnValue({ data: mockPatientSession, status: 'authenticated' })
+      vi.mocked(useSession).mockReturnValue({ data: mockPatientSession, status: 'authenticated' } as any)
 
       render(<UserMenu />)
 
@@ -163,8 +151,7 @@ describe('UserMenu', () => {
     })
 
     it('should show patient menu items when dropdown is open', async () => {
-      const { useSession } = require('next-auth/react')
-      useSession.mockReturnValue({ data: mockPatientSession, status: 'authenticated' })
+      vi.mocked(useSession).mockReturnValue({ data: mockPatientSession, status: 'authenticated' } as any)
 
       render(<UserMenu />)
       const user = userEvent.setup()
@@ -189,8 +176,7 @@ describe('UserMenu', () => {
     }
 
     it('should close dropdown when clicking a menu item', async () => {
-      const { useSession } = require('next-auth/react')
-      useSession.mockReturnValue({ data: mockSession, status: 'authenticated' })
+      vi.mocked(useSession).mockReturnValue({ data: mockSession, status: 'authenticated' } as any)
 
       render(<UserMenu />)
       const user = userEvent.setup()
@@ -208,8 +194,7 @@ describe('UserMenu', () => {
     })
 
     it('should rotate chevron icon when dropdown is open', async () => {
-      const { useSession } = require('next-auth/react')
-      useSession.mockReturnValue({ data: mockSession, status: 'authenticated' })
+      vi.mocked(useSession).mockReturnValue({ data: mockSession, status: 'authenticated' } as any)
 
       const { container } = render(<UserMenu />)
       const user = userEvent.setup()
@@ -227,11 +212,10 @@ describe('UserMenu', () => {
 
   describe('Accessibility', () => {
     it('should render user menu button', () => {
-      const { useSession } = require('next-auth/react')
-      useSession.mockReturnValue({
+      vi.mocked(useSession).mockReturnValue({
         data: { user: { name: 'Test', email: 'test@test.com', role: 'PATIENT' } },
         status: 'authenticated',
-      })
+      } as any)
 
       const { container } = render(<UserMenu />)
 

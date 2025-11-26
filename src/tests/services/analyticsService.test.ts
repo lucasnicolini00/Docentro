@@ -3,6 +3,9 @@ import { mockDeep, mockReset, type DeepMockProxy } from 'vitest-mock-extended'
 import type { PrismaClient } from '@prisma/client'
 import prisma from '@/lib/prisma'
 import { mockPatient } from '../utils/mocks'
+import { analyticsService } from '@/lib/services/analyticsService'
+
+
 
 vi.mock('@/lib/prisma', () => ({
   default: mockDeep<PrismaClient>(),
