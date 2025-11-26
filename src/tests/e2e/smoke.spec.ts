@@ -2,17 +2,17 @@ import { test, expect } from '@playwright/test'
 
 test.describe('Homepage', () => {
   test('should load homepage successfully', async ({ page }) => {
-    await page.goto('/')
+    await page.goto('/es')
     
     // Verify page loads
     await expect(page).toHaveTitle(/docentro/i)
     
     // Verify main elements are visible
-    await expect(page.getByText(/docentro/i)).toBeVisible()
+    await expect(page.getByText(/docentro/i).first()).toBeVisible()
   })
 
   test('should display hero section', async ({ page }) => {
-    await page.goto('/')
+    await page.goto('/es')
     
     // Check for hero content
     const heroSection = page.locator('section').first()
@@ -20,19 +20,19 @@ test.describe('Homepage', () => {
   })
 
   test('should have working navigation', async ({ page }) => {
-    await page.goto('/')
+    await page.goto('/es')
     
     // Check for navbar
     const navbar = page.locator('header')
     await expect(navbar).toBeVisible()
     
     // Check for logo
-    const logo = page.getByText('Docentro')
+    const logo = page.getByText('Docentro').first()
     await expect(logo).toBeVisible()
   })
 
   test('should navigate to search page from navbar', async ({ page }) => {
-    await page.goto('/')
+    await page.goto('/es')
     
     // Look for search link in mobile menu or navbar
     const menuButton = page.locator('button:has-text("☰"), button >> svg')
@@ -52,7 +52,7 @@ test.describe('Homepage', () => {
 
 test.describe('Authentication', () => {
   test('should display login and register buttons when not authenticated', async ({ page }) => {
-    await page.goto('/')
+    await page.goto('/es')
     
     // Look for login/register buttons
     const loginButton = page.locator('text=/login|iniciar/i')
@@ -63,7 +63,7 @@ test.describe('Authentication', () => {
   })
 
   test('should navigate to login page', async ({ page }) => {
-    await page.goto('/')
+    await page.goto('/es')
     
     // Click login button
     const loginButton = page.locator('a:has-text("Iniciar"), a:has-text("Login")')
@@ -74,7 +74,7 @@ test.describe('Authentication', () => {
   })
 
   test('should navigate to register page', async ({ page }) => {
-    await page.goto('/')
+    await page.goto('/es')
     
     // Click register button
     const registerButton = page.locator('a:has-text("Registr")')

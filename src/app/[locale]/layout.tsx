@@ -33,6 +33,8 @@ export default async function LocaleLayout({
     "navigation",
     "footer",
     "hero", // For HeroSection client component
+    "search", // For SearchPageClient
+    "doctor_public", // For doctor profile pages
     "modals",
     "login", // Often needed for auth modals
     "register", // Often needed for auth modals

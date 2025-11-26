@@ -40,7 +40,7 @@ export default function SearchPageClient({
               <h1 className="text-2xl font-bold text-gray-900">{t("title")}</h1>
               <div className="flex items-center gap-2 mt-1">
                 <p className="text-gray-600">
-                  {doctors.length} {t("results")}
+                  {Array.isArray(doctors) ? doctors.length : 0} {t("results")}
                 </p>
                 {(initialSpecialty || initialLocation) && (
                   <div className="flex items-center gap-2 ml-4">
@@ -87,10 +87,10 @@ export default function SearchPageClient({
               </div>
             </div>
             <div className="space-y-6">
-              {doctors.map((doctor) => (
+              {Array.isArray(doctors) && doctors.map((doctor) => (
                 <DoctorCard key={doctor.id} doctor={doctor as any} />
               ))}
-              {doctors.length === 0 && (
+              {(!Array.isArray(doctors) || doctors.length === 0) && (
                 <div className="text-center py-12">
                   <div className="text-6xl mb-4">👨‍⚕️</div>
                   <h3 className="text-xl font-semibold text-gray-900 mb-2">
@@ -110,7 +110,7 @@ export default function SearchPageClient({
                   </h3>
                   <div className="h-[400px] lg:h-[500px]">
                     <Map
-                      doctors={doctors}
+                      doctors={Array.isArray(doctors) ? doctors : []}
                       onOpenModal={() => setIsMapModalOpen(true)}
                     />
                   </div>
@@ -144,7 +144,7 @@ export default function SearchPageClient({
       <MapModal
         isOpen={isMapModalOpen}
         onClose={() => setIsMapModalOpen(false)}
-        doctors={doctors}
+        doctors={Array.isArray(doctors) ? doctors : []}
         initialCenter={{ lat: -17.8146, lng: -63.1561 }}
       />
     </div>

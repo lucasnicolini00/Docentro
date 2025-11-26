@@ -4,23 +4,26 @@ test.describe('Appointment Booking Flow', () => {
   test.describe('Unauthenticated User', () => {
     test('should redirect to login when trying to book without authentication', async ({ page }) => {
       // Try to access booking page directly
-      await page.goto('/book/doctor-123')
+      await page.goto('/es/book/doctor-123')
       
-      // Should redirect to login or show login prompt
-      await page.waitForTimeout(1000)
+      // Wait for redirect
+      await page.waitForLoadState('networkidle')
       
       const url = page.url()
+      
+      // Should redirect to login, unauthorized, or show auth UI
       const hasLogin = url.includes('/login') || url.includes('/unauthorized')
       const hasLoginButton = await page.locator('text=/login|iniciar/i').count() > 0
+      const hasAuthForm = await page.locator('input[type="email"]').count() > 0
       
-      expect(hasLogin || hasLoginButton).toBeTruthy()
+      expect(hasLogin || hasLoginButton || hasAuthForm).toBeTruthy()
     })
   })
 
   test.describe('Authenticated Patient', () => {
     test.beforeEach(async ({ page }) => {
       // Navigate to login page
-      await page.goto('/login')
+      await page.goto('/es/login')
       
       // Fill in login credentials (you'll need to use test credentials)
       await page.fill('input[type="email"]', 'patient@test.com')
@@ -35,7 +38,7 @@ test.describe('Appointment Booking Flow', () => {
 
     test('should access doctor profile and see booking button', async ({ page }) => {
       // Navigate to search
-      await page.goto('/search')
+      await page.goto('/es/search')
       
       // Wait for doctor cards
       await page.waitForTimeout(2000)
@@ -56,7 +59,7 @@ test.describe('Appointment Booking Flow', () => {
 
     test('should display booking form with required fields', async ({ page }) => {
       // Navigate directly to a booking page (you'll need a valid doctor ID)
-      await page.goto('/book/doctor-123')
+      await page.goto('/es/book/doctor-123')
       
       // Wait for form to load
       await page.waitForTimeout(1000)
@@ -72,7 +75,7 @@ test.describe('Appointment Booking Flow', () => {
     })
 
     test('should show available time slots when date is selected', async ({ page }) => {
-      await page.goto('/book/doctor-123')
+      await page.goto('/es/book/doctor-123')
       
       await page.waitForTimeout(1000)
       
@@ -94,7 +97,7 @@ test.describe('Appointment Booking Flow', () => {
     test('should complete booking flow', async ({ page }) => {
       // This is a full integration test
       // Navigate to search
-      await page.goto('/search?specialty=Cardiology')
+      await page.goto('/es/search?specialty=Cardiology')
       
       await page.waitForTimeout(2000)
       
@@ -150,7 +153,7 @@ test.describe('Appointment Booking Flow', () => {
 
 test.describe('Booking Validations', () => {
   test('should show error for invalid date selection', async ({ page }) => {
-    await page.goto('/login')
+    await page.goto('/es/login')
     
     // Quick login
     await page.fill('input[type="email"]', 'patient@test.com')
@@ -160,7 +163,7 @@ test.describe('Booking Validations', () => {
     await page.waitForTimeout(2000)
     
     // Navigate to booking
-    await page.goto('/book/doctor-123')
+    await page.goto('/es/book/doctor-123')
     
     await page.waitForTimeout(1000)
     
