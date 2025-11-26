@@ -1,8 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { render, screen, waitFor } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
+import { render, screen } from '@testing-library/react'
 import AppointmentBookingForm from '@/components/ui/forms/AppointmentBookingForm'
-import { createAppointment, getDoctorAvailability } from '@/lib/actions/appointments'
+import { getDoctorAvailability } from '@/lib/actions/appointments'
 
 vi.mock('@/lib/actions/appointments', () => ({
   createAppointment: vi.fn(),

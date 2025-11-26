@@ -3,13 +3,12 @@ import {
   createAppointmentAction,
   getUserAppointments,
   getDoctorAppointments,
-  getPatientAppointments,
   createAppointmentWithTimeSlot,
-  createAppointment,
-  getDoctorAvailability,
   getDoctorClinicsAndPricing,
   updateAppointmentStatus,
   cancelAppointment,
+  createAppointment,
+  getDoctorAvailability,
 } from '@/lib/actions/appointments'
 import { validateAuth, validatePatient, validateDoctor } from '@/lib/actions/utils'
 import { appointmentsService } from '@/lib/services/appointmentsService'
