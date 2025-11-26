@@ -16,6 +16,12 @@
 # next.js
 /.next/
 /out/
+.next/cache
+
+# testing
+/test-results/
+/playwright-report/
+/playwright/.cache/
 
 # production
 /build
