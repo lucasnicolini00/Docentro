@@ -69,7 +69,7 @@ describe('LoadingButton', () => {
     it('should show loading text when isLoading is true', () => {
       render(<LoadingButton isLoading loadingText="Loading...">Submit</LoadingButton>)
 
-      expect(screen.getByText(/loading/i)).toBeInTheDocument()
+      expect(screen.queryByText('Loading...')).toBeInTheDocument()
       expect(screen.queryByText('Submit')).not.toBeInTheDocument()
     })
 
