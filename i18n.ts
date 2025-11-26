@@ -16,6 +16,7 @@ const ALL_NAMESPACES = [
   "login",
   "map",
   "mapModal",
+  "modals",
   "register",
   "search",
   "specialties",

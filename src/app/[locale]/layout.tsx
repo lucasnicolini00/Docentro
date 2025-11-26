@@ -32,6 +32,7 @@ export default async function LocaleLayout({
     "common",
     "navigation",
     "footer",
+    "hero", // For HeroSection client component
     "modals",
     "login", // Often needed for auth modals
     "register", // Often needed for auth modals

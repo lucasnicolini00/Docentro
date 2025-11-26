@@ -22,6 +22,13 @@ export default withAuth(
     const maybeLocale = segments[0];
     const hasLocale =
       maybeLocale && SUPPORTED_LOCALES.includes(maybeLocale as any);
+    
+    // If no locale prefix, redirect to default locale
+    if (!hasLocale && segments.length > 0) {
+      const best = detectPreferredLocaleFromRequest(req as any);
+      return NextResponse.redirect(new URL(`/${best}${pathname}`, req.url));
+    }
+    
     const rest = hasLocale ? "/" + segments.slice(1).join("/") : pathname;
 
     // Protect doctor routes
@@ -80,5 +87,5 @@ export default withAuth(
 );
 
 export const config = {
-  matcher: ["/", "(/en|/es)/:path*", "/api/protected/:path*"],
+  matcher: ["/((?!api|_next/static|_next/image|favicon.ico|.*\\..*).*)"],
 };
