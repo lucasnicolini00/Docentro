@@ -41,6 +41,7 @@
     "@uiw/react-markdown-preview": "^5.1.5",
     "@uiw/react-md-editor": "^4.0.8",
     "@vercel/analytics": "^1.5.0",
+    "@vercel/speed-insights": "^1.2.0",
     "bcryptjs": "3.0.2",
     "lucide-react": "0.542.0",
     "marked": "^16.3.0",
