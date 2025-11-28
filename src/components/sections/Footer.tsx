@@ -10,7 +10,6 @@ export default async function Footer({ locale }: { locale: string }) {
     <footer id="contacto" className="bg-gray-900 text-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-          {/* Company Info */}
           <div className="md:col-span-2">
             <div className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent mb-4">
               🩺 Docentro
@@ -29,7 +28,6 @@ export default async function Footer({ locale }: { locale: string }) {
             </div>
           </div>
 
-          {/* Quick Links */}
           <div>
             <h3 className="text-lg font-semibold mb-4">{quickLinksTitle}</h3>
             <ul className="space-y-2">
