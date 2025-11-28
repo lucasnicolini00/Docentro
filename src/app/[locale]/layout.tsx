@@ -38,6 +38,10 @@ export default async function LocaleLayout({
     "modals",
     "login", // Often needed for auth modals
     "register", // Often needed for auth modals
+    "map", // For Map component
+    "mapModal", // For MapModal component
+    "dashboard_patient", // For patient dashboard
+    "dashboard_doctor", // For doctor dashboard
   ]);
 
   return (
