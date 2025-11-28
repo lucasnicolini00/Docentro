@@ -6,13 +6,59 @@ on:
 
 jobs:
   # Run tests first
-  tests:
-    uses: ./.github/workflows/test.yml
-    secrets: inherit
+  unit-tests:
+    runs-on: ubuntu-latest
+    name: Unit & Component Tests
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Run unit tests
+        run: npm run test
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          NEXTAUTH_SECRET: ${{ secrets.NEXTAUTH_SECRET }}
 
-  # Only deploy if tests pass
+  e2e-tests:
+    runs-on: ubuntu-latest
+    name: E2E Tests
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Install Playwright Browsers
+        run: npx playwright install --with-deps
+      
+      - name: Run E2E tests
+        run: npm run test:e2e
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          NEXTAUTH_SECRET: ${{ secrets.NEXTAUTH_SECRET }}
+          NEXTAUTH_URL: http://localhost:3000
+
+  # Only deploy if all tests pass
   deploy:
-    needs: tests
+    needs: [unit-tests, e2e-tests]
     runs-on: ubuntu-latest
     name: Deploy to Vercel
     
