@@ -16,10 +16,10 @@ export default async function DoctorAnalyticsPage({
 }: {
   params: Promise<{ locale: string }>;
 }) {
-  await params; // locale inferred by next-intl; no direct usage needed
+  const { locale } = await params;
   await requireDoctor();
 
-  const t = await getT("dashboard_doctor");
+  const t = await getT("dashboard_doctor", locale);
 
   // Pre-fetch data for the default view (month)
   const [statsResult, scheduleResult, patientResult, revenueResult] =

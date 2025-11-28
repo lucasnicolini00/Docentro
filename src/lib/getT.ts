@@ -1,4 +1,4 @@
-import { getTranslations as nextGetTranslations } from "next-intl/server";
+import { getTranslations as nextGetTranslations, getLocale } from "next-intl/server";
 
 /**
  * Helper to obtain a translation function for server components.
@@ -6,13 +6,16 @@ import { getTranslations as nextGetTranslations } from "next-intl/server";
  *   const t = await getT('namespace');
  *   t('key');
  *
- * This centralizes the import so server pages can use a shorter import path.
+ * Automatically detects locale from the request context.
+ * You can optionally pass a locale to override.
  */
 export async function getT(namespace: string, locale?: string) {
   if (locale) {
     return await nextGetTranslations({ locale, namespace });
   }
-  return await nextGetTranslations(namespace);
+  // Automatically detect locale from request context
+  const detectedLocale = await getLocale();
+  return await nextGetTranslations({ locale: detectedLocale, namespace });
 }
 
 export type Translator = ReturnType<typeof nextGetTranslations>;

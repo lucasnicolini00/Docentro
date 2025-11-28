@@ -1,7 +1,8 @@
 "use client";
 
 import { Session } from "next-auth";
-import { useTranslations } from "next-intl";
+import { useSession } from "next-auth/react";
+import { useTranslations, useLocale } from "next-intl";
 import { User, Calendar } from "lucide-react";
 
 interface PatientHeaderProps {
@@ -22,12 +23,15 @@ export default function PatientHeader({
   customContent,
 }: PatientHeaderProps) {
   const t = useTranslations("navigation");
-  const formatDate = () => {
-    return new Intl.DateTimeFormat("es-ES", {
+  const locale = useLocale();
+  const { status } = useSession();
+
+  const getFormattedDate = () => {
+    return new Intl.DateTimeFormat(locale, {
       weekday: "long",
-      year: "numeric",
-      month: "long",
       day: "numeric",
+      month: "long",
+      year: "numeric",
     }).format(new Date());
   };
 
@@ -66,7 +70,7 @@ export default function PatientHeader({
             <div className="mt-4 lg:mt-0 flex items-center space-x-2 text-blue-100">
               <Calendar className="w-5 h-5" />
               <span className="text-sm lg:text-base">
-                {capitalizeFirstLetter(formatDate())}
+                {capitalizeFirstLetter(getFormattedDate())}
               </span>
             </div>
           )}

@@ -440,5 +440,12 @@
     "minutes": "{count} minute(s) ago",
     "hours": "{count} hour(s) ago",
     "days": "{count} day(s) ago"
-  }
+  },
+  "yesterday": "yesterday",
+  "lastWeek": "last week",
+  "lastMonth": "last month",
+  "noChangeVs": "No change vs {period}",
+  "more": "more",
+  "less": "less",
+  "timeRangeLabel": "Time Period"
 }

@@ -16,8 +16,8 @@ export default async function PatientAppointmentsPage({
   const dashboard = await getPatientDashboard();
   const data = dashboard.success && dashboard.data ? dashboard.data : null;
 
-  const t = await getT("dashboard_patient");
   const { locale } = await params;
+  const t = await getT("dashboard_patient", locale);
 
   const upcoming = data?.upcomingAppointments ?? [];
   const past = data?.pastAppointments ?? [];

@@ -45,48 +45,51 @@ export const analyticsService = {
       ),
       appointment_stats AS (
         SELECT 
-          COUNT(*) FILTER (WHERE datetime >= (SELECT today_start FROM date_ranges) 
-                            AND datetime < (SELECT today_end FROM date_ranges)) as today_appointments,
-          COUNT(*) FILTER (WHERE datetime >= (SELECT yesterday_start FROM date_ranges) 
-                            AND datetime < (SELECT yesterday_end FROM date_ranges)) as yesterday_appointments,
-          COUNT(*) FILTER (WHERE datetime >= (SELECT week_start FROM date_ranges) 
-                            AND datetime < (SELECT week_end FROM date_ranges)) as week_appointments,
-          COUNT(*) FILTER (WHERE datetime >= (SELECT last_week_start FROM date_ranges) 
-                            AND datetime < (SELECT last_week_end FROM date_ranges)) as last_week_appointments,
-          COUNT(*) FILTER (WHERE status = 'PENDING') as pending_bookings,
-          COUNT(DISTINCT patient_id) as total_patients,
-          COUNT(DISTINCT patient_id) FILTER (WHERE datetime >= (SELECT last_month_start FROM date_ranges) 
-                                              AND datetime < (SELECT last_month_end FROM date_ranges)) as last_month_patients
+          SUM(CASE WHEN datetime >= (SELECT today_start FROM date_ranges) 
+                        AND datetime < (SELECT today_end FROM date_ranges) THEN 1 ELSE 0 END) as today_appointments,
+          SUM(CASE WHEN datetime >= (SELECT yesterday_start FROM date_ranges) 
+                        AND datetime < (SELECT yesterday_end FROM date_ranges) THEN 1 ELSE 0 END) as yesterday_appointments,
+          SUM(CASE WHEN datetime >= (SELECT week_start FROM date_ranges) 
+                        AND datetime < (SELECT week_end FROM date_ranges) THEN 1 ELSE 0 END) as week_appointments,
+          SUM(CASE WHEN datetime >= (SELECT last_week_start FROM date_ranges) 
+                        AND datetime < (SELECT last_week_end FROM date_ranges) THEN 1 ELSE 0 END) as last_week_appointments,
+          SUM(CASE WHEN status = 'PENDING' THEN 1 ELSE 0 END) as pending_bookings,
+          COUNT(DISTINCT "patientId") as total_patients,
+          COUNT(DISTINCT CASE WHEN datetime >= (SELECT last_month_start FROM date_ranges) 
+                                   AND datetime < (SELECT last_month_end FROM date_ranges) 
+                              THEN "patientId" ELSE NULL END) as last_month_patients
         FROM "Appointment" 
-        WHERE doctor_id = (SELECT doctor_id FROM date_ranges)
+        WHERE "doctorId" = (SELECT doctor_id FROM date_ranges)
       ),
       revenue_stats AS (
         SELECT 
-          COALESCE(SUM(p.price), 0) FILTER (WHERE a.datetime >= (SELECT month_start FROM date_ranges) 
-                                             AND a.datetime < (SELECT month_end FROM date_ranges) 
-                                             AND a.status = 'COMPLETED') as monthly_revenue,
-          COALESCE(SUM(p.price), 0) FILTER (WHERE a.datetime >= (SELECT last_month_start FROM date_ranges) 
-                                             AND a.datetime < (SELECT last_month_end FROM date_ranges) 
-                                             AND a.status = 'COMPLETED') as last_month_revenue
+          COALESCE(SUM(CASE WHEN a.datetime >= (SELECT month_start FROM date_ranges) 
+                                 AND a.datetime < (SELECT month_end FROM date_ranges) 
+                                 AND a.status = 'COMPLETED' 
+                            THEN p.price::numeric ELSE 0 END), 0) as monthly_revenue,
+          COALESCE(SUM(CASE WHEN a.datetime >= (SELECT last_month_start FROM date_ranges) 
+                                 AND a.datetime < (SELECT last_month_end FROM date_ranges) 
+                                 AND a.status = 'COMPLETED' 
+                            THEN p.price::numeric ELSE 0 END), 0) as last_month_revenue
         FROM "Appointment" a
-        LEFT JOIN "Pricing" p ON a.pricing_id = p.id
-        WHERE a.doctor_id = (SELECT doctor_id FROM date_ranges)
+        LEFT JOIN "Pricing" p ON a."pricingId" = p.id
+        WHERE a."doctorId" = (SELECT doctor_id FROM date_ranges)
       ),
       slot_stats AS (
         SELECT 
-          COUNT(*) FILTER (WHERE ts.created_at >= (SELECT month_start FROM date_ranges) 
-                            AND ts.created_at < (SELECT month_end FROM date_ranges)) as total_slots,
-          COUNT(*) FILTER (WHERE ts.created_at >= (SELECT month_start FROM date_ranges) 
-                            AND ts.created_at < (SELECT month_end FROM date_ranges) 
-                            AND ts.is_booked = true) as booked_slots,
-          COUNT(*) FILTER (WHERE ts.created_at >= (SELECT last_month_start FROM date_ranges) 
-                            AND ts.created_at < (SELECT last_month_end FROM date_ranges)) as last_month_total_slots,
-          COUNT(*) FILTER (WHERE ts.created_at >= (SELECT last_month_start FROM date_ranges) 
-                            AND ts.created_at < (SELECT last_month_end FROM date_ranges) 
-                            AND ts.is_booked = true) as last_month_booked_slots
+          SUM(CASE WHEN ts."createdAt" >= (SELECT month_start FROM date_ranges) 
+                        AND ts."createdAt" < (SELECT month_end FROM date_ranges) THEN 1 ELSE 0 END) as total_slots,
+          SUM(CASE WHEN ts."createdAt" >= (SELECT month_start FROM date_ranges) 
+                        AND ts."createdAt" < (SELECT month_end FROM date_ranges) 
+                        AND ts."isBooked" = true THEN 1 ELSE 0 END) as booked_slots,
+          SUM(CASE WHEN ts."createdAt" >= (SELECT last_month_start FROM date_ranges) 
+                        AND ts."createdAt" < (SELECT last_month_end FROM date_ranges) THEN 1 ELSE 0 END) as last_month_total_slots,
+          SUM(CASE WHEN ts."createdAt" >= (SELECT last_month_start FROM date_ranges) 
+                        AND ts."createdAt" < (SELECT last_month_end FROM date_ranges) 
+                        AND ts."isBooked" = true THEN 1 ELSE 0 END) as last_month_booked_slots
         FROM "TimeSlot" ts
-        INNER JOIN "Schedule" s ON ts.schedule_id = s.id
-        WHERE s.doctor_id = (SELECT doctor_id FROM date_ranges)
+        INNER JOIN "Schedule" s ON ts."scheduleId" = s.id
+        WHERE s."doctorId" = (SELECT doctor_id FROM date_ranges)
       )
       SELECT 
         ast.*,
@@ -128,14 +131,14 @@ export const analyticsService = {
         SELECT 
           'appointment' as type,
           'Nueva cita programada' as title,
-          CONCAT('Cita con ', p.first_name, ' ', p.last_name) as description,
-          a.created_at as timestamp,
+          CONCAT('Cita con ', p."firstName", ' ', p."lastName") as description,
+          a."createdAt" as timestamp,
           a.id::text as item_id
         FROM "Appointment" a
-        INNER JOIN "Patient" pt ON a.patient_id = pt.id
-        INNER JOIN "User" p ON pt.user_id = p.id
-        WHERE a.doctor_id = ${doctorId}
-          AND a.created_at >= NOW() - INTERVAL '7 days'
+        INNER JOIN "Patient" pt ON a."patientId" = pt.id
+        INNER JOIN "User" p ON pt."userId" = p.id
+        WHERE a."doctorId" = ${doctorId}
+          AND a."createdAt" >= NOW() - INTERVAL '7 days'
         
         UNION ALL
         
@@ -144,13 +147,13 @@ export const analyticsService = {
           'schedule' as type,
           'Horario actualizado' as title,
           CONCAT('Horario para ', c.name) as description,
-          s.updated_at as timestamp,
+          s."updatedAt" as timestamp,
           s.id::text as item_id
         FROM "Schedule" s
-        INNER JOIN "Clinic" c ON s.clinic_id = c.id
-        WHERE s.doctor_id = ${doctorId}
-          AND s.updated_at >= NOW() - INTERVAL '7 days'
-          AND s.updated_at != s.created_at
+        INNER JOIN "Clinic" c ON s."clinicId" = c.id
+        WHERE s."doctorId" = ${doctorId}
+          AND s."updatedAt" >= NOW() - INTERVAL '7 days'
+          AND s."updatedAt" != s."createdAt"
         
         UNION ALL
         
@@ -158,19 +161,19 @@ export const analyticsService = {
         SELECT 
           'patient' as type,
           'Nuevo paciente' as title,
-          CONCAT('Primera cita con ', u.first_name, ' ', u.last_name) as description,
-          a.created_at as timestamp,
+          CONCAT('Primera cita con ', u."firstName", ' ', u."lastName") as description,
+          a."createdAt" as timestamp,
           pt.id::text as item_id
         FROM "Appointment" a
-        INNER JOIN "Patient" pt ON a.patient_id = pt.id
-        INNER JOIN "User" u ON pt.user_id = u.id
-        WHERE a.doctor_id = ${doctorId}
-          AND a.created_at >= NOW() - INTERVAL '7 days'
+        INNER JOIN "Patient" pt ON a."patientId" = pt.id
+        INNER JOIN "User" u ON pt."userId" = u.id
+        WHERE a."doctorId" = ${doctorId}
+          AND a."createdAt" >= NOW() - INTERVAL '7 days'
           AND NOT EXISTS (
             SELECT 1 FROM "Appointment" a2 
-            WHERE a2.patient_id = a.patient_id 
-              AND a2.doctor_id = a.doctor_id 
-              AND a2.created_at < a.created_at
+            WHERE a2."patientId" = a."patientId" 
+              AND a2."doctorId" = a."doctorId" 
+              AND a2."createdAt" < a."createdAt"
           )
       )
       SELECT * FROM recent_activities

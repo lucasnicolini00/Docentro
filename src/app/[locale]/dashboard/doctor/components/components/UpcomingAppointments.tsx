@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { Clock, Calendar } from "lucide-react";
 import { UpcomingAppointment } from "./types";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import { useLocalePath } from "@/hooks";
 
 interface UpcomingAppointmentsProps {
@@ -15,10 +15,11 @@ export default function UpcomingAppointments({
   loading,
 }: UpcomingAppointmentsProps) {
   const t = useTranslations("dashboard_doctor");
+  const locale = useLocale();
   const localePath = useLocalePath();
 
   const formatTime = (datetime: Date) => {
-    return new Date(datetime).toLocaleTimeString("es-ES", {
+    return new Date(datetime).toLocaleTimeString(locale, {
       hour: "2-digit",
       minute: "2-digit",
       hour12: true,
@@ -59,7 +60,7 @@ export default function UpcomingAppointments({
     }
 
     // Otherwise, return formatted date
-    return date.toLocaleDateString("es-ES", {
+    return date.toLocaleDateString(locale, {
       month: "short",
       day: "numeric",
     });

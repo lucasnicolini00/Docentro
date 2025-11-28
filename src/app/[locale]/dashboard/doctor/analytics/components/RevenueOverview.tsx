@@ -9,14 +9,14 @@ interface RevenueOverviewProps {
 }
 
 export default function RevenueOverview({
-  totalRevenue,
-  averageValue,
-  totalAppointments,
-  growthRate,
+  totalRevenue = 0,
+  averageValue = 0,
+  totalAppointments = 0,
+  growthRate = 0,
 }: RevenueOverviewProps) {
   const t = useTranslations("dashboard_doctor");
   return (
-    <div className="bg-white rounded-xl border border-gray-100 p-6">
+    <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
       <h3 className="text-lg font-semibold text-gray-900 mb-4">
         {t("revenueOverviewTitle")}
       </h3>

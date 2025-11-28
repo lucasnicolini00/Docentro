@@ -45,7 +45,7 @@ export default function MetricsCards({ stats }: MetricsCardsProps) {
       {metrics.map((metric, index) => (
         <div
           key={index}
-          className="bg-white rounded-xl border border-gray-100 p-6"
+          className="bg-white rounded-xl border border-gray-200 shadow-sm p-6 hover:shadow-md transition-shadow"
         >
           <div className="flex items-center justify-between">
             <div>

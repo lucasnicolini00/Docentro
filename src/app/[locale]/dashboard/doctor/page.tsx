@@ -24,20 +24,20 @@ export default async function DoctorDashboardLocale({
 }) {
   const { locale } = await params;
   await requireDoctor();
-  const t = await getT("dashboard_doctor");
+  const t = await getT("dashboard_doctor",locale);
   
   // Fetch specific messages for this page's client components
   const messages = await getMessages(locale, ["dashboard_doctor"]);
 
   return (
-    <NextIntlClientProvider locale={locale} messages={messages}>
-      <div className="p-6">
-        <div className="mb-6">
-          <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
-            <h1 className="text-2xl font-semibold text-gray-900">{t("title")}</h1>
-          </div>
+    <div className="p-6">
+      <div className="mb-6">
+        <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
+          <h1 className="text-2xl font-semibold text-gray-900">{t("title")}</h1>
         </div>
+      </div>
 
+      <NextIntlClientProvider locale={locale} messages={messages}>
         <div className="space-y-8">
           {/* Onboarding Banner */}
           <Suspense fallback={<OnboardingSkeleton />}>
@@ -62,7 +62,7 @@ export default async function DoctorDashboardLocale({
             <DashboardAppointments />
           </Suspense>
         </div>
-      </div>
-    </NextIntlClientProvider>
+      </NextIntlClientProvider>
+    </div>
   );
 }

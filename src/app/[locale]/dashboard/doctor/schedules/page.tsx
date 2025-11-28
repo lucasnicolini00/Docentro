@@ -10,7 +10,7 @@ export default async function DoctorSchedulesPage({
 }: {
   params: Promise<{ locale: string }>;
 }) {
-  await params; // locale inferred
+  const { locale } = await params;
   await requireDoctor();
 
   const [clinicsResult, schedulesResult] = await Promise.all([
@@ -30,7 +30,7 @@ export default async function DoctorSchedulesPage({
   const schedules =
     schedulesResult.success && schedulesResult.data ? schedulesResult.data : [];
 
-  const t = await getT("dashboard_doctor");
+  const t = await getT("dashboard_doctor", locale);
 
   return (
     <div className="p-6 space-y-6">

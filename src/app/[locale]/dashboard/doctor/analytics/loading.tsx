@@ -36,14 +36,7 @@ export default function AnalyticsLoading() {
           ))}
         </div>
 
-        {/* Tab Navigation */}
-        <div className="bg-white rounded-lg border border-gray-200 shadow-sm">
-          <div className="flex border-b border-gray-200">
-            {[...Array(4)].map((_, i) => (
-              <Skeleton key={i} className="h-12 w-24 mx-1" />
-            ))}
-          </div>
-        </div>
+       
 
         {/* Content Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

@@ -2,7 +2,7 @@
 
 import { Session } from "next-auth";
 import { useSession } from "next-auth/react";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 
 interface DoctorHeaderProps {
   session: Session | null;
@@ -18,6 +18,7 @@ export default function DoctorHeader({
   showProfile = true,
 }: DoctorHeaderProps) {
   const t = useTranslations("navigation");
+  const locale = useLocale();
   const { status } = useSession();
 
   const getDoctorName = () => {
@@ -31,8 +32,7 @@ export default function DoctorHeader({
 
   const getFormattedDate = () => {
     const date = new Date();
-    const locale = "es-ES";
-
+    
     const options: Intl.DateTimeFormatOptions = {
       weekday: "long",
       day: "numeric",

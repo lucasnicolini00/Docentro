@@ -42,6 +42,7 @@ export default async function LocaleLayout({
     "mapModal", // For MapModal component
     "dashboard_patient", // For patient dashboard
     "dashboard_doctor", // For doctor dashboard
+    "forms", // For profile forms
   ]);
 
   return (

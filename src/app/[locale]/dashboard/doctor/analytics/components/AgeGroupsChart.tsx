@@ -6,10 +6,22 @@ interface AgeGroupsChartProps {
 
 export default function AgeGroupsChart({ data }: AgeGroupsChartProps) {
   const t = useTranslations("dashboard_doctor");
+
+  if (!data || Object.keys(data).length === 0) {
+    return (
+      <div className="bg-white rounded-xl border border-gray-100 p-6">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">
+          {t("ageDistributionTitle")}
+        </h3>
+        <p className="text-gray-500 text-sm">{t("noData")}</p>
+      </div>
+    );
+  }
+
   const maxCount = Math.max(...Object.values(data));
 
   return (
-    <div className="bg-white rounded-xl border border-gray-100 p-6">
+    <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
       <h3 className="text-lg font-semibold text-gray-900 mb-4">
         {t("ageDistributionTitle")}
       </h3>

@@ -4,12 +4,24 @@ interface RevenueByClinicProps {
 }
 
 export default function RevenueByClinicChart({ data }: RevenueByClinicProps) {
-  const maxRevenue = Math.max(...Object.values(data));
+  const maxRevenue = data ? Math.max(...Object.values(data)) : 0;
+  const t = useTranslations("dashboard_doctor");
+
+  if (!data || Object.keys(data).length === 0) {
+    return (
+      <div className="bg-white rounded-xl border border-gray-100 p-6">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">
+          {t("revenueByClinicTitle")}
+        </h3>
+        <p className="text-gray-500 text-sm">{t("noData")}</p>
+      </div>
+    );
+  }
 
   return (
-    <div className="bg-white rounded-xl border border-gray-100 p-6">
+    <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
       <h3 className="text-lg font-semibold text-gray-900 mb-4">
-        {useTranslations("dashboard_doctor")("revenueByClinicTitle")}
+        {t("revenueByClinicTitle")}
       </h3>
       <div className="space-y-3">
         {Object.entries(data).map(([clinic, revenue]) => (

@@ -440,5 +440,12 @@
     "minutes": "Hace {count} minuto(s)",
     "hours": "Hace {count} hora(s)",
     "days": "Hace {count} día(s)"
-  }
+  },
+  "yesterday": "ayer",
+  "lastWeek": "la semana pasada",
+  "lastMonth": "el mes pasado",
+  "noChangeVs": "Sin cambios vs {period}",
+  "more": "más",
+  "less": "menos",
+  "timeRangeLabel": "Período"
 }

@@ -14,7 +14,7 @@ export default async function DoctorExperiencePage({
 }: {
   params: Promise<{ locale: string }>;
 }) {
-  await params; // locale inferred
+  const { locale } = await params;
   await requireDoctor();
 
   const [profile, images] = await Promise.all([
@@ -31,7 +31,7 @@ export default async function DoctorExperiencePage({
 
   const existingImages = images.success && images.data ? images.data : [];
 
-  const t = await getT("dashboard_doctor");
+  const t = await getT("dashboard_doctor", locale);
 
   return (
     <>

@@ -12,9 +12,9 @@ export default async function PatientDashboardLocale({
   await requirePatient();
 
   const result = await getPatientDashboard();
-  const { locale: incomingLocale } = await params; // retained for date formatting
+  const { locale: incomingLocale } = await params;
   const locale = incomingLocale || "es";
-  const t = await getT("dashboard_patient");
+  const t = await getT("dashboard_patient", locale);
 
   if (!result.success || !result.data) {
     return (

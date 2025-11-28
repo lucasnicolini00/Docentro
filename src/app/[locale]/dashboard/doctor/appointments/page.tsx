@@ -11,13 +11,13 @@ export default async function DoctorAppointmentsPage({
 }: {
   params: Promise<{ locale: string }>;
 }) {
-  await params; // locale handled implicitly
+  const { locale } = await params;
   await requireDoctor();
 
   const dashboard = await getDoctorDashboard();
   const data = dashboard.success && dashboard.data ? dashboard.data : null;
 
-  const t = await getT("dashboard_doctor");
+  const t = await getT("dashboard_doctor", locale);
 
   const today = data?.appointments?.today ?? [];
   const pending = data?.appointments?.pending ?? [];

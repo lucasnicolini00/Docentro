@@ -16,7 +16,16 @@ export async function getDashboardStats(): Promise<ActionResult> {
   if (!result || result.length === 0) {
     return { success: false, error: "No se pudieron obtener las estadísticas" };
   }
-  return { success: true, data: result[0] };
+  
+  // Convert Decimal objects to numbers for client component compatibility
+  const stats = result[0];
+  const serializedStats = {
+    ...stats,
+    monthly_revenue: Number(stats.monthly_revenue) || 0,
+    last_month_revenue: Number(stats.last_month_revenue) || 0,
+  };
+  
+  return { success: true, data: serializedStats };
 }
 
 /**
@@ -66,7 +75,16 @@ export async function getScheduleAnalytics(
   if (!result || result.length === 0) {
     return { success: false, error: "No schedule analytics available" };
   }
-  return { success: true, data: result[0] };
+  
+  // Convert Decimal objects to numbers for client component compatibility
+  const stats = result[0];
+  const serializedStats = {
+    ...stats,
+    monthly_revenue: Number(stats.monthly_revenue) || 0,
+    last_month_revenue: Number(stats.last_month_revenue) || 0,
+  };
+  
+  return { success: true, data: serializedStats };
 }
 
 /**
