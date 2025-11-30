@@ -1,7 +1,7 @@
 import { requireDoctor } from "@/lib/auth-guards";
 import { getDoctorDashboard } from "@/lib/actions";
-import DoctorCalendarWrapper from "./components/DoctorCalendarWrapper";
 import { transformAppointmentToCalendarEvent } from "./utils";
+import DoctorCalendarClient from "./components/DoctorCalendarClient";
 
 export const dynamic = "force-dynamic"; // live calendar data
 
@@ -28,7 +28,7 @@ export default async function DoctorCalendarPage({
 
   return (
     <div className="space-y-6">
-      <DoctorCalendarWrapper initialAppointments={initialAppointments} />
+      <DoctorCalendarClient initialAppointments={initialAppointments} />
     </div>
   );
 }

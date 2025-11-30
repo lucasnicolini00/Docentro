@@ -1,7 +1,6 @@
 "use client";
 
 import { Session } from "next-auth";
-import { useSession } from "next-auth/react";
 import { useTranslations, useLocale } from "next-intl";
 import { User, Calendar } from "lucide-react";
 
@@ -24,7 +23,6 @@ export default function PatientHeader({
 }: PatientHeaderProps) {
   const t = useTranslations("navigation");
   const locale = useLocale();
-  const { status } = useSession();
 
   const getFormattedDate = () => {
     return new Intl.DateTimeFormat(locale, {

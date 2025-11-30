@@ -2,7 +2,7 @@
 
 import dynamic from "next/dynamic";
 
-const PatientCalendar = dynamic(() => import("./PatientCalendar"), {
+const DoctorCalendar = dynamic(() => import("./DoctorCalendar"), {
   ssr: false,
   loading: () => (
     <div className="h-[600px] w-full flex items-center justify-center bg-white rounded-lg border border-gray-200">
@@ -11,6 +11,4 @@ const PatientCalendar = dynamic(() => import("./PatientCalendar"), {
   ),
 });
 
-export default function PatientCalendarWrapper(props: any) {
-  return <PatientCalendar {...props} />;
-}
+export default DoctorCalendar;

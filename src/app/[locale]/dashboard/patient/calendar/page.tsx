@@ -1,7 +1,7 @@
 import { requirePatient } from "@/lib/auth-guards";
 import { getPatientDashboard } from "@/lib/actions";
 import { getT } from "@/lib/getT";
-import PatientCalendarWrapper from "./components/PatientCalendarWrapper";
+import PatientCalendarClient from "./components/PatientCalendarClient";
 
 export const dynamic = "force-dynamic";
 
@@ -88,7 +88,7 @@ export default async function PatientCalendarPage({
             </a>
           </div>
 
-          <PatientCalendarWrapper initialAppointments={initialAppointments} />
+          <PatientCalendarClient initialAppointments={initialAppointments} />
         </div>
 
         {/* Sidebar - Resumen de Citas */}
