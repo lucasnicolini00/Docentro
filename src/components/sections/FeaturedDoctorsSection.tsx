@@ -11,6 +11,7 @@ import type {
 } from "@prisma/client";
 import Link from "next/link";
 import { getT } from "@/lib/getT";
+import { getLocale } from "next-intl/server";
 
 type DoctorWithRelations = Doctor & {
   specialities: (DoctorSpeciality & {
@@ -28,11 +29,7 @@ type DoctorWithRelations = Doctor & {
     url: string;
   } | null;
 };
-export default async function FeaturedDoctorsSection({
-  locale,
-}: {
-  locale: string;
-}) {
+export default async function FeaturedDoctorsSection() {
   // Fetch real data from database using Server Action
   const result = await getFeaturedDoctors();
   const doctors: DoctorWithRelations[] = result.success
@@ -56,8 +53,9 @@ export default async function FeaturedDoctorsSection({
     })
   );
 
-  // Get translations using request locale instead of hardcoded Spanish
-  const t = await getT("featuredDoctors", locale);
+  // Get locale and translations
+  const locale = await getLocale();
+  const t = await getT("featuredDoctors");
 
   return (
     <section

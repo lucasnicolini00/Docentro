@@ -1,7 +1,7 @@
 import { getT } from "@/lib/getT";
 
-export default async function Footer({ locale }: { locale: string }) {
-  const t = await getT("footer", locale);
+export default async function Footer() {
+  const t = await getT("footer");
   const companyDescription = t("companyDescription");
   const quickLinksTitle = t("quickLinksTitle");
   const quickLinks = (await t.raw("quickLinks")) as string[];

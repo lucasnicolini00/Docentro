@@ -116,6 +116,10 @@ const extractAddressComponents = (result: google.maps.GeocoderResult) => {
   return { country, city, neighborhood };
 };
 
+import { GOOGLE_MAPS_LIBRARIES } from "@/lib/google-maps-config";
+
+// ...
+
 export default function LocationPicker({
   onLocationSelect,
   initialLocation,
@@ -126,7 +130,7 @@ export default function LocationPicker({
   const { isLoaded, loadError } = useJsApiLoader({
     id: "google-map-script",
     googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || "",
-    libraries: ["places"],
+    libraries: GOOGLE_MAPS_LIBRARIES,
   });
 
   const [map, setMap] = useState<google.maps.Map | null>(null);

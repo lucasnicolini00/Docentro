@@ -317,6 +317,8 @@
   "slotFreeLabel": "Libre",
   "clickToEnable": "Click para habilitar",
   "clickToBlock": "Click para bloquear",
+  "tooltipEnableSlot": "Habilitar",
+  "tooltipBlockSlot": "Bloquear",
   "slotBookedTitle": "Horario reservado",
   "saveChangesAction": "Guardar Cambios",
   "cancelAction": "Cancelar",

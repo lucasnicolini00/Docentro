@@ -5,12 +5,7 @@ import { getT } from "@/lib/getT";
 
 export const dynamic = "force-dynamic"; // Dashboard pages require auth & live data
 
-export default async function DoctorSchedulesPage({
-  params,
-}: {
-  params: Promise<{ locale: string }>;
-}) {
-  const { locale } = await params;
+export default async function SchedulesPage() {
   await requireDoctor();
 
   const [clinicsResult, schedulesResult] = await Promise.all([
@@ -30,10 +25,10 @@ export default async function DoctorSchedulesPage({
   const schedules =
     schedulesResult.success && schedulesResult.data ? schedulesResult.data : [];
 
-  const t = await getT("dashboard_doctor", locale);
+  const t = await getT("dashboard_doctor");
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="space-y-6">
       <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
         <h1 className="text-2xl font-semibold text-gray-900">
           {t("scheduleHeaderTitle")}

@@ -3,18 +3,14 @@ export const dynamic = "force-dynamic";
 import { getPatientDashboard } from "@/lib/actions/patients";
 import AppointmentList from "./components/AppointmentList";
 import { getT } from "@/lib/getT";
+import { getLocale } from "next-intl/server";
 
-export default async function PatientDashboardLocale({
-  params,
-}: {
-  params: Promise<{ locale: string }>;
-}) {
+export default async function PatientDashboardLocale() {
   await requirePatient();
 
   const result = await getPatientDashboard();
-  const { locale: incomingLocale } = await params;
-  const locale = incomingLocale || "es";
-  const t = await getT("dashboard_patient", locale);
+  const locale = await getLocale();
+  const t = await getT("dashboard_patient");
 
   if (!result.success || !result.data) {
     return (

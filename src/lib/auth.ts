@@ -39,6 +39,7 @@ export const authOptions: NextAuthOptions = {
       credentials: {
         email: { label: "Email", type: "email" },
         password: { label: "Password", type: "password" },
+        rememberMe: { label: "Remember Me", type: "text" },
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) {
@@ -86,12 +87,17 @@ export const authOptions: NextAuthOptions = {
   },
 
   callbacks: {
-    async jwt({ token, user }) {
+    async jwt({ token, user, trigger, account }) {
       // Add your custom fields to JWT
       if (user) {
         token.role = user.role;
         token.doctorId = user.doctorId;
         token.patientId = user.patientId;
+      }
+      // Store rememberMe flag from credentials on first login
+      if (trigger === "signIn" && account?.provider === "credentials") {
+        const credentials = account as any;
+        token.rememberMe = credentials.rememberMe === "true";
       }
       return token;
     },
@@ -103,6 +109,16 @@ export const authOptions: NextAuthOptions = {
         session.user.role = token.role as $Enums.UserRole;
         session.user.doctorId = token.doctorId as string | null;
         session.user.patientId = token.patientId as string | null;
+      }
+      // Set session maxAge based on rememberMe
+      if (token.rememberMe) {
+        session.expires = new Date(
+          Date.now() + 30 * 24 * 60 * 60 * 1000
+        ).toISOString(); // 30 days
+      } else {
+        session.expires = new Date(
+          Date.now() + 24 * 60 * 60 * 1000
+        ).toISOString(); // 1 day
       }
       return session;
     },

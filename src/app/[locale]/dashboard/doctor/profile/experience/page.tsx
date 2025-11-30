@@ -9,12 +9,7 @@ import { getT } from "@/lib/getT";
 
 export const dynamic = "force-dynamic";
 
-export default async function DoctorExperiencePage({
-  params,
-}: {
-  params: Promise<{ locale: string }>;
-}) {
-  const { locale } = await params;
+export default async function DoctorExperiencePage() {
   await requireDoctor();
 
   const [profile, images] = await Promise.all([
@@ -31,7 +26,7 @@ export default async function DoctorExperiencePage({
 
   const existingImages = images.success && images.data ? images.data : [];
 
-  const t = await getT("dashboard_doctor", locale);
+  const t = await getT("dashboard_doctor");
 
   return (
     <>

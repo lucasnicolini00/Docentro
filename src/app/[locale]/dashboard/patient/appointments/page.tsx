@@ -2,28 +2,24 @@ import { requirePatient } from "@/lib/auth-guards";
 import { getPatientDashboard } from "@/lib/actions";
 import AppointmentList from "./components/AppointmentList";
 import { getT } from "@/lib/getT";
+import { getLocale } from "next-intl/server";
 
 export const dynamic = "force-dynamic";
 
-export default async function PatientAppointmentsPage({
-  params,
-}: {
-  params: Promise<{ locale: string }>;
-}) {
-  await params; // locale inferred
+export default async function PatientAppointmentsPage() {
   await requirePatient();
 
   const dashboard = await getPatientDashboard();
   const data = dashboard.success && dashboard.data ? dashboard.data : null;
 
-  const { locale } = await params;
-  const t = await getT("dashboard_patient", locale);
+  const locale = await getLocale();
+  const t = await getT("dashboard_patient");
 
   const upcoming = data?.upcomingAppointments ?? [];
   const past = data?.pastAppointments ?? [];
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="space-y-6">
       <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200 flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-semibold text-gray-900">

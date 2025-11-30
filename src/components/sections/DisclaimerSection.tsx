@@ -1,11 +1,7 @@
 import { getT } from "@/lib/getT";
 
-export default async function DisclaimerSection({
-  locale,
-}: {
-  locale: string;
-}) {
-  const t = await getT("disclaimer", locale);
+export default async function DisclaimerSection() {
+  const t = await getT("disclaimer");
   const paymentsBullets = t.raw("paymentsBullets") as string[];
   const yesBullets = t.raw("yesBullets") as string[];
   const noBullets = t.raw("noBullets") as string[];

@@ -1,12 +1,14 @@
 {
-  "error": "Error loading map",
-  "checkConfig": "Check Google Maps configuration",
-  "loading": "Loading map...",
-  "selectorTitle": "Location Selector",
-  "selectorInstruction": "Click on the map to select the location",
-  "apiKey": "Set up Google Maps API Key to activate",
-  "mapLabel": "Location on the Map",
-  "searching": "Searching location...",
-  "pendingTitle": "Location pending",
-  "pendingInstruction": "Click on the map to confirm the exact location or adjust the address for automatic search"
+  "mapLoadError": "Error loading map",
+  "checkGoogleMapsConfig": "Check Google Maps configuration",
+  "loadingMap": "Loading map...",
+  "locationSelectorTitle": "Location Selector",
+  "clickMapToSelect": "Click on the map to select the location",
+  "configureApiKeyToEnable": "Set up Google Maps API Key to activate",
+  "mapLocationLabel": "Location on the Map",
+  "searchingLocation": "Searching location...",
+  "clickMapToSelectExact": "Click on the map to select the exact location",
+  "clinicLocationMarker": "Clinic Location",
+  "pendingLocation": "Location pending",
+  "clickToConfirmOrAdjust": "Click on the map to confirm the exact location or adjust the address for automatic search"
 }

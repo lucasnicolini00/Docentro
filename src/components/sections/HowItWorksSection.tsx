@@ -1,11 +1,7 @@
 import { getT } from "@/lib/getT";
 
-export default async function HowItWorksSection({
-  locale,
-}: {
-  locale: string;
-}) {
-  const t = await getT("howItWorks", locale);
+export default async function HowItWorksSection() {
+  const t = await getT("howItWorks");
   const stepIcons = ["🔍", "⭐", "📅"];
   const stepColors = [
     "from-blue-500 to-blue-600",

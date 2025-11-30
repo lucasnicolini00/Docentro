@@ -2,7 +2,7 @@ import { Skeleton } from "@/components/ui/feedback";
 
 export default function CalendarLoading() {
   return (
-    <div className="p-6 space-y-6">
+    <div className="space-y-6">
       {/* Page Header */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
         <div className="flex justify-between items-center">

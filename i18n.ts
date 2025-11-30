@@ -24,6 +24,7 @@ const ALL_NAMESPACES = [
   "forms",
   "book",
   "doctor_public",
+  "doctorProfile",
   "feedback",
 ];
 

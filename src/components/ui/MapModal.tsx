@@ -249,6 +249,10 @@ const buildCityCoordinatesMap = (
   return cityCoordinates;
 };
 
+import { GOOGLE_MAPS_LIBRARIES } from "@/lib/google-maps-config";
+
+// ...
+
 export default function MapModal({
   isOpen,
   onClose,
@@ -259,6 +263,7 @@ export default function MapModal({
   const { isLoaded, loadError } = useJsApiLoader({
     id: "google-map-script",
     googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || "",
+    libraries: GOOGLE_MAPS_LIBRARIES,
   });
 
   const [map, setMap] = useState<google.maps.Map | null>(null);

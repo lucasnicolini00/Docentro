@@ -1,18 +1,24 @@
 import { getT } from "@/lib/getT";
-import { Navbar } from "@/components/ui/navigation";
+import { getLocale } from "next-intl/server";
+import { NextIntlClientProvider } from "next-intl";
 import { getDoctorPublicProfile } from "@/lib/actions/doctors";
-import { Map } from "@/components/ui";
+import { getBatchImageUrls } from "@/lib/actions/images-uploader";
+import { Map, ClientMarkdownPreview } from "@/components/ui";
+import DoctorGallery from "@/components/features/doctor-profile/DoctorGallery";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { ArrowLeft } from "lucide-react";
+import { getMessages as getMessagesIntl } from "@/app/messages";
 
 interface DoctorProfilePageProps {
-  params: Promise<{ id: string; locale: string }>;
+  params: Promise<{ id: string }>;
 }
 
 export default async function DoctorProfilePage({
   params,
 }: DoctorProfilePageProps) {
-  const { id, locale } = await params;
+  const { id } = await params;
+  const locale = await getLocale();
   const t = await getT("doctorProfile");
 
   const result = await getDoctorPublicProfile(id);
@@ -22,28 +28,53 @@ export default async function DoctorProfilePage({
   }
 
   const doctor = result.data;
-  const { profile, opinions, clinics, specialities, experiences, pricings } =
-    doctor;
+
+  // Get fresh signed URLs for images
+  let imageUrls: Record<string, string> = {};
+  if (doctor.images && doctor.images.length > 0) {
+    const imageIds = doctor.images.map((img: any) => img.id);
+    imageUrls = await getBatchImageUrls(imageIds);
+  }
+
+  // Get messages for client components
+  const messages = await getMessagesIntl(locale, ["modals", "doctorProfile"]);
+
+  // Serialize doctor data to convert Decimal types to numbers for client components
+  const serializedDoctor = {
+    ...doctor,
+    pricings: doctor.pricings?.map((p: any) => ({
+      ...p,
+      price: p.price ? Number(p.price) : null,
+    })),
+  };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Navbar />
-      <div className="max-w-5xl mx-auto px-4 py-8">
+    <NextIntlClientProvider locale={locale} messages={messages}>
+      <div className="max-w-7xl mx-auto px-4 py-8">
+        {/* Back Button */}
+        <Link
+          href={`/${locale}/search`}
+          className="inline-flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-6 transition-colors"
+        >
+          <ArrowLeft className="w-5 h-5" />
+          <span>{t("backToSearch")}</span>
+        </Link>
+
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-8">
           <div className="flex flex-col md:flex-row gap-6">
             <div className="flex-shrink-0">
               <div className="w-32 h-32 bg-gradient-to-br from-blue-600 to-blue-700 rounded-xl flex items-center justify-center text-white text-3xl font-bold">
-                {profile?.firstName?.[0]}
+                {doctor.user?.firstName?.[0]}
               </div>
             </div>
             <div className="flex-grow">
               <h1 className="text-3xl font-bold text-gray-900 mb-2">
-                Dr(a). {profile?.firstName} {profile?.lastName}
+                Dr(a). {doctor.user?.firstName} {doctor.user?.lastName}
               </h1>
               <div className="flex flex-wrap gap-2 mb-4">
-                {specialities?.map((s: any) => (
+                {doctor.specialities?.map((s: any, index: number) => (
                   <span
-                    key={s.id}
+                    key={s.id || `specialty-${index}`}
                     className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800"
                   >
                     {s.speciality.name}
@@ -51,19 +82,19 @@ export default async function DoctorProfilePage({
                 ))}
               </div>
               <p className="text-gray-700 leading-relaxed mb-4">
-                {profile?.bio || t("noBio")}
+                {doctor.bio || t("noBio")}
               </p>
               <div className="flex items-center gap-6">
                 <div>
                   <p className="text-sm text-gray-600">{t("rating")}</p>
                   <p className="text-xl font-semibold text-gray-900">
-                    {profile?.rating?.toFixed(1) || "-"}
+                    {doctor.rating?.toFixed(1) || "-"}
                   </p>
                 </div>
                 <div>
                   <p className="text-sm text-gray-600">{t("opinions")}</p>
                   <p className="text-xl font-semibold text-gray-900">
-                    {opinions?.length || 0}
+                    {doctor.opinions?.length || 0}
                   </p>
                 </div>
                 <div>
@@ -93,15 +124,17 @@ export default async function DoctorProfilePage({
               {t("experience")}
             </h2>
             <div className="space-y-4">
-              {experiences && experiences.length > 0 ? (
-                experiences.map((exp: any) => (
+              {doctor.experiences && doctor.experiences.length > 0 ? (
+                doctor.experiences.map((exp: any, index: number) => (
                   <div
-                    key={exp.id}
-                    className="border-b border-gray-100 pb-3 last:border-b-0"
+                    key={exp.id || `experience-${index}`}
+                    className="border-b border-gray-100 pb-4 last:border-b-0 mb-4 last:mb-0"
                   >
                     <h3 className="font-medium text-gray-900">{exp.title}</h3>
-                    <p className="text-sm text-gray-600">{exp.institution}</p>
-                    <p className="text-xs text-gray-500 mt-1">
+                    {exp.institution && (
+                      <p className="text-sm text-gray-600">{exp.institution}</p>
+                    )}
+                    <p className="text-xs text-gray-500 mt-1 mb-3">
                       {exp.startDate
                         ? new Date(exp.startDate).getFullYear()
                         : ""}{" "}
@@ -110,6 +143,12 @@ export default async function DoctorProfilePage({
                         ? new Date(exp.endDate).getFullYear()
                         : t("present")}
                     </p>
+                    {exp.description && (
+                      <ClientMarkdownPreview
+                        source={exp.description}
+                        className="text-sm text-gray-700 prose prose-sm max-w-none"
+                      />
+                    )}
                   </div>
                 ))
               ) : (
@@ -122,13 +161,13 @@ export default async function DoctorProfilePage({
               {t("locations")}
             </h2>
             <div className="h-[300px] mb-4">
-              <Map doctors={[doctor]} />
+              <Map doctors={[serializedDoctor]} />
             </div>
             <div className="space-y-3">
-              {clinics && clinics.length > 0 ? (
-                clinics.map((dc: any) => (
+              {doctor.clinics && doctor.clinics.length > 0 ? (
+                doctor.clinics.map((dc: any, index: number) => (
                   <div
-                    key={dc.id}
+                    key={dc.id || `clinic-${index}`}
                     className="flex items-center justify-between"
                   >
                     <div>
@@ -139,15 +178,16 @@ export default async function DoctorProfilePage({
                         {dc.clinic.address}
                       </p>
                     </div>
-                    <span className="text-sm font-semibold text-blue-600">
-                      {t("priceFrom")}{" "}
-                      {pricings
-                        ?.find((p: any) => p.clinicId === dc.clinic.id)
-                        ?.amount?.toLocaleString("es-BO", {
-                          style: "currency",
-                          currency: "BOB",
-                        }) || "-"}
-                    </span>
+                    {serializedDoctor.pricings?.find(
+                      (p: any) => p.clinicId === dc.clinic.id
+                    )?.price && (
+                      <span className="text-sm font-semibold text-blue-600">
+                        {t("priceFrom")}{" "}
+                        {serializedDoctor.pricings
+                          ?.find((p: any) => p.clinicId === dc.clinic.id)
+                          ?.price?.toString()}
+                      </span>
+                    )}
                   </div>
                 ))
               ) : (
@@ -162,10 +202,10 @@ export default async function DoctorProfilePage({
             {t("opinions")}
           </h2>
           <div className="space-y-4">
-            {opinions && opinions.length > 0 ? (
-              opinions.map((op: any) => (
+            {doctor.opinions && doctor.opinions.length > 0 ? (
+              doctor.opinions.map((op: any, index: number) => (
                 <div
-                  key={op.id}
+                  key={op.id || `opinion-${index}`}
                   className="border border-gray-100 rounded-lg p-4"
                 >
                   <div className="flex items-center justify-between mb-1">
@@ -184,7 +224,19 @@ export default async function DoctorProfilePage({
             )}
           </div>
         </div>
+
+        {/* Gallery Section */}
+        {doctor.images && doctor.images.length > 0 && (
+          <DoctorGallery
+            images={doctor.images.map((img: any) => ({
+              id: img.id,
+              url: imageUrls[img.id] || img.url,
+              filename: img.filename,
+            }))}
+            title={t("gallery")}
+          />
+        )}
       </div>
-    </div>
+    </NextIntlClientProvider>
   );
 }

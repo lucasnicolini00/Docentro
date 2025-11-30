@@ -27,7 +27,7 @@ export default async function DoctorCalendarPage({
   );
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="space-y-6">
       <DoctorCalendarWrapper initialAppointments={initialAppointments} />
     </div>
   );

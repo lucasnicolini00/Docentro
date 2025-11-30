@@ -40,9 +40,11 @@ export default async function LocaleLayout({
     "register", // Often needed for auth modals
     "map", // For Map component
     "mapModal", // For MapModal component
+    "filtersModal", // For FiltersModal component in search
     "dashboard_patient", // For patient dashboard
     "dashboard_doctor", // For doctor dashboard
     "forms", // For profile forms
+    "locationPicker", // For LocationPicker component in clinic forms
   ]);
 
   return (

@@ -149,7 +149,7 @@ export default function AppointmentDetailsModal({
           </div>
 
           {/* Content */}
-          <div className="p-6 space-y-6">
+          <div className="space-y-6">
             {/* Status Badge */}
             <div
               className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${statusStyle.bg} ${statusStyle.text} ${statusStyle.border} border`}

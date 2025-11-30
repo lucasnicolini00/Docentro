@@ -317,6 +317,8 @@
   "slotFreeLabel": "Free",
   "clickToEnable": "Click to enable",
   "clickToBlock": "Click to block",
+  "tooltipEnableSlot": "Enable",
+  "tooltipBlockSlot": "Block",
   "slotBookedTitle": "Booked slot",
   "saveChangesAction": "Save Changes",
   "cancelAction": "Cancel",

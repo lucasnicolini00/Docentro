@@ -149,6 +149,10 @@ const getMarkerIcon = (type: string) => {
   };
 };
 
+import { GOOGLE_MAPS_LIBRARIES } from "@/lib/google-maps-config";
+
+// ...
+
 export default function Map({
   doctors = [],
   className,
@@ -159,6 +163,7 @@ export default function Map({
   const { isLoaded } = useJsApiLoader({
     id: "google-map-script",
     googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || "",
+    libraries: GOOGLE_MAPS_LIBRARIES,
   });
 
   const [activeMarker, setActiveMarker] = useState<string | null>(null);

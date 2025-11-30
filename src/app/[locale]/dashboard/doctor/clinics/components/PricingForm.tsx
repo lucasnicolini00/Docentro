@@ -100,7 +100,7 @@ export default function PricingForm({
         </div>
 
         {/* Form */}
-        <form onSubmit={handleSubmit} className="p-6 space-y-6">
+        <form onSubmit={handleSubmit} className="space-y-6">
           {/* Clinic Selection */}
           <div>
             <label

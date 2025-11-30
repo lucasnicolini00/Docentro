@@ -1,18 +1,17 @@
 import { getPopularSpecialities } from "@/lib/actions/search";
 import type { Speciality } from "@prisma/client";
 import { getT } from "@/lib/getT";
+import { getLocale } from "next-intl/server";
 
-export default async function SpecialtiesSection({
-  locale,
-}: {
-  locale: string;
-}) {
+export default async function SpecialtiesSection() {
   const result = await getPopularSpecialities();
   const specialities: Speciality[] = result.success ? result.data || [] : [];
 
   const icons = ["🫀", "🧴", "👩🏻‍🦰", "🧠", "🩻", "💊", "🔬", "🩺"];
-  // Use request locale via next-intl server instead of hardcoding Spanish
-  const t = await getT("specialties", locale);
+  
+  // Get locale and translations
+  const locale = await getLocale();
+  const t = await getT("specialties");
 
   // Translation mappings moved to JSON files (names & descriptions objects in specialties namespace)
   const nameMap = (await t.raw("names")) as Record<string, string> | undefined;

@@ -1,0 +1,26 @@
+{
+  "doctorNotification": {
+    "newRequestTitle": "New Appointment Request",
+    "greeting": "Hello Dr. {doctor},",
+    "requestText": "{patient} has requested an appointment at {clinic}.",
+    "dateLabel": "Date:",
+    "timeLabel": "Time:",
+    "notesLabel": "Notes:",
+    "approvalInstruction": "Please review and approve or deny this request:",
+    "systemButton": "Go to System",
+    "questionsText": "If you have any questions, please contact us."
+  },
+  "appointmentStatus": {
+    "greeting": "Hello {name},",
+    "confirmedText": "Your appointment with Dr. {doctor} has been confirmed!",
+    "canceledText": "Your appointment with Dr. {doctor} has been canceled.",
+    "clinicLabel": "Clinic:",
+    "dateLabel": "Date:",
+    "timeLabel": "Time:",
+    "notesLabel": "Notes:",
+    "apologyText": "We apologize for any inconvenience.",
+    "rescheduleText": "You can schedule a new appointment through our platform.",
+    "waitingText": "We look forward to seeing you!",
+    "questionsText": "If you have any questions, please contact us."
+  }
+}

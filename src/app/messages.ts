@@ -20,6 +20,7 @@ import en_testimonials from "../../messages/en/testimonials.json";
 import en_forms from "../../messages/en/forms.json";
 import en_book from "../../messages/en/book.json";
 import en_doctor_public from "../../messages/en/doctor_public.json";
+import en_doctorProfile from "../../messages/en/doctorProfile.json";
 import en_feedback from "../../messages/en/feedback.json";
 import en_navigation from "../../messages/en/navigation.json";
 import en_modals from "../../messages/en/modals.json";
@@ -44,6 +45,7 @@ import es_testimonials from "../../messages/es/testimonials.json";
 import es_forms from "../../messages/es/forms.json";
 import es_book from "../../messages/es/book.json";
 import es_doctor_public from "../../messages/es/doctor_public.json";
+import es_doctorProfile from "../../messages/es/doctorProfile.json";
 import es_feedback from "../../messages/es/feedback.json";
 import es_navigation from "../../messages/es/navigation.json";
 import es_modals from "../../messages/es/modals.json";
@@ -70,6 +72,7 @@ const MESSAGE_BUNDLE: Record<string, Record<string, any>> = {
     forms: en_forms,
     book: en_book,
     doctor_public: en_doctor_public,
+    doctorProfile: en_doctorProfile,
     feedback: en_feedback,
     navigation: en_navigation,
     modals: en_modals,
@@ -95,6 +98,7 @@ const MESSAGE_BUNDLE: Record<string, Record<string, any>> = {
     forms: es_forms,
     book: es_book,
     doctor_public: es_doctor_public,
+    doctorProfile: es_doctorProfile,
     feedback: es_feedback,
     navigation: es_navigation,
     modals: es_modals,

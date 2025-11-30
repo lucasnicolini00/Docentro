@@ -17,6 +17,7 @@ export default function LoginFormClient({ locale }: LoginFormClientProps) {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [rememberMe, setRememberMe] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const searchParams = useSearchParams();
 
@@ -34,6 +35,7 @@ export default function LoginFormClient({ locale }: LoginFormClientProps) {
       const result = await signIn("credentials", {
         email,
         password,
+        rememberMe: rememberMe.toString(),
         redirect: false,
       });
 
@@ -119,6 +121,8 @@ export default function LoginFormClient({ locale }: LoginFormClientProps) {
                   id="remember-me"
                   name="remember-me"
                   type="checkbox"
+                  checked={rememberMe}
+                  onChange={(e) => setRememberMe(e.target.checked)}
                   className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded cursor-pointer"
                 />
                 <label

@@ -8,21 +8,16 @@ import {
   Footer,
 } from "@/components/sections";
 
-export default async function HomeLocalePage({
-  params,
-}: {
-  params: Promise<{ locale: string }>;
-}) {
-  const { locale } = await params;
+export default async function HomeLocalePage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-50">
       <Navbar />
       <HeroSection />
-      <SpecialtiesSection locale={locale} />
-      <FeaturedDoctorsSection locale={locale} />
-      <HowItWorksSection locale={locale} />
-      <DisclaimerSection locale={locale} />
-      <Footer locale={locale} />
+      <SpecialtiesSection />
+      <FeaturedDoctorsSection />
+      <HowItWorksSection />
+      <DisclaimerSection />
+      <Footer />
     </div>
   );
 }

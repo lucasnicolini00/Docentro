@@ -24,7 +24,7 @@ export default async function DoctorDashboardLocale({
 }) {
   const { locale } = await params;
   await requireDoctor();
-  const t = await getT("dashboard_doctor",locale);
+  const t = await getT("dashboard_doctor");
   
   // Fetch specific messages for this page's client components
   const messages = await getMessages(locale, ["dashboard_doctor"]);

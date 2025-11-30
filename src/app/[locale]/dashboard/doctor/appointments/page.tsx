@@ -6,18 +6,13 @@ import { getT } from "@/lib/getT";
 
 export const dynamic = "force-dynamic"; // appointments are live and auth-protected
 
-export default async function DoctorAppointmentsPage({
-  params,
-}: {
-  params: Promise<{ locale: string }>;
-}) {
-  const { locale } = await params;
+export default async function DoctorAppointmentsPage() {
   await requireDoctor();
 
   const dashboard = await getDoctorDashboard();
   const data = dashboard.success && dashboard.data ? dashboard.data : null;
 
-  const t = await getT("dashboard_doctor", locale);
+  const t = await getT("dashboard_doctor");
 
   const today = data?.appointments?.today ?? [];
   const pending = data?.appointments?.pending ?? [];
@@ -25,7 +20,7 @@ export default async function DoctorAppointmentsPage({
   const past = data?.appointments?.past ?? [];
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="space-y-6">
       <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
         <h1 className="text-2xl font-semibold text-gray-900">
           {t("appointmentsPageHeader")}

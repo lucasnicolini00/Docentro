@@ -1,0 +1,26 @@
+{
+  "doctorNotification": {
+    "newRequestTitle": "Nueva Solicitud de Cita",
+    "greeting": "Hola Dr. {doctor},",
+    "requestText": "{patient} ha solicitado una cita en {clinic}.",
+    "dateLabel": "Fecha:",
+    "timeLabel": "Hora:",
+    "notesLabel": "Notas:",
+    "approvalInstruction": "Por favor revise y apruebe o rechace esta solicitud:",
+    "systemButton": "Ir al Sistema",
+    "questionsText": "Si tiene alguna pregunta, por favor contáctenos."
+  },
+  "appointmentStatus": {
+    "greeting": "Hola {name},",
+    "confirmedText": "¡Tu cita con el Dr. {doctor} ha sido confirmada!",
+    "canceledText": "Tu cita con el Dr. {doctor} ha sido cancelada.",
+    "clinicLabel": "Clínica:",
+    "dateLabel": "Fecha:",
+    "timeLabel": "Hora:",
+    "notesLabel": "Notas:",
+    "apologyText": "Lamentamos cualquier inconveniente.",
+    "rescheduleText": "Puedes agendar una nueva cita a través de nuestra plataforma.",
+    "waitingText": "¡Esperamos verte pronto!",
+    "questionsText": "Si tienes alguna pregunta, por favor contáctanos."
+  }
+}

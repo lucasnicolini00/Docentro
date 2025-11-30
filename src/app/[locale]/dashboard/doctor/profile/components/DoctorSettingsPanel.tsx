@@ -180,7 +180,7 @@ export default function DoctorSettingsPanel() {
           </p>
         </div>
 
-        <div className="p-6 space-y-6">
+        <div className="space-y-6">
           <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-100">
             <div className="flex items-start space-x-3">
               <div className="p-2 bg-blue-100 rounded-lg">

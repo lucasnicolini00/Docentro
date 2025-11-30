@@ -1,12 +1,37 @@
 {
   "title": "Advanced Filters",
+  "advancedFilters": "Advanced Filters",
   "specialties": "Specialties",
+  "specialtiesLabel": "Specialties",
   "priceRange": "Price Range",
+  "priceRangeLabel": "Price Range",
   "availability": "Availability",
+  "availabilityLabel": "Availability",
   "minRating": "Minimum Rating",
+  "minRatingLabel": "Minimum Rating",
+  "andMore": "and up",
   "clear": "Clear",
+  "clearButton": "Clear",
   "apply": "Apply Filters",
+  "applyFiltersButton": "Apply Filters",
   "appliedFilters": "filters applied",
+  "specialtiesList": [
+    "Cardiology",
+    "Dermatology",
+    "Pediatrics",
+    "Neurology",
+    "Gynecology",
+    "Traumatology",
+    "Psychiatry",
+    "Ophthalmology"
+  ],
+  "priceRangesList": [
+    "Up to Bs. 200",
+    "Bs. 200 - 400",
+    "Bs. 400 - 600",
+    "More than Bs. 600"
+  ],
+  "availabilityList": ["Today", "This week", "This month", "Next month"],
   "options": {
     "specialties": [
       "Cardiology",

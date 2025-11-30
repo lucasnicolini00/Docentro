@@ -11,15 +11,10 @@ import {
 
 export const dynamic = "force-dynamic"; // analytics depend on live data
 
-export default async function DoctorAnalyticsPage({
-  params,
-}: {
-  params: Promise<{ locale: string }>;
-}) {
-  const { locale } = await params;
+export default async function AnalyticsPage() {
   await requireDoctor();
 
-  const t = await getT("dashboard_doctor", locale);
+  const t = await getT("dashboard_doctor");
 
   // Pre-fetch data for the default view (month)
   const [statsResult, scheduleResult, patientResult, revenueResult] =
