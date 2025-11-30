@@ -74,7 +74,7 @@ export const doctorsService = {
 
           if (data.experiences.length > 0) {
             await tx.experience.deleteMany({
-              where: { doctorId: doctorId },
+              where: { doctorId: doctorId, deletedAt: null },
             });
 
             await tx.experience.createMany({
@@ -102,7 +102,10 @@ export const doctorsService = {
 
   async getAllSpecialities() {
     return withErrorHandling(
-      () => prisma.speciality.findMany({ orderBy: { name: "asc" } }),
+      () => prisma.speciality.findMany({ 
+        where: { deletedAt: null },
+        orderBy: { name: "asc" } 
+      }),
       { service: "doctorsService", method: "getAllSpecialities" }
     );
   },
@@ -181,7 +184,7 @@ export const doctorsService = {
           where: { id: doctorId },
           include: {
             appointments: {
-              take: 100,
+              take: 20, // Reduced from 100 for better performance
               include: {
                 patient: {
                   select: {

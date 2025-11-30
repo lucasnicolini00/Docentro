@@ -201,11 +201,34 @@ export const appointmentsService = {
   async getTimeSlotWithRelations(timeSlotId: string) {
     return prisma.timeSlot.findUnique({
       where: { id: timeSlotId },
-      include: {
+      select: {
+        id: true,
+        startTime: true,
+        endTime: true,
+        isBooked: true,
+        isBlocked: true,
+        scheduleId: true,
         schedule: {
-          include: {
-            doctor: true,
-            clinic: true,
+          select: {
+            id: true,
+            dayOfWeek: true,
+            doctorId: true,
+            clinicId: true,
+            doctor: {
+              select: {
+                id: true,
+                name: true,
+                surname: true,
+              },
+            },
+            clinic: {
+              select: {
+                id: true,
+                name: true,
+                address: true,
+                city: true,
+              },
+            },
           },
         },
       },
@@ -324,24 +347,76 @@ export const appointmentsService = {
   async getDoctorWithRelations(doctorId: string) {
     return prisma.doctor.findUnique({
       where: { id: doctorId },
-      include: {
-        user: true,
+      select: {
+        id: true,
+        name: true,
+        surname: true,
+        email: true,
+        phone: true,
+        createdAt: true,
+        updatedAt: true,
+        deletedAt: true,
+        user: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            email: true,
+            createdAt: true,
+            updatedAt: true,
+            deletedAt: true,
+          },
+        },
         specialities: {
-          include: {
-            speciality: true,
+          select: {
+            speciality: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
           },
         },
         clinics: {
-          include: {
-            clinic: true,
+          select: {
+            createdAt: true,
+            clinic: {
+              select: {
+                id: true,
+                name: true,
+                address: true,
+                city: true,
+                isVirtual: true,
+                createdAt: true,
+                updatedAt: true,
+                deletedAt: true,
+              },
+            },
           },
         },
         pricings: {
           where: {
             isActive: true,
+            deletedAt: null,
           },
-          include: {
-            clinic: true,
+          select: {
+            id: true,
+            title: true,
+            price: true,
+            currency: true,
+            durationMinutes: true,
+            createdAt: true,
+            updatedAt: true,
+            deletedAt: true,
+            clinic: {
+              select: {
+                id: true,
+                name: true,
+                createdAt: true,
+                updatedAt: true,
+                deletedAt: true,
+              },
+            },
           },
         },
       },

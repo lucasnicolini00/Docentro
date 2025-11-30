@@ -1,5 +1,6 @@
 import prisma from "@/lib/prisma";
 import { DayOfWeek } from "@prisma/client";
+import { generateTimeSlotsForDateRange, parseTime, formatTime } from "./slotGenerationHelper";
 
 export const schedulesService = {
   async getSchedule(
@@ -248,21 +249,6 @@ export const schedulesService = {
           endTime: string;
         }> = [];
 
-        // Helper functions need to be imported or duplicated here if not exported
-        // For now assuming we pass processed slots or duplicate logic
-        // Duplicating logic for simplicity as it's pure calculation
-        const parseTime = (timeString: string): number => {
-          const [hours, minutes] = timeString.split(":").map(Number);
-          return hours * 60 + minutes;
-        };
-        const formatTime = (minutes: number): string => {
-          const hours = Math.floor(minutes / 60);
-          const mins = minutes % 60;
-          return `${hours.toString().padStart(2, "0")}:${mins
-            .toString()
-            .padStart(2, "0")}`;
-        };
-
         for (let i = 0; i < createdSchedules.length; i++) {
           const schedule = createdSchedules[i];
           const data = scheduleData[i];
@@ -440,82 +426,8 @@ export const schedulesService = {
       },
     });
 
-    // 3. Generate available slots dynamically
-    const resultSlots: any[] = [];
-    const dayMapping = [
-      "SUNDAY",
-      "MONDAY",
-      "TUESDAY",
-      "WEDNESDAY",
-      "THURSDAY",
-      "FRIDAY",
-      "SATURDAY",
-    ];
-
-    // Create a Map for O(1) appointment lookups
-    const appointmentMap = new Map<number, any>();
-    for (const apt of appointments) {
-      appointmentMap.set(apt.datetime.getTime(), apt);
-    }
-
-    // Pre-group schedules by day of week to avoid repeated find
-    const schedulesByDay = new Map<string, any>();
-    for (const schedule of schedules) {
-      schedulesByDay.set(schedule.dayOfWeek, schedule);
-    }
-
-    // Iterate through each day in the range
-    const currentDate = new Date(startDate);
-    while (currentDate <= endDate) {
-      const dayOfWeek = dayMapping[currentDate.getDay()];
-      // O(1) lookup instead of O(n) find
-      const scheduleForDay = schedulesByDay.get(dayOfWeek);
-
-      if (scheduleForDay) {
-        // For each template slot in the schedule
-        for (const templateSlot of scheduleForDay.timeSlots) {
-          // Construct the actual datetime for this slot instance
-          const [hours, minutes] = templateSlot.startTime.split(":").map(Number);
-          const slotDateTime = new Date(currentDate);
-          slotDateTime.setHours(hours, minutes, 0, 0);
-
-          // O(1) lookup instead of O(n) find
-          const appointment = appointmentMap.get(slotDateTime.getTime());
-
-          // Check if slot is in the past
-          // const isPast = slotDateTime < new Date();
-
-          // Only add if not in past (optional, depending on requirements, but usually for booking we want future)
-          // But for calendar view we might want past too. Let's keep all.
-
-          resultSlots.push({
-            id: `${templateSlot.id}-${slotDateTime.toISOString()}`, // Virtual ID
-            startTime: slotDateTime.toISOString(),
-            endTime: new Date(
-              slotDateTime.getTime() + 30 * 60000
-            ).toISOString(), // Assuming 30 min duration or calculate from template
-            isBooked: !!appointment,
-            isBlocked: templateSlot.isBlocked,
-            schedule: {
-              dayOfWeek: scheduleForDay.dayOfWeek,
-              doctor: scheduleForDay.doctor,
-              clinic: scheduleForDay.clinic,
-            },
-            appointment: appointment
-              ? {
-                  id: appointment.id,
-                  status: appointment.status,
-                }
-              : null,
-          });
-        }
-      }
-
-      // Next day
-      currentDate.setDate(currentDate.getDate() + 1);
-    }
-
-    return resultSlots;
+    // 3. Use shared helper to generate slots
+    return generateTimeSlotsForDateRange(schedules, appointments, startDate, endDate, false);
   },
 
   async getDoctorSchedulesWithSlots(
@@ -536,6 +448,7 @@ export const schedulesService = {
       include: {
         clinic: {
           select: {
+            id: true,
             name: true,
             address: true,
           },
@@ -561,7 +474,12 @@ export const schedulesService = {
           not: "CANCELED",
         },
       },
-      include: {
+      select: {
+        datetime: true,
+        durationMinutes: true,
+        id: true,
+        status: true,
+        clinicId: true,
         patient: {
           select: {
             name: true,
@@ -571,102 +489,48 @@ export const schedulesService = {
       },
     });
 
-    // 3. Generate dynamic view
-    // We need to group by schedule (or rather, return a structure that resembles the original return type but with dynamic slots)
-    // The original return type was Schedule[], so we should try to maintain that structure but populate 'timeSlots' dynamically
-    // However, since 'timeSlots' in the return are specific instances with dates, and a Schedule is generic for a day of week,
-    // we can't strictly return Schedule[] if we want to show slots for multiple weeks.
-    // BUT, the function name implies it returns Schedules.
-    // If the UI expects a list of Schedules (templates), then we can't put specific date slots in them easily if the range spans multiple weeks.
-    // Let's look at how it's used. It seems to be used for a calendar view.
-    // If the UI expects a flat list of events/slots, the previous function return type (Schedule[]) was actually misleading or wrong for a date range query.
-    // The previous query returned `prisma.schedule.findMany` with `timeSlots` filtered by date range.
-    // But `TimeSlot` in DB doesn't have a date, only time. So the previous query was definitely returning nothing or wrong data.
+    // 3. Use shared helper to generate dynamic slots
+    const generatedSlots = generateTimeSlotsForDateRange(
+      schedules,
+      appointments,
+      startDate,
+      endDate,
+      true // Use clinic-specific matching
+    );
     
-    // To support the UI, we should probably return a flat list of "DaySchedules" or similar.
-    // But to minimize breaking changes, let's see if we can return a structure that the UI can handle.
-    // If the UI iterates over schedules and then slots, it might be expecting the slots to have specific dates?
-    // Actually, the previous code `startTime: { gte: startDate.toISOString() ... }` suggests the previous dev THOUGHT TimeSlots had dates.
-    // Since they don't, the UI must be broken or expecting something else.
-    
-    // I will return a structure that groups by Day (Date) instead of Schedule Template.
-    // OR, I can return a flat list of slots like `getTimeSlotsForCalendar`.
-    // Let's check `getDoctorSchedulesWithSlots` usage in `schedules.ts`.
-    // It just calls this service and returns data.
-    
-    // I'll stick to returning a structure that contains the generated slots, but maybe grouped by day?
-    // Let's return a flat list of "DailySchedule" objects which contain the date and the slots for that date.
-    
+    // 4. Group slots by schedule and date
     const result: any[] = [];
-    const dayMapping = [
-      "SUNDAY",
-      "MONDAY",
-      "TUESDAY",
-      "WEDNESDAY",
-      "THURSDAY",
-      "FRIDAY",
-      "SATURDAY",
-    ];
-
+    const slotsByScheduleAndDate = new Map<string, any[]>();
+    
+    for (const slot of generatedSlots) {
+      const scheduleId = slot.id.split('-')[0]; // Extract original schedule ID
+      const date = new Date(slot.startTime).toISOString().split('T')[0];
+      const key = `${scheduleId}_${date}`;
+      
+      const existing = slotsByScheduleAndDate.get(key) || [];
+      existing.push(slot);
+      slotsByScheduleAndDate.set(key, existing);
+    }
+    
+    // 5. Build result structure matching original format
     const currentDate = new Date(startDate);
     
-    // Create a Map for O(1) appointment lookups instead of O(n) find
-    // Key format: "timestamp_clinicId"
-    const appointmentMap = new Map<string, any>();
-    for (const apt of appointments) {
-      const key = `${apt.datetime.getTime()}_${apt.clinicId}`;
-      appointmentMap.set(key, apt);
-    }
-    
-    // Pre-group schedules by day of week to avoid repeated filtering
-    const schedulesByDay = new Map<string, typeof schedules>();
-    for (const schedule of schedules) {
-      const existing = schedulesByDay.get(schedule.dayOfWeek) || [];
-      existing.push(schedule);
-      schedulesByDay.set(schedule.dayOfWeek, existing);
-    }
-    
     while (currentDate <= endDate) {
-      const dayOfWeek = dayMapping[currentDate.getDay()];
-      // O(1) lookup instead of O(n) filter
-      const daySchedules = schedulesByDay.get(dayOfWeek) || [];
-
-      for (const schedule of daySchedules) {
-        const slotsForDay: any[] = [];
+      const dateStr = currentDate.toISOString().split('T')[0];
+      
+      for (const schedule of schedules) {
+        const key = `${schedule.id}_${dateStr}`;
+        const slotsForDay = slotsByScheduleAndDate.get(key) || [];
         
-        for (const templateSlot of schedule.timeSlots) {
-          const [hours, minutes] = templateSlot.startTime.split(":").map(Number);
-          const slotDateTime = new Date(currentDate);
-          slotDateTime.setHours(hours, minutes, 0, 0);
-
-          // O(1) lookup instead of O(n) find
-          const appointmentKey = `${slotDateTime.getTime()}_${schedule.clinicId}`;
-          const appointment = appointmentMap.get(appointmentKey);
-
-          slotsForDay.push({
-            id: templateSlot.id, // Keep template ID or virtual?
-            startTime: slotDateTime.toISOString(),
-            endTime: new Date(slotDateTime.getTime() + 30 * 60000).toISOString(),
-            isBooked: !!appointment,
-            isBlocked: templateSlot.isBlocked,
-            appointment: appointment
-              ? {
-                  id: appointment.id,
-                  status: appointment.status,
-                  patient: appointment.patient,
-                }
-              : null,
-          });
-        }
-
         if (slotsForDay.length > 0) {
           result.push({
             ...schedule,
-            date: currentDate.toISOString(), // Add date to the schedule object
+            date: currentDate.toISOString(),
             timeSlots: slotsForDay,
           });
         }
       }
+      
       currentDate.setDate(currentDate.getDate() + 1);
     }
 

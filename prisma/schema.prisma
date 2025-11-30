@@ -132,6 +132,7 @@ model Doctor {
   deletedAt DateTime?
 
   @@index([name, surname])
+  @@index([userId]) // For auth lookups
 }
 
 // Images stored externally (e.g. Google Cloud Storage). Each Image may be:
@@ -232,6 +233,7 @@ model Clinic {
   @@index([name])
   @@index([address])
   @@index([city])
+  @@index([city, isVirtual]) // For location-based searches
 }
 
 model DoctorClinic {
@@ -289,6 +291,8 @@ model Schedule {
   @@unique([doctorId, clinicId, dayOfWeek])
   // Performance indexes for schedule queries
   @@index([doctorId, updatedAt])
+  @@index([doctorId, clinicId, isActive]) // For active schedule lookups
+  @@index([doctorId, isActive, dayOfWeek]) // For weekly schedule queries
 }
 
 model TimeSlot {

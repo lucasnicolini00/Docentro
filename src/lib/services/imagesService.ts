@@ -14,7 +14,24 @@ export const imagesService = {
     return withErrorHandling(
       () => prisma.image.findUnique({
         where: { id: imageId },
-        include: { profileForDoctor: true },
+        select: {
+          id: true,
+          url: true,
+          filename: true,
+          mime: true,
+          size: true,
+          doctorId: true,
+          userId: true,
+          createdAt: true,
+          updatedAt: true,
+          profileForDoctor: {
+            select: {
+              id: true,
+              name: true,
+              surname: true,
+            },
+          },
+        },
       }),
       { service: "imagesService", method: "getImage", params: { imageId } }
     );
@@ -75,14 +92,40 @@ export const imagesService = {
     return withErrorHandling(
       () => prisma.user.findUnique({
         where: { id: userId },
-        include: {
-          profileImage: true,
-          doctor: {
-            include: {
-              profileImage: true,
+        select: {
+          id: true,
+          email: true,
+          firstName: true,
+          lastName: true,
+          role: true,
+          profileImageId: true,
+          profileImage: {
+            select: {
+              id: true,
+              url: true,
             },
           },
-          patient: true,
+          doctor: {
+            select: {
+              id: true,
+              name: true,
+              surname: true,
+              profileImageId: true,
+              profileImage: {
+                select: {
+                  id: true,
+                  url: true,
+                },
+              },
+            },
+          },
+          patient: {
+            select: {
+              id: true,
+              name: true,
+              surname: true,
+            },
+          },
         },
       }),
       { service: "imagesService", method: "getUserWithProfileImages", params: { userId } }

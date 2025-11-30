@@ -5,6 +5,7 @@ export const searchService = {
   async getAllSpecialities() {
     return withErrorHandling(
       () => prisma.speciality.findMany({
+        where: { deletedAt: null },
         orderBy: { name: "asc" },
         select: { id: true, name: true },
       }),
@@ -16,7 +17,7 @@ export const searchService = {
     return withErrorHandling(
       async () => {
         const cities = await prisma.clinic.findMany({
-          where: { city: { not: null } },
+          where: { city: { not: null }, deletedAt: null },
           select: { city: true },
           distinct: ["city"],
           orderBy: { city: "asc" },
@@ -32,6 +33,7 @@ export const searchService = {
   async getPopularSpecialities() {
     return withErrorHandling(
       () => prisma.speciality.findMany({
+        where: { deletedAt: null },
         take: 4,
         orderBy: { name: "asc" },
       }),
@@ -42,6 +44,7 @@ export const searchService = {
   async getFeaturedDoctors() {
     return withErrorHandling(
       () => prisma.doctor.findMany({
+        where: { deletedAt: null },
         include: {
           specialities: { include: { speciality: true } },
           opinions: true,
@@ -69,6 +72,7 @@ export const searchService = {
         const skip = (page - 1) * pageSize;
 
         const where = {
+          deletedAt: null,
           ...(specialty && {
             specialities: {
               some: {
@@ -106,29 +110,55 @@ export const searchService = {
         };
 
         const include = {
-          specialities: { include: { speciality: true } },
+          specialities: {
+            select: {
+              speciality: {
+                select: {
+                  id: true,
+                  name: true,
+                },
+              },
+            },
+          },
           opinions: {
             select: {
               id: true,
               rating: true,
-              title: true,
-              description: true,
+            },
+            take: 5, // Limit opinions for search results
+          },
+          clinics: {
+            select: {
+              clinic: {
+                select: {
+                  id: true,
+                  name: true,
+                  city: true,
+                  isVirtual: true,
+                },
+              },
             },
           },
-          clinics: { include: { clinic: true } },
           pricings: {
-            include: {
+            select: {
+              id: true,
+              price: true,
+              currency: true,
               clinic: { select: { id: true, name: true } },
             },
             where: { isActive: true },
+            take: 3, // Limit pricing options for search results
           },
-          experiences: {
+          user: {
+            select: {
+              firstName: true,
+              lastName: true,
+            },
+          },
+          profileImage: {
             select: {
               id: true,
-              title: true,
-              institution: true,
-              startDate: true,
-              endDate: true,
+              url: true,
             },
           },
         };
@@ -161,40 +191,67 @@ export const searchService = {
         const skip = (page - 1) * pageSize;
 
         const include = {
-          specialities: { include: { speciality: true } },
+          specialities: {
+            select: {
+              speciality: {
+                select: {
+                  id: true,
+                  name: true,
+                },
+              },
+            },
+          },
           opinions: {
             select: {
               id: true,
               rating: true,
-              title: true,
-              description: true,
+            },
+            take: 5, // Limit opinions for search results
+          },
+          clinics: {
+            select: {
+              clinic: {
+                select: {
+                  id: true,
+                  name: true,
+                  city: true,
+                  isVirtual: true,
+                },
+              },
             },
           },
-          clinics: { include: { clinic: true } },
           pricings: {
-            include: {
+            select: {
+              id: true,
+              price: true,
+              currency: true,
               clinic: { select: { id: true, name: true } },
             },
             where: { isActive: true },
+            take: 3, // Limit pricing options for search results
           },
-          experiences: {
+          user: {
+            select: {
+              firstName: true,
+              lastName: true,
+            },
+          },
+          profileImage: {
             select: {
               id: true,
-              title: true,
-              institution: true,
-              startDate: true,
-              endDate: true,
+              url: true,
             },
           },
         };
 
         const [doctors, total] = await Promise.all([
           prisma.doctor.findMany({
+            where: { deletedAt: null },
             include,
             skip,
             take: pageSize,
           }),
-          prisma.doctor.count(),
+          prisma.doctor.count({ where: { deletedAt: null } }),
         ]);
 
         return {

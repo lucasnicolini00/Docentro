@@ -30,7 +30,13 @@ export const settingsService = {
   async exportDoctorData(doctorId: string) {
     return prisma.doctor.findUnique({
       where: { id: doctorId },
-      include: {
+      select: {
+        id: true,
+        name: true,
+        surname: true,
+        email: true,
+        phone: true,
+        createdAt: true,
         user: {
           select: {
             firstName: true,
@@ -41,23 +47,62 @@ export const settingsService = {
           },
         },
         specialities: {
-          include: {
-            speciality: true,
+          select: {
+            speciality: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
           },
         },
-        experiences: true,
+        experiences: {
+          select: {
+            id: true,
+            title: true,
+            institution: true,
+            startDate: true,
+            endDate: true,
+            description: true,
+          },
+        },
         clinics: {
-          include: {
-            clinic: true,
+          select: {
+            clinic: {
+              select: {
+                id: true,
+                name: true,
+                address: true,
+                city: true,
+                isVirtual: true,
+              },
+            },
           },
         },
         schedules: {
-          include: {
-            timeSlots: true,
+          select: {
+            id: true,
+            dayOfWeek: true,
+            startTime: true,
+            endTime: true,
+            isActive: true,
+            timeSlots: {
+              select: {
+                id: true,
+                startTime: true,
+                endTime: true,
+                isBooked: true,
+              },
+              take: 100, // Limit time slots for performance
+            },
           },
         },
         appointments: {
-          include: {
+          select: {
+            id: true,
+            datetime: true,
+            status: true,
+            type: true,
             patient: {
               select: {
                 name: true,
@@ -66,8 +111,18 @@ export const settingsService = {
               },
             },
           },
+          take: 500, // Limit appointments for data export
         },
-        pricings: true,
+        pricings: {
+          select: {
+            id: true,
+            title: true,
+            price: true,
+            currency: true,
+            durationMinutes: true,
+            isActive: true,
+          },
+        },
       },
     });
   },

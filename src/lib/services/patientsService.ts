@@ -52,11 +52,27 @@ export const patientsService = {
     return withErrorHandling(
       () => prisma.patient.findUnique({
         where: { id: patientId },
-        include: {
+        select: {
+          id: true,
+          name: true,
+          surname: true,
+          email: true,
+          phone: true,
+          birthdate: true,
+          gender: true,
           appointments: {
-            include: {
+            take: 20, // Limit to recent appointments
+            select: {
+              id: true,
+              datetime: true,
+              status: true,
+              type: true,
+              durationMinutes: true,
               doctor: {
-                include: {
+                select: {
+                  id: true,
+                  name: true,
+                  surname: true,
                   user: {
                     select: {
                       firstName: true,
@@ -65,7 +81,14 @@ export const patientsService = {
                   },
                 },
               },
-              clinic: true,
+              clinic: {
+                select: {
+                  id: true,
+                  name: true,
+                  address: true,
+                  city: true,
+                },
+              },
             },
             orderBy: {
               datetime: "desc",

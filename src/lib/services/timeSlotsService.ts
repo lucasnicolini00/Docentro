@@ -5,11 +5,27 @@ export const timeSlotsService = {
   async getDoctor(doctorId: string) {
     return prisma.doctor.findUnique({
       where: { id: doctorId },
-      include: {
-        user: true,
+      select: {
+        id: true,
+        name: true,
+        surname: true,
+        email: true,
+        user: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            email: true,
+          },
+        },
         specialities: {
-          include: {
-            speciality: true,
+          select: {
+            speciality: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
           },
         },
       },
@@ -54,15 +70,41 @@ export const timeSlotsService = {
         doctorId,
         isActive: true,
       },
-      include: {
-        clinic: true,
+      select: {
+        id: true,
+        dayOfWeek: true,
+        startTime: true,
+        endTime: true,
+        clinic: {
+          select: {
+            id: true,
+            name: true,
+            address: true,
+            isVirtual: true,
+          },
+        },
         timeSlots: {
-          include: {
+          select: {
+            id: true,
+            startTime: true,
+            endTime: true,
+            isBooked: true,
+            isBlocked: true,
             appointment: {
-              include: {
+              select: {
+                id: true,
+                status: true,
                 patient: {
-                  include: {
-                    user: true,
+                  select: {
+                    id: true,
+                    name: true,
+                    surname: true,
+                    user: {
+                      select: {
+                        firstName: true,
+                        lastName: true,
+                      },
+                    },
                   },
                 },
               },
@@ -71,6 +113,7 @@ export const timeSlotsService = {
           orderBy: {
             startTime: "asc",
           },
+          take: 50, // Limit time slots per schedule
         },
       },
       orderBy: {

@@ -26,160 +26,258 @@ export const analyticsService = {
     const endOfWeek = now;
     const endOfMonth = now;
 
-    const statsQuery = `
-      WITH date_ranges AS (
-        SELECT 
-          $1::timestamp as today_start,
-          $2::timestamp as today_end,
-          $3::timestamp as yesterday_start,
-          $4::timestamp as yesterday_end,
-          $5::timestamp as week_start,
-          $6::timestamp as week_end,
-          $7::timestamp as last_week_start,
-          $8::timestamp as last_week_end,
-          $9::timestamp as month_start,
-          $10::timestamp as month_end,
-          $11::timestamp as last_month_start,
-          $12::timestamp as last_month_end,
-          $13::text as doctor_id
-      ),
-      appointment_stats AS (
-        SELECT 
-          SUM(CASE WHEN datetime >= (SELECT today_start FROM date_ranges) 
-                        AND datetime < (SELECT today_end FROM date_ranges) THEN 1 ELSE 0 END) as today_appointments,
-          SUM(CASE WHEN datetime >= (SELECT yesterday_start FROM date_ranges) 
-                        AND datetime < (SELECT yesterday_end FROM date_ranges) THEN 1 ELSE 0 END) as yesterday_appointments,
-          SUM(CASE WHEN datetime >= (SELECT week_start FROM date_ranges) 
-                        AND datetime < (SELECT week_end FROM date_ranges) THEN 1 ELSE 0 END) as week_appointments,
-          SUM(CASE WHEN datetime >= (SELECT last_week_start FROM date_ranges) 
-                        AND datetime < (SELECT last_week_end FROM date_ranges) THEN 1 ELSE 0 END) as last_week_appointments,
-          SUM(CASE WHEN status = 'PENDING' THEN 1 ELSE 0 END) as pending_bookings,
-          COUNT(DISTINCT "patientId") as total_patients,
-          COUNT(DISTINCT CASE WHEN datetime >= (SELECT last_month_start FROM date_ranges) 
-                                   AND datetime < (SELECT last_month_end FROM date_ranges) 
-                              THEN "patientId" ELSE NULL END) as last_month_patients
-        FROM "Appointment" 
-        WHERE "doctorId" = (SELECT doctor_id FROM date_ranges)
-      ),
-      revenue_stats AS (
-        SELECT 
-          COALESCE(SUM(CASE WHEN a.datetime >= (SELECT month_start FROM date_ranges) 
-                                 AND a.datetime < (SELECT month_end FROM date_ranges) 
-                                 AND a.status = 'COMPLETED' 
-                            THEN p.price::numeric ELSE 0 END), 0) as monthly_revenue,
-          COALESCE(SUM(CASE WHEN a.datetime >= (SELECT last_month_start FROM date_ranges) 
-                                 AND a.datetime < (SELECT last_month_end FROM date_ranges) 
-                                 AND a.status = 'COMPLETED' 
-                            THEN p.price::numeric ELSE 0 END), 0) as last_month_revenue
-        FROM "Appointment" a
-        LEFT JOIN "Pricing" p ON a."pricingId" = p.id
-        WHERE a."doctorId" = (SELECT doctor_id FROM date_ranges)
-      ),
-      slot_stats AS (
-        SELECT 
-          SUM(CASE WHEN ts."createdAt" >= (SELECT month_start FROM date_ranges) 
-                        AND ts."createdAt" < (SELECT month_end FROM date_ranges) THEN 1 ELSE 0 END) as total_slots,
-          SUM(CASE WHEN ts."createdAt" >= (SELECT month_start FROM date_ranges) 
-                        AND ts."createdAt" < (SELECT month_end FROM date_ranges) 
-                        AND ts."isBooked" = true THEN 1 ELSE 0 END) as booked_slots,
-          SUM(CASE WHEN ts."createdAt" >= (SELECT last_month_start FROM date_ranges) 
-                        AND ts."createdAt" < (SELECT last_month_end FROM date_ranges) THEN 1 ELSE 0 END) as last_month_total_slots,
-          SUM(CASE WHEN ts."createdAt" >= (SELECT last_month_start FROM date_ranges) 
-                        AND ts."createdAt" < (SELECT last_month_end FROM date_ranges) 
-                        AND ts."isBooked" = true THEN 1 ELSE 0 END) as last_month_booked_slots
-        FROM "TimeSlot" ts
-        INNER JOIN "Schedule" s ON ts."scheduleId" = s.id
-        WHERE s."doctorId" = (SELECT doctor_id FROM date_ranges)
-      )
-      SELECT 
-        ast.*,
-        rst.*,
-        sst.*,
-        CASE 
-          WHEN sst.total_slots > 0 THEN ROUND((sst.booked_slots::float / sst.total_slots) * 100)
-          ELSE 0 
-        END as utilization_rate,
-        CASE 
-          WHEN sst.last_month_total_slots > 0 THEN ROUND((sst.last_month_booked_slots::float / sst.last_month_total_slots) * 100)
-          ELSE 0 
-        END as last_month_utilization
-      FROM appointment_stats ast, revenue_stats rst, slot_stats sst;
-    `;
+    // Use type-safe Prisma queries instead of raw SQL
+    const [
+      todayCount,
+      yesterdayCount,
+      weekCount,
+      lastWeekCount,
+      pendingCount,
+      totalPatients,
+      lastMonthPatients,
+      monthSlots,
+      monthBookedSlots,
+      lastMonthSlots,
+      lastMonthBookedSlots,
+    ] = await Promise.all([
+      // Today's appointments
+      prisma.appointment.count({
+        where: { doctorId, datetime: { gte: startOfToday, lt: endOfToday } },
+      }),
+      // Yesterday's appointments
+      prisma.appointment.count({
+        where: { doctorId, datetime: { gte: yesterday, lt: endOfYesterday } },
+      }),
+      // This week's appointments
+      prisma.appointment.count({
+        where: { doctorId, datetime: { gte: startOfWeek, lte: endOfWeek } },
+      }),
+      // Last week's appointments
+      prisma.appointment.count({
+        where: { doctorId, datetime: { gte: lastWeekStart, lte: lastWeekEnd } },
+      }),
+      // Pending appointments
+      prisma.appointment.count({
+        where: { doctorId, status: "PENDING" },
+      }),
+      // Total unique patients
+      prisma.appointment.findMany({
+        where: { doctorId },
+        distinct: ["patientId"],
+        select: { patientId: true },
+      }),
+      // Last month's unique patients
+      prisma.appointment.findMany({
+        where: {
+          doctorId,
+          datetime: { gte: lastMonthStart, lte: lastMonthEnd },
+        },
+        distinct: ["patientId"],
+        select: { patientId: true },
+      }),
+      // This month's total time slots
+      prisma.timeSlot.count({
+        where: {
+          schedule: { doctorId },
+          createdAt: { gte: startOfMonth, lt: endOfMonth },
+        },
+      }),
+      // This month's booked time slots
+      prisma.timeSlot.count({
+        where: {
+          schedule: { doctorId },
+          createdAt: { gte: startOfMonth, lt: endOfMonth },
+          isBooked: true,
+        },
+      }),
+      // Last month's total time slots
+      prisma.timeSlot.count({
+        where: {
+          schedule: { doctorId },
+          createdAt: { gte: lastMonthStart, lt: lastMonthEnd },
+        },
+      }),
+      // Last month's booked time slots
+      prisma.timeSlot.count({
+        where: {
+          schedule: { doctorId },
+          createdAt: { gte: lastMonthStart, lt: lastMonthEnd },
+          isBooked: true,
+        },
+      }),
+    ]);
 
-    return prisma.$queryRawUnsafe(
-      statsQuery,
-      startOfToday,
-      endOfToday,
-      yesterday,
-      endOfYesterday,
-      startOfWeek,
-      endOfWeek,
-      lastWeekStart,
-      lastWeekEnd,
-      startOfMonth,
-      endOfMonth,
-      lastMonthStart,
-      lastMonthEnd,
-      doctorId
-    ) as Promise<any[]>;
+    // Calculate revenue (need to fetch actual pricing data)
+    const monthlyAppointments = await prisma.appointment.findMany({
+      where: {
+        doctorId,
+        status: "COMPLETED",
+        datetime: { gte: startOfMonth, lte: endOfMonth },
+        pricingId: { not: null },
+      },
+      include: { pricing: { select: { price: true } } },
+    });
+
+    const lastMonthAppointments = await prisma.appointment.findMany({
+      where: {
+        doctorId,
+        status: "COMPLETED",
+        datetime: { gte: lastMonthStart, lte: lastMonthEnd },
+        pricingId: { not: null },
+      },
+      include: { pricing: { select: { price: true } } },
+    });
+
+    const monthRevenue = monthlyAppointments.reduce(
+      (sum, apt) => sum + (Number(apt.pricing?.price) || 0),
+      0
+    );
+    const lastRevenue = lastMonthAppointments.reduce(
+      (sum, apt) => sum + (Number(apt.pricing?.price) || 0),
+      0
+    );
+
+    // Calculate utilization rates
+    const totalSlots = monthSlots || 1; // Avoid division by zero
+    const bookedSlots = monthBookedSlots || 0;
+    const utilizationRate = Math.round((bookedSlots / totalSlots) * 100);
+
+    const lastTotalSlots = lastMonthSlots || 1;
+    const lastBookedSlots = lastMonthBookedSlots || 0;
+    const lastMonthUtilization = Math.round(
+      (lastBookedSlots / lastTotalSlots) * 100
+    );
+
+    return [
+      {
+        today_appointments: todayCount,
+        yesterday_appointments: yesterdayCount,
+        week_appointments: weekCount,
+        last_week_appointments: lastWeekCount,
+        pending_bookings: pendingCount,
+        total_patients: totalPatients.length,
+        last_month_patients: lastMonthPatients.length,
+        monthly_revenue: monthRevenue,
+        last_month_revenue: lastRevenue,
+        total_slots: totalSlots,
+        booked_slots: bookedSlots,
+        last_month_total_slots: lastTotalSlots,
+        last_month_booked_slots: lastBookedSlots,
+        utilization_rate: utilizationRate,
+        last_month_utilization: lastMonthUtilization,
+      },
+    ];
   },
 
   async getRecentActivities(doctorId: string) {
-    return prisma.$queryRaw`
-      WITH recent_activities AS (
-        -- Recent appointments
-        SELECT 
-          'appointment' as type,
-          'Nueva cita programada' as title,
-          CONCAT('Cita con ', p."firstName", ' ', p."lastName") as description,
-          a."createdAt" as timestamp,
-          a.id::text as item_id
-        FROM "Appointment" a
-        INNER JOIN "Patient" pt ON a."patientId" = pt.id
-        INNER JOIN "User" p ON pt."userId" = p.id
-        WHERE a."doctorId" = ${doctorId}
-          AND a."createdAt" >= NOW() - INTERVAL '7 days'
-        
-        UNION ALL
-        
-        -- Schedule updates
-        SELECT 
-          'schedule' as type,
-          'Horario actualizado' as title,
-          CONCAT('Horario para ', c.name) as description,
-          s."updatedAt" as timestamp,
-          s.id::text as item_id
-        FROM "Schedule" s
-        INNER JOIN "Clinic" c ON s."clinicId" = c.id
-        WHERE s."doctorId" = ${doctorId}
-          AND s."updatedAt" >= NOW() - INTERVAL '7 days'
-          AND s."updatedAt" != s."createdAt"
-        
-        UNION ALL
-        
-        -- New patients (first appointments)
-        SELECT 
-          'patient' as type,
-          'Nuevo paciente' as title,
-          CONCAT('Primera cita con ', u."firstName", ' ', u."lastName") as description,
-          a."createdAt" as timestamp,
-          pt.id::text as item_id
-        FROM "Appointment" a
-        INNER JOIN "Patient" pt ON a."patientId" = pt.id
-        INNER JOIN "User" u ON pt."userId" = u.id
-        WHERE a."doctorId" = ${doctorId}
-          AND a."createdAt" >= NOW() - INTERVAL '7 days'
-          AND NOT EXISTS (
-            SELECT 1 FROM "Appointment" a2 
-            WHERE a2."patientId" = a."patientId" 
-              AND a2."doctorId" = a."doctorId" 
-              AND a2."createdAt" < a."createdAt"
-          )
-      )
-      SELECT * FROM recent_activities
-      ORDER BY timestamp DESC
-      LIMIT 10;
-    ` as Promise<any[]>;
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
+    // Get recent appointments
+    const recentAppointments = await prisma.appointment.findMany({
+      where: {
+        doctorId,
+        createdAt: { gte: sevenDaysAgo },
+      },
+      include: {
+        patient: {
+          include: {
+            user: {
+              select: {
+                firstName: true,
+                lastName: true,
+              },
+            },
+          },
+        },
+      },
+      take: 10,
+      orderBy: { createdAt: "desc" },
+    });
+
+    // Get schedule updates
+    const scheduleUpdates = await prisma.schedule.findMany({
+      where: {
+        doctorId,
+        updatedAt: { gte: sevenDaysAgo },
+        NOT: {
+          updatedAt: {
+            equals: prisma.schedule.fields.createdAt,
+          },
+        },
+      },
+      include: {
+        clinic: {
+          select: {
+            name: true,
+          },
+        },
+      },
+      take: 10,
+      orderBy: { updatedAt: "desc" },
+    });
+
+    // Get new patients (first appointments)
+    const allDoctorAppointments = await prisma.appointment.findMany({
+      where: { doctorId },
+      select: {
+        patientId: true,
+        createdAt: true,
+        patient: {
+          include: {
+            user: {
+              select: {
+                firstName: true,
+                lastName: true,
+              },
+            },
+          },
+        },
+      },
+      orderBy: { createdAt: "asc" },
+    });
+
+    // Find first appointment for each patient within last 7 days
+    const patientFirstAppointments = new Map<string, any>();
+    for (const apt of allDoctorAppointments) {
+      if (!patientFirstAppointments.has(apt.patientId)) {
+        patientFirstAppointments.set(apt.patientId, apt);
+      }
+    }
+
+    const newPatients = Array.from(patientFirstAppointments.values()).filter(
+      (apt) => apt.createdAt >= sevenDaysAgo
+    );
+
+    // Combine and format all activities
+    const activities = [
+      ...recentAppointments.map((apt) => ({
+        type: "appointment",
+        title: "Nueva cita programada",
+        description: `Cita con ${apt.patient.user.firstName} ${apt.patient.user.lastName}`,
+        timestamp: apt.createdAt,
+        item_id: apt.id,
+      })),
+      ...scheduleUpdates.map((schedule) => ({
+        type: "schedule",
+        title: "Horario actualizado",
+        description: `Horario para ${schedule.clinic.name}`,
+        timestamp: schedule.updatedAt,
+        item_id: schedule.id,
+      })),
+      ...newPatients.map((apt) => ({
+        type: "patient",
+        title: "Nuevo paciente",
+        description: `Primera cita con ${apt.patient.user.firstName} ${apt.patient.user.lastName}`,
+        timestamp: apt.createdAt,
+        item_id: apt.patient.id,
+      })),
+    ];
+
+    // Sort by timestamp and limit to 10
+    return activities
+      .sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime())
+      .slice(0, 10);
   },
 
   async getUpcomingAppointments(doctorId: string) {
