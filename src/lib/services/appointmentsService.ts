@@ -276,10 +276,7 @@ export const appointmentsService = {
     });
   },
 
-  async checkConflictingAppointment(
-    doctorId: string,
-    datetime: Date
-  ) {
+  async checkConflictingAppointment(doctorId: string, datetime: Date) {
     return prisma.appointment.findFirst({
       where: {
         doctorId,
@@ -432,7 +429,10 @@ export const appointmentsService = {
     });
   },
 
-  async updateAppointmentStatus(appointmentId: string, status: AppointmentStatus) {
+  async updateAppointmentStatus(
+    appointmentId: string,
+    status: AppointmentStatus
+  ) {
     return prisma.appointment.update({
       where: { id: appointmentId },
       data: { status },

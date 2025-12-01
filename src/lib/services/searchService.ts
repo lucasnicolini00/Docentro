@@ -4,11 +4,12 @@ import { withErrorHandling } from "./errorHandler";
 export const searchService = {
   async getAllSpecialities() {
     return withErrorHandling(
-      () => prisma.speciality.findMany({
-        where: { deletedAt: null },
-        orderBy: { name: "asc" },
-        select: { id: true, name: true },
-      }),
+      () =>
+        prisma.speciality.findMany({
+          where: { deletedAt: null },
+          orderBy: { name: "asc" },
+          select: { id: true, name: true },
+        }),
       { service: "searchService", method: "getAllSpecialities" }
     );
   },
@@ -32,31 +33,33 @@ export const searchService = {
 
   async getPopularSpecialities() {
     return withErrorHandling(
-      () => prisma.speciality.findMany({
-        where: { deletedAt: null },
-        take: 4,
-        orderBy: { name: "asc" },
-      }),
+      () =>
+        prisma.speciality.findMany({
+          where: { deletedAt: null },
+          take: 4,
+          orderBy: { name: "asc" },
+        }),
       { service: "searchService", method: "getPopularSpecialities" }
     );
   },
 
   async getFeaturedDoctors() {
     return withErrorHandling(
-      () => prisma.doctor.findMany({
-        where: { deletedAt: null },
-        include: {
-          specialities: { include: { speciality: true } },
-          opinions: true,
-          clinics: { include: { clinic: true } },
-          pricings: {
-            include: { clinic: true },
-            where: { isActive: true },
+      () =>
+        prisma.doctor.findMany({
+          where: { deletedAt: null },
+          include: {
+            specialities: { include: { speciality: true } },
+            opinions: true,
+            clinics: { include: { clinic: true } },
+            pricings: {
+              include: { clinic: true },
+              where: { isActive: true },
+            },
+            profileImage: { select: { id: true, url: true } },
           },
-          profileImage: { select: { id: true, url: true } },
-        },
-        take: 3,
-      }),
+          take: 3,
+        }),
       { service: "searchService", method: "getFeaturedDoctors" }
     );
   },
@@ -181,7 +184,11 @@ export const searchService = {
           totalPages: Math.ceil(total / pageSize),
         };
       },
-      { service: "searchService", method: "searchDoctors", params: { specialty, location, page, pageSize } }
+      {
+        service: "searchService",
+        method: "searchDoctors",
+        params: { specialty, location, page, pageSize },
+      }
     );
   },
 
@@ -262,7 +269,11 @@ export const searchService = {
           totalPages: Math.ceil(total / pageSize),
         };
       },
-      { service: "searchService", method: "getAllDoctors", params: { page, pageSize } }
+      {
+        service: "searchService",
+        method: "getAllDoctors",
+        params: { page, pageSize },
+      }
     );
   },
 };

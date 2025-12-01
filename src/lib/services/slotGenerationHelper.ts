@@ -77,10 +77,10 @@ export interface GeneratedSlot {
 export function createAppointmentMaps(appointments: AppointmentRecord[]) {
   // Map for calendar view (timestamp only)
   const appointmentMap = new Map<number, AppointmentRecord>();
-  
+
   // Map for clinic-specific view (timestamp_clinicId)
   const appointmentByClinicMap = new Map<string, AppointmentRecord>();
-  
+
   for (const apt of appointments) {
     appointmentMap.set(apt.datetime.getTime(), apt);
     if (apt.clinicId) {
@@ -88,7 +88,7 @@ export function createAppointmentMaps(appointments: AppointmentRecord[]) {
       appointmentByClinicMap.set(key, apt);
     }
   }
-  
+
   return { appointmentMap, appointmentByClinicMap };
 }
 
@@ -99,13 +99,13 @@ export function groupSchedulesByDay<T extends { dayOfWeek: string }>(
   schedules: T[]
 ): Map<string, T[]> {
   const schedulesByDay = new Map<string, T[]>();
-  
+
   for (const schedule of schedules) {
     const existing = schedulesByDay.get(schedule.dayOfWeek) || [];
     existing.push(schedule);
     schedulesByDay.set(schedule.dayOfWeek, existing);
   }
-  
+
   return schedulesByDay;
 }
 
@@ -126,18 +126,19 @@ export function generateTimeSlotsForDateRange(
   includeClinicId = false
 ): GeneratedSlot[] {
   const resultSlots: GeneratedSlot[] = [];
-  
+
   // Create lookup maps for O(1) performance
-  const { appointmentMap, appointmentByClinicMap } = createAppointmentMaps(appointments);
+  const { appointmentMap, appointmentByClinicMap } =
+    createAppointmentMaps(appointments);
   const schedulesByDay = groupSchedulesByDay(schedules);
-  
+
   // Iterate through each day in the range
   const currentDate = new Date(startDate);
-  
+
   while (currentDate <= endDate) {
     const dayOfWeek = DAY_MAPPING[currentDate.getDay()];
     const daySchedules = schedulesByDay.get(dayOfWeek) || [];
-    
+
     for (const schedule of daySchedules) {
       // For each template slot in the schedule
       for (const templateSlot of schedule.timeSlots) {
@@ -145,21 +146,23 @@ export function generateTimeSlotsForDateRange(
         const [hours, minutes] = templateSlot.startTime.split(":").map(Number);
         const slotDateTime = new Date(currentDate);
         slotDateTime.setHours(hours, minutes, 0, 0);
-        
+
         // Calculate end time (default 30 min if not specified)
-        const [endHours, endMinutes] = templateSlot.endTime.split(":").map(Number);
+        const [endHours, endMinutes] = templateSlot.endTime
+          .split(":")
+          .map(Number);
         const slotEndTime = new Date(currentDate);
         slotEndTime.setHours(endHours, endMinutes, 0, 0);
-        
+
         // O(1) lookup for appointment
         let appointment: AppointmentRecord | undefined;
-        if (includeClinicId && 'clinicId' in schedule) {
+        if (includeClinicId && "clinicId" in schedule) {
           const appointmentKey = `${slotDateTime.getTime()}_${(schedule as any).clinicId}`;
           appointment = appointmentByClinicMap.get(appointmentKey);
         } else {
           appointment = appointmentMap.get(slotDateTime.getTime());
         }
-        
+
         resultSlots.push({
           id: `${templateSlot.id}-${slotDateTime.toISOString()}`,
           startTime: slotDateTime.toISOString(),
@@ -181,11 +184,11 @@ export function generateTimeSlotsForDateRange(
         });
       }
     }
-    
+
     // Move to next day
     currentDate.setDate(currentDate.getDate() + 1);
   }
-  
+
   return resultSlots;
 }
 

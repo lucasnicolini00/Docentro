@@ -102,10 +102,11 @@ export const doctorsService = {
 
   async getAllSpecialities() {
     return withErrorHandling(
-      () => prisma.speciality.findMany({ 
-        where: { deletedAt: null },
-        orderBy: { name: "asc" } 
-      }),
+      () =>
+        prisma.speciality.findMany({
+          where: { deletedAt: null },
+          orderBy: { name: "asc" },
+        }),
       { service: "doctorsService", method: "getAllSpecialities" }
     );
   },

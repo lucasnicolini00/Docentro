@@ -323,7 +323,7 @@ export const analyticsService = {
       take: 5,
     });
   },
-  
+
   async getPatientAnalytics(
     doctorId: string,
     timeRange: "month" | "quarter" | "year" = "month"
@@ -440,5 +440,4 @@ export const analyticsService = {
       previousMonthAppointments,
     };
   },
-  
 };

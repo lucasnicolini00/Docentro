@@ -1,13 +1,13 @@
 import prisma from "@/lib/prisma";
 import { DayOfWeek } from "@prisma/client";
-import { generateTimeSlotsForDateRange, parseTime, formatTime } from "./slotGenerationHelper";
+import {
+  generateTimeSlotsForDateRange,
+  parseTime,
+  formatTime,
+} from "./slotGenerationHelper";
 
 export const schedulesService = {
-  async getSchedule(
-    doctorId: string,
-    clinicId: string,
-    dayOfWeek: DayOfWeek
-  ) {
+  async getSchedule(doctorId: string, clinicId: string, dayOfWeek: DayOfWeek) {
     return prisma.schedule.findUnique({
       where: {
         doctorId_clinicId_dayOfWeek: {
@@ -427,7 +427,13 @@ export const schedulesService = {
     });
 
     // 3. Use shared helper to generate slots
-    return generateTimeSlotsForDateRange(schedules, appointments, startDate, endDate, false);
+    return generateTimeSlotsForDateRange(
+      schedules,
+      appointments,
+      startDate,
+      endDate,
+      false
+    );
   },
 
   async getDoctorSchedulesWithSlots(
@@ -497,31 +503,31 @@ export const schedulesService = {
       endDate,
       true // Use clinic-specific matching
     );
-    
+
     // 4. Group slots by schedule and date
     const result: any[] = [];
     const slotsByScheduleAndDate = new Map<string, any[]>();
-    
+
     for (const slot of generatedSlots) {
-      const scheduleId = slot.id.split('-')[0]; // Extract original schedule ID
-      const date = new Date(slot.startTime).toISOString().split('T')[0];
+      const scheduleId = slot.id.split("-")[0]; // Extract original schedule ID
+      const date = new Date(slot.startTime).toISOString().split("T")[0];
       const key = `${scheduleId}_${date}`;
-      
+
       const existing = slotsByScheduleAndDate.get(key) || [];
       existing.push(slot);
       slotsByScheduleAndDate.set(key, existing);
     }
-    
+
     // 5. Build result structure matching original format
     const currentDate = new Date(startDate);
-    
+
     while (currentDate <= endDate) {
-      const dateStr = currentDate.toISOString().split('T')[0];
-      
+      const dateStr = currentDate.toISOString().split("T")[0];
+
       for (const schedule of schedules) {
         const key = `${schedule.id}_${dateStr}`;
         const slotsForDay = slotsByScheduleAndDate.get(key) || [];
-        
+
         if (slotsForDay.length > 0) {
           result.push({
             ...schedule,
@@ -530,7 +536,7 @@ export const schedulesService = {
           });
         }
       }
-      
+
       currentDate.setDate(currentDate.getDate() + 1);
     }
 

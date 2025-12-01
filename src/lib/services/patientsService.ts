@@ -19,84 +19,94 @@ export const patientsService = {
     }
   ) {
     return withErrorHandling(
-      () => prisma.$transaction(async (tx) => {
-        const updatedUser = await tx.user.update({
-          where: { id: userId },
-          data: {
-            firstName: data.firstName,
-            lastName: data.lastName,
-            email: data.email,
-            phone: data.phone || null,
-          },
-        });
+      () =>
+        prisma.$transaction(async (tx) => {
+          const updatedUser = await tx.user.update({
+            where: { id: userId },
+            data: {
+              firstName: data.firstName,
+              lastName: data.lastName,
+              email: data.email,
+              phone: data.phone || null,
+            },
+          });
 
-        const updatedPatient = await tx.patient.update({
-          where: { id: patientId },
-          data: {
-            name: data.patientName,
-            surname: data.patientSurname,
-            email: data.patientEmail,
-            phone: data.patientPhone || null,
-            birthdate: data.birthdate ? new Date(data.birthdate) : null,
-            gender: data.gender || null,
-          },
-        });
+          const updatedPatient = await tx.patient.update({
+            where: { id: patientId },
+            data: {
+              name: data.patientName,
+              surname: data.patientSurname,
+              email: data.patientEmail,
+              phone: data.patientPhone || null,
+              birthdate: data.birthdate ? new Date(data.birthdate) : null,
+              gender: data.gender || null,
+            },
+          });
 
-        return { updatedUser, updatedPatient };
-      }),
-      { service: "patientsService", method: "updatePatientProfile", params: { userId, patientId } }
+          return { updatedUser, updatedPatient };
+        }),
+      {
+        service: "patientsService",
+        method: "updatePatientProfile",
+        params: { userId, patientId },
+      }
     );
   },
 
   async getPatientDashboard(patientId: string) {
     return withErrorHandling(
-      () => prisma.patient.findUnique({
-        where: { id: patientId },
-        select: {
-          id: true,
-          name: true,
-          surname: true,
-          email: true,
-          phone: true,
-          birthdate: true,
-          gender: true,
-          appointments: {
-            take: 20, // Limit to recent appointments
-            select: {
-              id: true,
-              datetime: true,
-              status: true,
-              type: true,
-              durationMinutes: true,
-              doctor: {
-                select: {
-                  id: true,
-                  name: true,
-                  surname: true,
-                  user: {
-                    select: {
-                      firstName: true,
-                      lastName: true,
+      () =>
+        prisma.patient.findUnique({
+          where: { id: patientId },
+          select: {
+            id: true,
+            name: true,
+            surname: true,
+            email: true,
+            phone: true,
+            birthdate: true,
+            gender: true,
+            appointments: {
+              take: 20, // Limit to recent appointments
+              select: {
+                id: true,
+                datetime: true,
+                status: true,
+                type: true,
+                durationMinutes: true,
+                doctor: {
+                  select: {
+                    id: true,
+                    name: true,
+                    surname: true,
+                    user: {
+                      select: {
+                        firstName: true,
+                        lastName: true,
+                      },
                     },
                   },
                 },
-              },
-              clinic: {
-                select: {
-                  id: true,
-                  name: true,
-                  address: true,
-                  city: true,
+                clinic: {
+                  select: {
+                    id: true,
+                    name: true,
+                    address: true,
+                    city: true,
+                  },
                 },
               },
-            },
-            orderBy: {
-              datetime: "desc",
+              orderBy: {
+                datetime: "desc",
+              },
             },
           },
-        },
-      }),
-      { service: "patientsService", method: "getPatientDashboard", params: { patientId } }
+        }),
+      {
+        service: "patientsService",
+        method: "getPatientDashboard",
+        params: { patientId },
+      }
     );
   },
 };

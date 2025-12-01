@@ -2,6 +2,8 @@
 
 import type { ActionResult } from "./utils";
 import { searchService } from "@/lib/services/searchService";
+import { convertDoctorDecimals } from "@/lib/utils/serialization";
+
 
 /**
  * Server action for getting all available specialities for autocomplete
@@ -97,16 +99,8 @@ export async function searchDoctors(
       pageSize
     );
 
-    // Transform Decimal to number for client compatibility using JSON serialization
-    const serializedDoctors = JSON.parse(
-      JSON.stringify(result.doctors, (key, value) =>
-        typeof value === "object" &&
-        value !== null &&
-        value.constructor?.name === "Decimal"
-          ? Number(value)
-          : value
-      )
-    );
+    // Convert Decimal fields to numbers for client compatibility
+    const serializedDoctors = result.doctors.map(convertDoctorDecimals);
 
     return {
       success: true,
@@ -134,16 +128,8 @@ export async function getAllDoctors(
   try {
     const result = await searchService.getAllDoctors(page, pageSize);
 
-    // Transform Decimal to number for client compatibility using JSON serialization
-    const serializedDoctors = JSON.parse(
-      JSON.stringify(result.doctors, (key, value) =>
-        typeof value === "object" &&
-        value !== null &&
-        value.constructor?.name === "Decimal"
-          ? Number(value)
-          : value
-      )
-    );
+    // Convert Decimal fields to numbers for client compatibility
+    const serializedDoctors = result.doctors.map(convertDoctorDecimals);
 
     return {
       success: true,
