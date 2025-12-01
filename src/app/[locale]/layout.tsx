@@ -4,9 +4,9 @@ import { getMessages } from "../messages";
 import { AuthProvider } from "@/components/providers";
 
 export const metadata: Metadata = {
-  title: "Docentro - Encuentra tu Profesional de Salud Ideal",
+  title: "Docentro - Encuentra tu Profesional Ideal",
   description:
-    "Plataforma líder para conectar pacientes con profesionales de la salud. Agenda tu consulta de forma segura y confiable.",
+    "Plataforma líder para conectar clientes con profesionales. Agenda tu cita de forma segura y confiable.",
   alternates: {
     languages: {
       en: "/en",

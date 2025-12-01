@@ -25,14 +25,13 @@ export default function DoctorHeader({
     if (!session?.user?.name) return t("doctor");
     const fullName = session.user.name.trim();
     const nameParts = fullName.split(" ");
-    const lower = fullName.toLowerCase();
-    if (lower.includes("dr.") || lower.includes("dra.")) return fullName;
-    return `Dr. ${nameParts[0]}`;
+    // Return first name only for brevity
+    return nameParts[0];
   };
 
   const getFormattedDate = () => {
     const date = new Date();
-    
+
     const options: Intl.DateTimeFormatOptions = {
       weekday: "long",
       day: "numeric",

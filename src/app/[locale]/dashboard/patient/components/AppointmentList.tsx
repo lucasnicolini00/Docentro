@@ -161,7 +161,7 @@ export default function AppointmentList({
                     </div>
                     <div>
                       <h4 className="font-semibold text-gray-900">
-                        Dr. {appointment.doctor.user.firstName}{" "}
+                        {appointment.doctor.user.firstName}{" "}
                         {appointment.doctor.user.lastName}
                       </h4>
                       <p className="text-sm text-gray-600">

@@ -342,7 +342,7 @@ export default function Map({
                 return (
                   <div>
                     <h3 className="font-semibold text-gray-900 mb-1">
-                      Dr. {marker.doctor.name} {marker.doctor.surname}
+                      {marker.doctor.name} {marker.doctor.surname}
                     </h3>
                     <p className="text-sm text-blue-600 mb-2">
                       {marker.doctor.specialities[0]?.speciality?.name ||

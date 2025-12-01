@@ -1,7 +1,7 @@
 {
-  "errorNotFoundTitle": "Doctor not found",
+  "errorNotFoundTitle": "Professional not found",
   "errorNotFoundSubtitle": "Sorry, we couldn't find the requested information.",
-  "errorLoadingDoctor": "Error loading doctor information",
+  "errorLoadingDoctor": "Error loading professional information",
   "galleryTitle": "Gallery",
   "viewMoreImages": "View more ({count} images)",
   "aboutMeTitle": "About me",
@@ -15,7 +15,7 @@
   "scheduleValueDefault": "Mon - Fri: 8:00 - 18:00",
   "clinicsTitle": "Locations",
   "imageCounterLabel": "{current} of {total}",
-  "galleryImageAlt": "Doctor gallery image",
+  "galleryImageAlt": "Professional gallery image",
   "thumbnailAlt": "Thumbnail {index}",
   "backAction": "Back",
   "notAvailableShort": "N/A"

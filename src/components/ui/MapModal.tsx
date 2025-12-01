@@ -411,7 +411,7 @@ export default function MapModal({
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img
                           src={doctor.picaddress}
-                          alt={`Dr. ${doctor.name} ${doctor.surname}`}
+                          alt={`${doctor.name} ${doctor.surname}`}
                           className="object-cover"
                           sizes="48px"
                         />
@@ -426,7 +426,7 @@ export default function MapModal({
                     )}
                     <div className="flex-1">
                       <h3 className="font-semibold text-gray-900 text-base">
-                        Dr. {doctor.name} {doctor.surname}
+                        {doctor.name} {doctor.surname}
                       </h3>
                       <p className="text-sm text-blue-600 font-medium">
                         {doctor.specialitiesText}
@@ -579,7 +579,7 @@ export default function MapModal({
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img
                           src={selectedDoctor.doctor.picaddress}
-                          alt={`Dr. ${selectedDoctor.doctor.name}`}
+                          alt={`${selectedDoctor.doctor.name}`}
                           className="object-cover"
                           sizes="40px"
                         />
@@ -594,7 +594,7 @@ export default function MapModal({
                     )}
                     <div className="flex-1">
                       <h3 className="font-semibold text-gray-900 text-sm leading-tight">
-                        Dr. {selectedDoctor.doctor.name}{" "}
+                        {selectedDoctor.doctor.name}{" "}
                         {selectedDoctor.doctor.surname}
                       </h3>
                       <p className="text-xs text-blue-600 font-medium">

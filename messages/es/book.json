@@ -1,8 +1,7 @@
 {
   "title": "Reservar Cita",
   "headerTitle": "Programa tu cita",
-  "doctorPrefix": "Dr(a).",
-  "doctorLabel": "Doctor",
+  "doctorLabel": "Profesional",
   "specialtiesLabel": "Especialidades",
   "availableTimes": "Horarios Disponibles",
   "summaryTitle": "Resumen de la Cita",

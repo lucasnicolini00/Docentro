@@ -12,7 +12,7 @@ export function DoctorInfo({ doctor }: DoctorInfoProps) {
   const primarySpeciality =
     doctor.specialities[0]?.speciality?.name || t("primarySpecialistFallback");
 
-  // Use doctor.profileImage.url directly. 
+  // Use doctor.profileImage.url directly.
   // Previous implementation incorrectly fetched current user's image.
   const profileImageUrl = doctor.profileImage?.url;
 
@@ -23,7 +23,7 @@ export function DoctorInfo({ doctor }: DoctorInfoProps) {
           // eslint-disable-next-line @next/next/no-img-element
           <img
             src={profileImageUrl}
-            alt={`Dr. ${doctor.name} ${doctor.surname}`}
+            alt={`${doctor.name} ${doctor.surname}`}
             className="w-16 h-16 rounded-full object-cover border-2 border-gray-200 shadow-sm"
           />
         ) : (
@@ -35,7 +35,7 @@ export function DoctorInfo({ doctor }: DoctorInfoProps) {
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 mb-2">
           <h3 className="text-xl font-bold text-gray-900">
-            Dr. {doctor.name} {doctor.surname}
+            {doctor.name} {doctor.surname}
           </h3>
         </div>
         <p className="text-gray-600 mb-3 font-medium">{primarySpeciality}</p>

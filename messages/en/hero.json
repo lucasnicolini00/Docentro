@@ -1,10 +1,10 @@
 {
-  "title": "Find your ideal healthcare professional",
+  "title": "Find your ideal professional",
   "subtitle": "ideal for you",
-  "description": "We connect patients with the best healthcare professionals. Book your appointment quickly and securely.",
+  "description": "We connect clients with the best professionals. Book your appointment quickly and securely.",
   "searchButton": "Search Professionals",
   "specialtyLabel": "Specialty",
   "locationLabel": "City or location",
-  "specialtyPlaceholder": "e.g., Psychology, Dermatology...",
+  "specialtyPlaceholder": "e.g., Psychology, Plumbing, Training...",
   "locationPlaceholder": "e.g., City, Location..."
 }

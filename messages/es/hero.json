@@ -1,10 +1,10 @@
 {
-  "title": "Encuentra al profesional de salud",
+  "title": "Encuentra al profesional",
   "subtitle": "ideal para ti",
-  "description": "Conectamos pacientes con los mejores profesionales de la salud. Agenda tu cita de forma rápida y segura.",
+  "description": "Conectamos clientes con los mejores profesionales. Agenda tu cita de forma rápida y segura.",
   "searchButton": "Buscar Profesionales",
   "specialtyLabel": "Especialidad",
   "locationLabel": "Ciudad o ubicación",
-  "specialtyPlaceholder": "Ej: Psicología, Dermatología...",
+  "specialtyPlaceholder": "Ej: Psicología, Plomería, Entrenamiento...",
   "locationPlaceholder": "Ej: Ciudad, Ubicación..."
 }

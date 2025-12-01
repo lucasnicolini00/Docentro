@@ -210,7 +210,7 @@ export default function PatientCalendar({
                   ></div>
                   <div>
                     <p className="font-medium text-gray-900">
-                      Dr. {appointment.extendedProps.doctorName}
+                      {appointment.extendedProps.doctorName}
                     </p>
                     <p className="text-sm text-gray-600">
                       {appointment.extendedProps.specialty} •{" "}
@@ -359,7 +359,7 @@ export default function PatientCalendar({
             eventDidMount={(info) => {
               // Add tooltip
               const props = info.event.extendedProps;
-              info.el.title = `Dr. ${props.doctorName} - ${props.specialty} @ ${props.clinicName}`;
+              info.el.title = `${props.doctorName} - ${props.specialty} @ ${props.clinicName}`;
 
               // Add status badge in list view
               if (currentView.includes("list")) {

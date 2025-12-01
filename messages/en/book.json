@@ -1,8 +1,7 @@
 {
   "title": "Book an Appointment",
   "headerTitle": "Schedule Your Appointment",
-  "doctorPrefix": "Dr.",
-  "doctorLabel": "Doctor",
+  "doctorLabel": "Professional",
   "specialtiesLabel": "Specialties",
   "availableTimes": "Available Time Slots",
   "summaryTitle": "Appointment Summary",

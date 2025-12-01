@@ -1,8 +1,8 @@
 # 🏥 Docentro
 
-**Plataforma médica global que conecta pacientes con doctores**
+**Plataforma global que conecta clientes con profesionales**
 
-Una aplicación web moderna y escalable construida con Next.js 15 que facilita la gestión de citas médicas, horarios de doctores y administración de clínicas a nivel mundial.
+Una aplicación web moderna y escalable construida con Next.js 15 que facilita la gestión de citas, horarios y administración de servicios profesionales a nivel mundial. Diseñada para cualquier tipo de servicio profesional: salud, educación, mantenimiento, bienestar y más.
 
 🌐 **[Ver aplicación en vivo](https://docentro.vercel.app/)** - Disponible en https://docentro.vercel.app/
 

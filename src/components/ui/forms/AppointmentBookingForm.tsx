@@ -151,7 +151,7 @@ export default function AppointmentBookingForm({
           </div>
           <div>
             <h3 className="text-lg font-semibold text-gray-900">
-              Dr. {doctor.user.firstName} {doctor.user.lastName}
+              {doctor.user.firstName} {doctor.user.lastName}
             </h3>
             <p className="text-sm text-gray-600">
               {doctor.specialities.map((s) => s.speciality.name).join(", ")}

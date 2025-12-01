@@ -27,7 +27,7 @@ export default async function PatientCalendarPage({
     return {
       id: apt.id,
       title:
-        `Dr. ${apt.doctor?.user?.firstName || ""} ${apt.doctor?.user?.lastName || ""}`.trim(),
+        `${apt.doctor?.user?.firstName || ""} ${apt.doctor?.user?.lastName || ""}`.trim(),
       start: start.toISOString(),
       end: end.toISOString(),
       extendedProps: {

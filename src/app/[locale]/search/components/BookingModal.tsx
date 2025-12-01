@@ -286,8 +286,8 @@ export default function BookingModal({
               </h2>
               <p className="text-gray-600">
                 {mode === "clinics-list"
-                  ? `Dr. ${doctor.name} ${doctor.surname}`
-                  : `Dr. ${doctor.name} ${doctor.surname}`}
+                  ? `${doctor.name} ${doctor.surname}`
+                  : `${doctor.name} ${doctor.surname}`}
               </p>
             </div>
             <button
@@ -361,7 +361,7 @@ export default function BookingModal({
                                 {t("summaryDoctorLabel")}
                               </div>
                               <div className="font-semibold text-gray-900 text-base">
-                                Dr. {doctor.name} {doctor.surname}
+                                {doctor.name} {doctor.surname}
                               </div>
                               <div className="text-xs text-gray-600">
                                 {primarySpeciality}
@@ -475,7 +475,7 @@ export default function BookingModal({
                           <User className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
                           <div>
                             <p className="font-medium text-gray-900">
-                              Dr. {doctor.name} {doctor.surname}
+                              {doctor.name} {doctor.surname}
                             </p>
                             <p className="text-gray-600">{primarySpeciality}</p>
                           </div>

@@ -1,16 +1,16 @@
 {
   "sectionTitle": "Información Importante",
   "sectionDescription": "Conoce cómo funciona nuestra plataforma y nuestras responsabilidades",
-  "platformTitle": "Plataforma de Conexión Médica",
-  "platformText1": "Docentro es una plataforma digital que facilita la conexión entre profesionales de la salud y pacientes. Nuestro objetivo es simplificar el proceso de búsqueda y agendamiento de citas médicas, proporcionando una herramienta eficiente y confiable para ambas partes.",
-  "platformText2": "Como intermediario tecnológico, nos enfocamos exclusivamente en facilitar el contacto inicial y la gestión de citas entre médicos y pacientes. La plataforma no interviene en la prestación de servicios médicos ni en la relación profesional que se establece entre el médico y el paciente.",
+  "platformTitle": "Plataforma de Conexión Profesional",
+  "platformText1": "Docentro es una plataforma digital que facilita la conexión entre profesionales y clientes. Nuestro objetivo es simplificar el proceso de búsqueda y agendamiento de citas, proporcionando una herramienta eficiente y confiable para ambas partes.",
+  "platformText2": "Como intermediario tecnológico, nos enfocamos exclusivamente en facilitar el contacto inicial y la gestión de citas entre profesionales y clientes. La plataforma no interviene en la prestación de servicios ni en la relación profesional que se establece entre el profesional y el cliente.",
   "paymentsTitle": "Política de Pagos y Facturación",
-  "paymentsText": "Importante: Docentro NO procesa, gestiona ni se hace responsable de los pagos por servicios médicos. Todos los aspectos financieros relacionados con las consultas médicas son manejados directamente entre el profesional de la salud y el paciente.",
+  "paymentsText": "Importante: Docentro NO procesa, gestiona ni se hace responsable de los pagos por servicios profesionales. Todos los aspectos financieros relacionados con las consultas son manejados directamente entre el profesional y el cliente.",
   "paymentsBullets": [
     "Los precios mostrados son únicamente informativos y proporcionados por los profesionales",
-    "Los métodos de pago son acordados directamente con cada médico",
-    "Las facturas y comprobantes son emitidos por el profesional de la salud",
-    "Cualquier disputa de pago debe resolverse directamente con el médico"
+    "Los métodos de pago son acordados directamente con cada profesional",
+    "Las facturas y comprobantes son emitidos por el profesional",
+    "Cualquier disputa de pago debe resolverse directamente con el profesional"
   ],
   "responsibilitiesTitle": "Responsabilidades y Limitaciones",
   "yesTitle": "Lo que SÍ hacemos:",
@@ -23,11 +23,11 @@
   ],
   "noTitle": "Lo que NO hacemos:",
   "noBullets": [
-    "Procesar pagos médicos",
-    "Supervisar tratamientos médicos",
-    "Garantizar resultados médicos",
+    "Procesar pagos de servicios profesionales",
+    "Supervisar tratamientos",
+    "Garantizar resultados",
     "Intervenir en diagnósticos",
-    "Mediar en disputas médicas"
+    "Mediar en disputas profesionales"
   ],
-  "legalNote": "Nota Legal: Al utilizar Docentro, el usuario acepta que la plataforma actúa únicamente como intermediario tecnológico. Toda responsabilidad médica, ética y legal recae exclusivamente en los profesionales de la salud registrados y sus respectivos colegios profesionales."
+  "legalNote": "Nota Legal: Al utilizar Docentro, el usuario acepta que la plataforma actúa únicamente como intermediario tecnológico. Toda responsabilidad profesional, ética y legal recae exclusivamente en los profesionales registrados y sus respectivas organizaciones profesionales."
 }

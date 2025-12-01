@@ -172,7 +172,7 @@ export default function AppointmentDetailsModal({
                       {t("appointmentDetailsDoctor")}
                     </label>
                     <p className="text-gray-900 font-medium">
-                      Dr. {extendedProps.doctorName}
+                      {extendedProps.doctorName}
                     </p>
                   </div>
                   <div>

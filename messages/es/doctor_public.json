@@ -1,7 +1,7 @@
 {
-  "errorNotFoundTitle": "Doctor no encontrado",
+  "errorNotFoundTitle": "Profesional no encontrado",
   "errorNotFoundSubtitle": "Lo sentimos, no pudimos encontrar la información solicitada.",
-  "errorLoadingDoctor": "Error al cargar la información del doctor",
+  "errorLoadingDoctor": "Error al cargar la información del profesional",
   "galleryTitle": "Galería",
   "viewMoreImages": "Ver más ({count} imágenes)",
   "aboutMeTitle": "Sobre mí",
@@ -15,7 +15,7 @@
   "scheduleValueDefault": "Lun - Vie: 8:00 - 18:00",
   "clinicsTitle": "Ubicaciones",
   "imageCounterLabel": "{current} de {total}",
-  "galleryImageAlt": "Imagen de galería del doctor",
+  "galleryImageAlt": "Imagen de galería del profesional",
   "thumbnailAlt": "Miniatura {index}",
   "backAction": "Volver",
   "notAvailableShort": "N/A"

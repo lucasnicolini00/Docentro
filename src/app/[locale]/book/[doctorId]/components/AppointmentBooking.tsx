@@ -197,7 +197,7 @@ export default function AppointmentBooking({
               {t("title")}
             </h2>
             <p className="text-sm text-gray-500">
-              {t("doctorLabel")}: Dr. {doctor.name} {doctor.surname}
+              {t("doctorLabel")}: {doctor.name} {doctor.surname}
             </p>
           </div>
           <button
@@ -345,7 +345,7 @@ export default function AppointmentBooking({
                 </h3>
                 <div className="text-sm text-blue-800 space-y-1">
                   <p>
-                    <span className="font-medium">{t("doctorLabel")}:</span> Dr.{" "}
+                    <span className="font-medium">{t("doctorLabel")}:</span>{" "}
                     {doctor.name} {doctor.surname}
                   </p>
                   <p>
