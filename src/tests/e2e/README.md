@@ -51,21 +51,40 @@ npx playwright test e2e/search-doctors.spec.ts
 
 ## Prerequisites
 
-1. **Database Setup:**
-   - Ensure test database is seeded with sample data
-   - At least one doctor with available time slots
-   - Test patient account created
-
-2. **Environment Variables:**
-   ```env
-   DATABASE_URL="your-test-database-url"
-   NEXTAUTH_SECRET="your-secret"
-   NEXTAUTH_URL="http://localhost:3000"
+1. **Local PostgreSQL Database:**
+   ```bash
+   # Install PostgreSQL if you haven't already
+   # macOS: brew install postgresql@16
+   # Ubuntu: sudo apt install postgresql
+   
+   # Start PostgreSQL
+   # macOS: brew services start postgresql@16
+   # Ubuntu: sudo systemctl start postgresql
    ```
 
-3. **Server Running:**
-   - E2E tests will automatically start the dev server
-   - Or run manually: `npm run dev`
+2. **Setup Test Database:**
+   ```bash
+   # Run the setup script to create and seed test database
+   npm run test:e2e:setup
+   ```
+   
+   **Or manually:**
+   ```bash
+   # Create test database
+   psql -U postgres -c "CREATE DATABASE docentro_test;"
+   
+   # Load .env.test variables
+   export $(cat .env.test | grep -v '^#' | xargs)
+   
+   # Run migrations and seed
+   npx prisma migrate deploy
+   npx prisma db seed
+   ```
+
+3. **Environment Variables:**
+   - The `.env.test` file is already configured for local testing
+   - Update `DATABASE_URL` if your local PostgreSQL has different credentials
+   - Default: `postgresql://postgres:postgres@localhost:5432/docentro_test`
 
 ## Writing New E2E Tests
 
