@@ -50,7 +50,7 @@ export function convertDecimalsInObject<T>(obj: T): T {
       // Skip functions and constructor
       if (typeof value === "function") continue;
       if (key === "constructor") continue;
-      
+
       converted[key] = convertDecimalsInObject(value);
     }
     return converted as T;

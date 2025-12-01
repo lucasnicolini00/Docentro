@@ -218,7 +218,7 @@ const getClinicCoordinates = (
     }
   }
 
-  // Default to Bolivia center if no location data available
+  // Default to global center if no location data available
   return { lat: -16.5, lng: -68.1193 };
 };
 
@@ -433,7 +433,8 @@ export default function MapModal({
                       </p>
                       {doctor.yearsExp > 0 && (
                         <p className="text-xs text-gray-500 mt-1">
-                          {doctor.yearsExp} {doctor.yearsExp === 1 ? t("year") : t("years")}
+                          {doctor.yearsExp}{" "}
+                          {doctor.yearsExp === 1 ? t("year") : t("years")}
                         </p>
                       )}
                     </div>

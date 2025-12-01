@@ -6,5 +6,5 @@
   "specialtyLabel": "Specialty",
   "locationLabel": "City or location",
   "specialtyPlaceholder": "e.g., Psychology, Dermatology...",
-  "locationPlaceholder": "e.g., La Paz, Santa Cruz..."
+  "locationPlaceholder": "e.g., City, Location..."
 }

@@ -25,10 +25,10 @@ const containerStyle = {
   borderRadius: "8px",
 };
 
-// Default center (Santa Cruz, Bolivia)
+// Default center (generic global location)
 const defaultCenter = {
-  lat: -17.8146,
-  lng: -63.1561,
+  lat: 0,
+  lng: 0,
 };
 
 const mapOptions = {
@@ -154,7 +154,7 @@ export default function LocationPicker({
       setIsGeocodingAddress(true);
 
       const geocoder = new google.maps.Geocoder();
-      const searchQuery = `${address}, Bolivia`; // Add Bolivia to improve accuracy
+      const searchQuery = address;
 
       geocoder.geocode({ address: searchQuery }, (results, status) => {
         setIsGeocodingAddress(false);

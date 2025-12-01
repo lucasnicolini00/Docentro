@@ -16,10 +16,10 @@ const containerStyle = {
   borderRadius: "12px",
 };
 
-// Default center (La Paz, Bolivia)
+// Default center (generic global location)
 const defaultCenter = {
-  lat: -16.5,
-  lng: -68.1193,
+  lat: 0,
+  lng: 0,
 };
 
 // Map options with custom styling to match the design

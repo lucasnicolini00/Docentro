@@ -120,9 +120,9 @@ export async function getDoctorProfile(): Promise<ActionResult> {
     if (fullDoctor.profileImage) {
       imageIds.push(fullDoctor.profileImage.id);
     }
-    
+
     const imageUrlMap = await getBatchImageUrls(imageIds);
-    
+
     const profileImageUrl = fullDoctor.profileImage
       ? imageUrlMap[fullDoctor.profileImage.id] || null
       : null;
@@ -165,7 +165,7 @@ export async function getAllDoctorImages(): Promise<ActionResult> {
     // Batch process image URLs
     const imageIds = images.map((img) => img.id);
     const imageUrlMap = await getBatchImageUrls(imageIds);
-    
+
     const imagesWithUrls = images.map((img) => ({
       id: img.id,
       url: imageUrlMap[img.id] || "",
@@ -299,7 +299,7 @@ export async function getDoctorImagesById(
     // Batch process image URLs
     const imageIds = images.map((img) => img.id);
     const imageUrlMap = await getBatchImageUrls(imageIds);
-    
+
     const imagesWithUrls = images.map((img) => ({
       id: img.id,
       url: imageUrlMap[img.id] || "",

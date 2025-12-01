@@ -1,6 +1,7 @@
 # E2E Testing Guide
 
 ## Overview
+
 End-to-end tests for critical user flows using Playwright.
 
 ## Running E2E Tests
@@ -25,17 +26,20 @@ npx playwright test e2e/search-doctors.spec.ts
 ## Test Files
 
 ### 1. `smoke.spec.ts` - Basic Smoke Tests
+
 - Homepage loads
 - Navigation works
 - Authentication buttons visible
 
 ### 2. `search-doctors.spec.ts` - Doctor Search
+
 - Search from homepage
 - Filter by specialty
 - Filter by location
 - Navigate to doctor profile
 
 ### 3. `book-appointment.spec.ts` - Appointment Booking
+
 - Authentication required
 - Booking form validation
 - Complete booking flow
@@ -44,6 +48,7 @@ npx playwright test e2e/search-doctors.spec.ts
 ## Test Data
 
 **Test Patient Credentials:**
+
 - Email: `patient@test.com`
 - Password: `password123`
 
@@ -52,30 +57,33 @@ npx playwright test e2e/search-doctors.spec.ts
 ## Prerequisites
 
 1. **Local PostgreSQL Database:**
+
    ```bash
    # Install PostgreSQL if you haven't already
    # macOS: brew install postgresql@16
    # Ubuntu: sudo apt install postgresql
-   
+
    # Start PostgreSQL
    # macOS: brew services start postgresql@16
    # Ubuntu: sudo systemctl start postgresql
    ```
 
 2. **Setup Test Database:**
+
    ```bash
    # Run the setup script to create and seed test database
    npm run test:e2e:setup
    ```
-   
+
    **Or manually:**
+
    ```bash
    # Create test database
    psql -U postgres -c "CREATE DATABASE docentro_test;"
-   
+
    # Load .env.test variables
    export $(cat .env.test | grep -v '^#' | xargs)
-   
+
    # Run migrations and seed
    npx prisma migrate deploy
    npx prisma db seed
@@ -89,36 +97,39 @@ npx playwright test e2e/search-doctors.spec.ts
 ## Writing New E2E Tests
 
 ```typescript
-import { test, expect } from '@playwright/test'
+import { test, expect } from "@playwright/test";
 
-test.describe('Feature Name', () => {
-  test('should do something', async ({ page }) => {
-    await page.goto('/path')
-    
+test.describe("Feature Name", () => {
+  test("should do something", async ({ page }) => {
+    await page.goto("/path");
+
     // Interact with page
-    await page.click('button')
-    
+    await page.click("button");
+
     // Assert
-    await expect(page).toHaveURL(/expected/)
-  })
-})
+    await expect(page).toHaveURL(/expected/);
+  });
+});
 ```
 
 ## Best Practices
 
 1. **Use data-testid for stable selectors:**
+
    ```typescript
-   await page.click('[data-testid="book-button"]')
+   await page.click('[data-testid="book-button"]');
    ```
 
 2. **Wait for network idle:**
+
    ```typescript
-   await page.waitForLoadState('networkidle')
+   await page.waitForLoadState("networkidle");
    ```
 
 3. **Use fixtures for authentication:**
+
    ```typescript
-   test.use({ storageState: 'auth.json' })
+   test.use({ storageState: "auth.json" });
    ```
 
 4. **Keep tests independent:**
@@ -128,6 +139,7 @@ test.describe('Feature Name', () => {
 ## CI/CD Integration
 
 E2E tests run automatically in GitHub Actions on:
+
 - Push to `main` or `develop`
 - Pull requests
 
@@ -149,6 +161,7 @@ npx playwright test --debug e2e/book-appointment.spec.ts
 ## Coverage
 
 Current E2E test coverage:
+
 - ✅ Homepage & Navigation
 - ✅ Doctor Search & Filters
 - ✅ Appointment Booking Flow

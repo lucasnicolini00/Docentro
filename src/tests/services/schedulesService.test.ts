@@ -624,7 +624,7 @@ describe("schedulesService", () => {
       prismaMock.schedule.findMany.mockResolvedValue(schedules as any);
       prismaMock.appointment.findMany.mockResolvedValue(appointments as any);
 
-      const result = await schedulesService.getDoctorSchedulesWithSlots(
+      await schedulesService.getDoctorSchedulesWithSlots(
         "doctor-123",
         startDate,
         endDate

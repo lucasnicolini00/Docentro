@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-Docentro is a Next.js 15.3.5 medical platform connecting patients with doctors in Bolivia. Built with TypeScript, Prisma ORM (PostgreSQL), NextAuth.js, and Tailwind CSS using the app router architecture. **Status**: Production-ready, fully migrated to Server Actions.
+Docentro is a Next.js 15.3.5 medical platform connecting patients with doctors globally. Built with TypeScript, Prisma ORM (PostgreSQL), NextAuth.js, and Tailwind CSS using the app router architecture. **Status**: Production-ready, fully migrated to Server Actions.
 
 ## 🚨 Critical AI Coding Rules
 
