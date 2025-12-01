@@ -7,9 +7,6 @@ export const timeSlotsService = {
       where: { id: doctorId },
       select: {
         id: true,
-        name: true,
-        surname: true,
-        email: true,
         user: {
           select: {
             id: true,
@@ -97,8 +94,6 @@ export const timeSlotsService = {
                 patient: {
                   select: {
                     id: true,
-                    name: true,
-                    surname: true,
                     user: {
                       select: {
                         firstName: true,

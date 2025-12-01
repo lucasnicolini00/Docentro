@@ -177,20 +177,12 @@ export async function registerUser(data: RegisterData): Promise<AuthResult> {
           await tx.patient.create({
             data: {
               userId: user.id,
-              name: data.firstName,
-              surname: data.lastName,
-              email: data.email,
-              phone: data.phone,
             },
           });
         } else if (data.userType === "doctor") {
           await tx.doctor.create({
             data: {
               userId: user.id,
-              name: data.firstName,
-              surname: data.lastName,
-              email: data.email,
-              phone: data.phone,
             },
           });
         }
@@ -295,8 +287,6 @@ export async function getUserById(userId: string) {
         patient: {
           select: {
             id: true,
-            name: true,
-            surname: true,
             birthdate: true,
             gender: true,
           },
@@ -304,8 +294,6 @@ export async function getUserById(userId: string) {
         doctor: {
           select: {
             id: true,
-            name: true,
-            surname: true,
             picaddress: true,
             specialities: {
               include: {

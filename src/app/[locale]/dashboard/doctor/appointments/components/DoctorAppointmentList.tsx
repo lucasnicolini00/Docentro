@@ -27,10 +27,12 @@ interface Appointment {
   notes: string | null;
   patient: {
     id: string;
-    name: string;
-    surname: string;
-    email: string;
-    phone: string | null;
+    user: {
+      firstName: string;
+      lastName: string;
+      email: string;
+      phone: string | null;
+    };
   };
   clinic: {
     id: string;
@@ -99,8 +101,8 @@ export default function DoctorAppointmentList({
           // );
 
           // Fire-and-forget server action to send the email. Log failures.
-          // sendAppointmentStatusUpdateEmail(selectedAppointment.patient.email, {
-          //   patientName: `${selectedAppointment.patient.name} ${selectedAppointment.patient.surname}`,
+          // sendAppointmentStatusUpdateEmail(selectedAppointment.patient.user.email, {
+          //   patientName: `${selectedAppointment.patient.user.firstName} ${selectedAppointment.patient.user.lastName}`,
           //   doctorName: user?.name || "",
           //   clinicName: selectedAppointment.clinic.name,
           //   date: formattedDate,
@@ -230,17 +232,18 @@ export default function DoctorAppointmentList({
                   <div className="flex items-start justify-between mb-4">
                     <div>
                       <h4 className="text-lg font-semibold text-gray-900 mb-1">
-                        {appointment.patient.name} {appointment.patient.surname}
+                        {appointment.patient.user.firstName}{" "}
+                        {appointment.patient.user.lastName}
                       </h4>
                       <div className="flex flex-wrap gap-4 text-sm text-gray-600">
                         <div className="flex items-center gap-1">
                           <Mail className="w-4 h-4" />
-                          {appointment.patient.email}
+                          {appointment.patient.user.email}
                         </div>
-                        {appointment.patient.phone && (
+                        {appointment.patient.user.phone && (
                           <div className="flex items-center gap-1">
                             <Phone className="w-4 h-4" />
-                            {appointment.patient.phone}
+                            {appointment.patient.user.phone}
                           </div>
                         )}
                       </div>
@@ -398,8 +401,8 @@ export default function DoctorAppointmentList({
                     </div>
                     <div className="flex-1">
                       <h4 className="font-semibold text-gray-900 mb-2">
-                        {selectedAppointment.patient.name}{" "}
-                        {selectedAppointment.patient.surname}
+                        {selectedAppointment.patient.user.firstName}{" "}
+                        {selectedAppointment.patient.user.lastName}
                       </h4>
                       <div className="grid grid-cols-2 gap-3 text-sm">
                         <div>

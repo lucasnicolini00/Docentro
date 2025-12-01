@@ -1,40 +1,13 @@
 import { getFeaturedDoctors } from "@/lib/actions/search";
 import { getImageUrl } from "@/lib/actions/images-uploader";
-import type {
-  Doctor,
-  DoctorSpeciality,
-  Speciality,
-  Opinion,
-  DoctorClinic,
-  Clinic,
-  Pricing,
-} from "@prisma/client";
 import Link from "next/link";
 import { getT } from "@/lib/getT";
 import { getLocale } from "next-intl/server";
 
-type DoctorWithRelations = Doctor & {
-  specialities: (DoctorSpeciality & {
-    speciality: Speciality;
-  })[];
-  opinions: Opinion[];
-  clinics: (DoctorClinic & {
-    clinic: Clinic;
-  })[];
-  pricings: (Pricing & {
-    clinic: Clinic;
-  })[];
-  profileImage?: {
-    id: string;
-    url: string;
-  } | null;
-};
 export default async function FeaturedDoctorsSection() {
   // Fetch real data from database using Server Action
   const result = await getFeaturedDoctors();
-  const doctors: DoctorWithRelations[] = result.success
-    ? result.data || []
-    : [];
+  const doctors: any[] = result.success ? result.data || [] : [];
 
   // Get signed URLs for profile images
   const doctorsWithSignedUrls = await Promise.all(
@@ -89,7 +62,7 @@ export default async function FeaturedDoctorsSection() {
                     // eslint-disable-next-line @next/next/no-img-element
                     <img
                       src={doctor.profileImageUrl}
-                      alt={`${doctor.name} ${doctor.surname}`}
+                      alt={`${doctor.user.firstName} ${doctor.user.lastName}`}
                       className="w-20 h-20 rounded-full object-cover border-2 border-gray-200"
                     />
                   ) : (
@@ -102,7 +75,7 @@ export default async function FeaturedDoctorsSection() {
                 {/* Doctor Info */}
                 <div className="flex-1 min-w-0">
                   <h3 className="text-lg font-semibold text-gray-900 truncate">
-                    {doctor.name} {doctor.surname}
+                    {doctor.user.firstName} {doctor.user.lastName}
                   </h3>
                   <p className="text-sm text-gray-600 mb-2">
                     {primarySpeciality}

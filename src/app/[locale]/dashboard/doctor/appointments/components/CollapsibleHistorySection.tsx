@@ -14,10 +14,12 @@ interface Appointment {
   notes: string | null;
   patient: {
     id: string;
-    name: string;
-    surname: string;
-    email: string;
-    phone: string | null;
+    user: {
+      firstName: string;
+      lastName: string;
+      email: string;
+      phone: string | null;
+    };
   };
   clinic: {
     id: string;

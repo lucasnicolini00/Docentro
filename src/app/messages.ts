@@ -105,6 +105,9 @@ const MESSAGE_BUNDLE: Record<string, Record<string, any>> = {
   },
 };
 
+// Auto-detect all namespaces from the bundle (single source of truth)
+export const MESSAGE_NAMESPACES = Object.keys(MESSAGE_BUNDLE.en);
+
 export async function getMessages(locale: string, namespaces: string[]) {
   const localeBundle = MESSAGE_BUNDLE[locale] || MESSAGE_BUNDLE.en;
   const result: Record<string, any> = {};

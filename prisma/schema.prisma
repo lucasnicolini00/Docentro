@@ -74,16 +74,15 @@ model User {
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
   deletedAt DateTime?
+
+  @@index([email, role]) // For auth and role-based queries
+  @@index([isActive])
 }
 
 model Patient {
   id        String    @id @default(cuid())
   userId    String    @unique
   user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  name      String
-  surname   String
-  email     String    @unique
-  phone     String?
   birthdate DateTime?
   gender    String?
 
@@ -93,17 +92,15 @@ model Patient {
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
   deletedAt DateTime?
+
+  @@index([userId])
 }
 
 model Doctor {
   id             String  @id @default(cuid())
   userId         String  @unique
   user           User    @relation(fields: [userId], references: [id], onDelete: Cascade)
-  name           String
-  surname        String
-  email          String? @unique
-  phone          String?
-  picaddress     String?
+  picaddress     String? // Doctor-specific field (keep)
   profileImageId String? @unique
   profileImage   Image?  @relation("DoctorProfileImage", fields: [profileImageId], references: [id])
   images         Image[] @relation("DoctorGallery")
@@ -131,8 +128,9 @@ model Doctor {
   updatedAt DateTime  @updatedAt
   deletedAt DateTime?
 
-  @@index([name, surname])
   @@index([userId]) // For auth lookups
+  @@index([isPublic, deletedAt]) // For public doctor listings
+  @@index([deletedAt]) // For soft delete filtering
 }
 
 // Images stored externally (e.g. Google Cloud Storage). Each Image may be:
@@ -269,6 +267,8 @@ model Pricing {
 
   @@index([doctorId])
   @@index([clinicId])
+  @@index([doctorId, isActive]) // For active pricing lookups
+  @@index([clinicId, isActive])
 }
 
 model Schedule {
@@ -304,8 +304,8 @@ model TimeSlot {
   isBooked   Boolean  @default(false)
   isBlocked  Boolean  @default(false) // For doctor-blocked slots
 
-  appointmentId String?      @unique
-  appointment   Appointment? @relation(fields: [appointmentId], references: [id], onDelete: SetNull)
+  // One-to-one relationship owned by Appointment
+  appointment Appointment?
 
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
@@ -329,7 +329,7 @@ model Appointment {
   patient         Patient           @relation(fields: [patientId], references: [id], onDelete: Cascade)
   clinic          Clinic            @relation(fields: [clinicId], references: [id], onDelete: Cascade)
   pricing         Pricing?          @relation(fields: [pricingId], references: [id], onDelete: SetNull)
-  timeSlot        TimeSlot?
+  timeSlot        TimeSlot?         @relation(fields: [timeSlotId], references: [id], onDelete: Restrict)
   datetime        DateTime
   durationMinutes Int               @default(30)
   type            AppointmentType   @default(IN_PERSON)
@@ -346,6 +346,9 @@ model Appointment {
   @@index([doctorId, createdAt])
   @@index([doctorId, status, datetime])
   @@index([patientId, doctorId])
+  @@index([patientId, datetime]) // For patient appointment history
+  @@index([patientId, status]) // For patient filtering by status
+  @@index([clinicId, datetime]) // For clinic-based queries
 }
 
 model Opinion {
@@ -363,5 +366,8 @@ model Opinion {
   updatedAt DateTime  @updatedAt
   deletedAt DateTime?
 
+  @@unique([patientId, doctorId]) // One opinion per patient-doctor pair
   @@index([doctorId])
+  @@index([doctorId, rating]) // For rating aggregations
+  @@index([patientId])
 }

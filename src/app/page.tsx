@@ -1,6 +1,6 @@
 import { headers, cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import { detectPreferredLocaleFromStrings } from "@/lib/detectLocale";
+import { detectLocale } from "@/lib/detectLocale";
 
 export default async function RootRedirect() {
   // Middleware performs redirects in most hosts, but on some preview/static
@@ -9,6 +9,6 @@ export default async function RootRedirect() {
   const localeCookie = cookieStore.get("NEXT_LOCALE")?.value ?? null;
   const hdrs = await headers();
   const accept = hdrs.get("accept-language") ?? null;
-  const best = detectPreferredLocaleFromStrings(localeCookie, accept);
+  const best = detectLocale(localeCookie, accept);
   redirect(`/${best}`);
 }

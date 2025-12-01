@@ -4,7 +4,6 @@ import type { ActionResult } from "./utils";
 import { searchService } from "@/lib/services/searchService";
 import { convertDoctorDecimals } from "@/lib/utils/serialization";
 
-
 /**
  * Server action for getting all available specialities for autocomplete
  */
@@ -72,9 +71,15 @@ export async function getFeaturedDoctors(): Promise<ActionResult> {
   try {
     const doctors = await searchService.getFeaturedDoctors();
 
+    // Convert Decimal fields (e.g. price) to plain numbers so Next server
+    // components don't pass Decimal objects to client components.
+    const serialized = Array.isArray(doctors)
+      ? doctors.map((d) => convertDoctorDecimals(d))
+      : doctors;
+
     return {
       success: true,
-      data: doctors,
+      data: serialized,
     };
   } catch (error) {
     console.error("Error fetching featured doctors:", error);

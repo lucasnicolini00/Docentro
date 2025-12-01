@@ -265,9 +265,18 @@ export async function getDoctorPublicProfile(
       };
     }
 
+    // Convert Decimal fields to numbers for client compatibility
+    const serializedDoctor = {
+      ...doctor,
+      pricings: doctor.pricings?.map((p: any) => ({
+        ...p,
+        price: p.price ? Number(p.price) : p.price,
+      })),
+    };
+
     return {
       success: true,
-      data: doctor,
+      data: serializedDoctor,
     };
   } catch (error) {
     console.error("Error fetching doctor public profile:", error);

@@ -398,8 +398,12 @@ export const schedulesService = {
         },
         doctor: {
           select: {
-            name: true,
-            surname: true,
+            user: {
+              select: {
+                firstName: true,
+                lastName: true,
+              },
+            },
           },
         },
       },
@@ -488,8 +492,12 @@ export const schedulesService = {
         clinicId: true,
         patient: {
           select: {
-            name: true,
-            surname: true,
+            user: {
+              select: {
+                firstName: true,
+                lastName: true,
+              },
+            },
           },
         },
       },

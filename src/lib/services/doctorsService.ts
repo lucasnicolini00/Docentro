@@ -39,23 +39,24 @@ export const doctorsService = {
     return withErrorHandling(
       () =>
         prisma.$transaction(async (tx) => {
-          const updatedUser = await tx.user.update({
-            where: { id: userId },
+          // Get doctor to access userId
+          const doctor = await tx.doctor.findUnique({
+            where: { id: doctorId },
+            select: { userId: true },
+          });
+
+          if (!doctor) {
+            throw new Error("Doctor not found");
+          }
+
+          // Update User fields (name, email, phone are in User table now)
+          await tx.user.update({
+            where: { id: doctor.userId },
             data: {
               firstName: data.firstName,
               lastName: data.lastName,
               email: data.email,
               phone: data.phone || null,
-            },
-          });
-
-          const updatedDoctor = await tx.doctor.update({
-            where: { id: doctorId },
-            data: {
-              name: data.doctorName,
-              surname: data.doctorSurname,
-              email: data.doctorEmail,
-              phone: data.doctorPhone || null,
             },
           });
 
@@ -90,7 +91,7 @@ export const doctorsService = {
             });
           }
 
-          return { updatedUser, updatedDoctor };
+          return { updatedDoctor: doctor };
         }),
       {
         service: "doctorsService",
@@ -118,10 +119,6 @@ export const doctorsService = {
           where: { userId },
           select: {
             id: true,
-            name: true,
-            surname: true,
-            email: true,
-            phone: true,
             user: {
               select: {
                 firstName: true,
@@ -190,10 +187,14 @@ export const doctorsService = {
                 patient: {
                   select: {
                     id: true,
-                    name: true,
-                    surname: true,
-                    email: true,
-                    phone: true,
+                    user: {
+                      select: {
+                        firstName: true,
+                        lastName: true,
+                        email: true,
+                        phone: true,
+                      },
+                    },
                   },
                 },
                 clinic: {

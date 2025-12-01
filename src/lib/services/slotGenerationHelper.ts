@@ -27,8 +27,10 @@ export interface ScheduleTemplate {
     address: string | null;
   };
   doctor?: {
-    name: string;
-    surname: string;
+    user: {
+      firstName: string;
+      lastName: string;
+    };
   };
 }
 
@@ -39,8 +41,10 @@ export interface AppointmentRecord {
   status: string;
   clinicId?: string;
   patient?: {
-    name: string;
-    surname: string;
+    user: {
+      firstName: string;
+      lastName: string;
+    };
   };
 }
 
@@ -57,16 +61,20 @@ export interface GeneratedSlot {
       address: string | null;
     };
     doctor?: {
-      name: string;
-      surname: string;
+      user: {
+        firstName: string;
+        lastName: string;
+      };
     };
   };
   appointment?: {
     id: string;
     status: string;
     patient?: {
-      name: string;
-      surname: string;
+      user: {
+        firstName: string;
+        lastName: string;
+      };
     };
   } | null;
 }

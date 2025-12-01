@@ -51,7 +51,7 @@ export async function getTimeSlotsForBooking(
         data: {
           doctor: {
             id: doctor.id,
-            name: `${doctor.name} ${doctor.surname}`,
+            name: `${doctor.user.firstName} ${doctor.user.lastName}`,
             specialties: doctor.specialities.map((ds) => ds.speciality.name),
           },
           clinic: {
@@ -76,7 +76,7 @@ export async function getTimeSlotsForBooking(
     const result = {
       doctor: {
         id: doctor.id,
-        name: `${doctor.name} ${doctor.surname}`,
+        name: `${doctor.user.firstName} ${doctor.user.lastName}`,
         specialties: doctor.specialities.map((ds) => ds.speciality.name),
       },
       clinic: {
@@ -254,7 +254,7 @@ export async function getTimeSlotsForCalendarAction(
         : null,
       schedule: {
         doctorName: slot.schedule?.doctor
-          ? `${slot.schedule.doctor.name} ${slot.schedule.doctor.surname}`
+          ? `${slot.schedule.doctor.user.firstName} ${slot.schedule.doctor.user.lastName}`
           : null,
         clinicName: slot.schedule?.clinic?.name || null,
       },

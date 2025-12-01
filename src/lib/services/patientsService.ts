@@ -34,10 +34,6 @@ export const patientsService = {
           const updatedPatient = await tx.patient.update({
             where: { id: patientId },
             data: {
-              name: data.patientName,
-              surname: data.patientSurname,
-              email: data.patientEmail,
-              phone: data.patientPhone || null,
               birthdate: data.birthdate ? new Date(data.birthdate) : null,
               gender: data.gender || null,
             },
@@ -60,10 +56,6 @@ export const patientsService = {
           where: { id: patientId },
           select: {
             id: true,
-            name: true,
-            surname: true,
-            email: true,
-            phone: true,
             birthdate: true,
             gender: true,
             appointments: {
@@ -77,8 +69,6 @@ export const patientsService = {
                 doctor: {
                   select: {
                     id: true,
-                    name: true,
-                    surname: true,
                     user: {
                       select: {
                         firstName: true,

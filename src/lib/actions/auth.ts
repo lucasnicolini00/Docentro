@@ -9,7 +9,7 @@ import {
 import { redirect } from "next/navigation";
 import { cookies, headers } from "next/headers";
 import type { ActionResult } from "./utils";
-import { detectPreferredLocaleFromStrings } from "@/lib/detectLocale";
+import { detectLocale } from "@/lib/detectLocale";
 
 /**
  * Server action for user registration
@@ -108,10 +108,7 @@ export async function logoutAction(): Promise<void> {
   // Detect user's preferred locale
   const localeCookie = cookieStore.get("NEXT_LOCALE");
   const acceptLanguage = headersList.get("accept-language");
-  const locale = detectPreferredLocaleFromStrings(
-    localeCookie?.value,
-    acceptLanguage
-  );
+  const locale = detectLocale(localeCookie?.value, acceptLanguage);
 
   cookieStore.delete("user-session");
   // Redirect to user's locale home after logout

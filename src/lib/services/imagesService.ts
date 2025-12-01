@@ -29,8 +29,12 @@ export const imagesService = {
             profileForDoctor: {
               select: {
                 id: true,
-                name: true,
-                surname: true,
+                user: {
+                  select: {
+                    firstName: true,
+                    lastName: true,
+                  },
+                },
               },
             },
           },
@@ -125,8 +129,6 @@ export const imagesService = {
             doctor: {
               select: {
                 id: true,
-                name: true,
-                surname: true,
                 profileImageId: true,
                 profileImage: {
                   select: {
@@ -139,8 +141,6 @@ export const imagesService = {
             patient: {
               select: {
                 id: true,
-                name: true,
-                surname: true,
               },
             },
           },

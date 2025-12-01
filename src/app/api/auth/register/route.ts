@@ -46,10 +46,6 @@ export async function POST(request: NextRequest) {
         await tx.patient.create({
           data: {
             userId: user.id,
-            name: firstName,
-            surname: lastName,
-            email,
-            phone: phone || "",
             birthdate: new Date(), // You can make this optional in registration
             gender: "Not specified",
           },
@@ -58,10 +54,6 @@ export async function POST(request: NextRequest) {
         await tx.doctor.create({
           data: {
             userId: user.id,
-            name: firstName,
-            surname: lastName,
-            email,
-            phone: phone || "",
           },
         });
       }

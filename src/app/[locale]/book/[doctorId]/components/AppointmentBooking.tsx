@@ -76,6 +76,7 @@ import { useTranslations } from "next-intl";
 export default function AppointmentBooking({
   doctor,
   clinics,
+  pricings = [],
   onClose,
 }: AppointmentBookingProps) {
   const [step, setStep] = useState(1);
@@ -88,7 +89,7 @@ export default function AppointmentBooking({
   );
   const [notes, setNotes] = useState("");
   const [availableTimeSlots, setAvailableTimeSlots] = useState<TimeSlot[]>([]);
-  const [pricing, setPricing] = useState<Pricing[]>([]);
+  const [pricing, setPricing] = useState<Pricing[]>(pricings);
   const [isLoading, setIsLoading] = useState(false);
   const [isBooking, setIsBooking] = useState(false);
 

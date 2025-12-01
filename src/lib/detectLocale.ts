@@ -1,71 +1,54 @@
 export const SUPPORTED_LOCALES = ["es", "en"] as const;
 export type SupportedLocale = (typeof SUPPORTED_LOCALES)[number];
 
-// Detect from a standard Request (used by middleware)
-export function detectPreferredLocaleFromRequest(
-  req: Request
+/**
+ * Parse Accept-Language header to find supported locale
+ */
+function parseAcceptLanguage(header: string): SupportedLocale | null {
+  const langs = header
+    .split(",")
+    .map((p) => p.split(";")[0].trim().toLowerCase())
+    .filter(Boolean);
+
+  for (const lang of langs) {
+    if (lang === "es" || lang.startsWith("es-")) return "es";
+    if (lang === "en" || lang.startsWith("en-")) return "en";
+  }
+  return null;
+}
+
+/**
+ * Unified locale detection function
+ * Works with cookie string and Accept-Language header
+ */
+export function detectLocale(
+  cookie?: string | null,
+  acceptHeader?: string | null
 ): SupportedLocale {
   // 1. Cookie override
-  try {
-    const cookieHeader = req.headers.get("cookie") || "";
-    const localeCookie = /(?:^|;\s*)NEXT_LOCALE=([^;]+)/i.exec(
-      cookieHeader
-    )?.[1];
-    if (localeCookie && SUPPORTED_LOCALES.includes(localeCookie as any)) {
-      return localeCookie as SupportedLocale;
-    }
-  } catch {}
+  if (cookie && SUPPORTED_LOCALES.includes(cookie as SupportedLocale)) {
+    return cookie as SupportedLocale;
+  }
 
   // 2. Accept-Language negotiation
-  const accept = req.headers.get("accept-language");
-  if (accept) {
-    const parsed = accept
-      .split(",")
-      .map((p) => p.split(";")[0].trim().toLowerCase())
-      .filter(Boolean);
-    const found = parsed.find((lang) => {
-      if (lang === "es" || lang.startsWith("es-")) return true;
-      if (lang === "en" || lang.startsWith("en-")) return true;
-      return false;
-    });
-    if (found) {
-      if (found.startsWith("es")) return "es";
-      if (found.startsWith("en")) return "en";
-    }
+  if (acceptHeader) {
+    const detected = parseAcceptLanguage(acceptHeader);
+    if (detected) return detected;
   }
 
   // 3. Fallback
   return "es";
 }
 
-// Detect from cookie value + Accept-Language string (used by server components)
-export function detectPreferredLocaleFromStrings(
-  localeCookieValue?: string | null,
-  acceptHeader?: string | null
+/**
+ * Detect locale from Next.js Request object (used by middleware)
+ */
+export function detectPreferredLocaleFromRequest(
+  req: Request
 ): SupportedLocale {
-  if (
-    localeCookieValue &&
-    SUPPORTED_LOCALES.includes(localeCookieValue as any)
-  ) {
-    return localeCookieValue as SupportedLocale;
-  }
+  const cookieHeader = req.headers.get("cookie") || "";
+  const cookie = /(?:^|;\s*)NEXT_LOCALE=([^;]+)/i.exec(cookieHeader)?.[1];
+  const accept = req.headers.get("accept-language");
 
-  const accept = acceptHeader;
-  if (accept) {
-    const parsed = accept
-      .split(",")
-      .map((p) => p.split(";")[0].trim().toLowerCase())
-      .filter(Boolean);
-    const found = parsed.find((lang) => {
-      if (lang === "es" || lang.startsWith("es-")) return true;
-      if (lang === "en" || lang.startsWith("en-")) return true;
-      return false;
-    });
-    if (found) {
-      if (found.startsWith("es")) return "es";
-      if (found.startsWith("en")) return "en";
-    }
-  }
-
-  return "es";
+  return detectLocale(cookie, accept);
 }

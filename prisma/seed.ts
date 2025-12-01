@@ -169,40 +169,24 @@ async function main() {
     prisma.doctor.create({
       data: {
         userId: users[0].id,
-        name: "Carlos",
-        surname: "Rodriguez",
-        email: "carlos.rodriguez@example.com",
-        phone: "+54 11 1234-5678",
         picaddress: null,
       },
     }),
     prisma.doctor.create({
       data: {
         userId: users[1].id,
-        name: "Ana",
-        surname: "Martinez",
-        email: "ana.martinez@example.com",
-        phone: "+54 11 2345-6789",
         picaddress: null,
       },
     }),
     prisma.doctor.create({
       data: {
         userId: users[2].id,
-        name: "Luis",
-        surname: "Garcia",
-        email: "luis.garcia@example.com",
-        phone: "+54 11 3456-7890",
         picaddress: null,
       },
     }),
     prisma.doctor.create({
       data: {
         userId: users[3].id,
-        name: "Maria",
-        surname: "Lopez",
-        email: "maria.lopez@example.com",
-        phone: "+54 11 4567-8901",
         picaddress: null,
       },
     }),
@@ -215,10 +199,6 @@ async function main() {
     prisma.patient.create({
       data: {
         userId: users[4].id,
-        name: "Juan",
-        surname: "Perez",
-        email: "juan.perez@example.com",
-        phone: "+54 11 5678-9012",
         birthdate: new Date("1985-03-15"),
         gender: "Masculino",
       },
@@ -226,10 +206,6 @@ async function main() {
     prisma.patient.create({
       data: {
         userId: users[5].id,
-        name: "Laura",
-        surname: "Fernandez",
-        email: "laura.fernandez@example.com",
-        phone: "+54 11 6789-0123",
         birthdate: new Date("1990-07-22"),
         gender: "Femenino",
       },

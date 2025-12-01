@@ -21,6 +21,7 @@ export function decimalToNumber(value: unknown): number | unknown {
 /**
  * Recursively converts all Decimal fields in an object to numbers
  * Use for complex nested objects with Decimal fields
+ * Strips out functions and non-serializable properties for client compatibility
  */
 export function convertDecimalsInObject<T>(obj: T): T {
   if (obj === null || obj === undefined) {
@@ -37,10 +38,19 @@ export function convertDecimalsInObject<T>(obj: T): T {
     return obj.map((item) => convertDecimalsInObject(item)) as T;
   }
 
+  // Handle Date objects - convert to ISO string
+  if (obj instanceof Date) {
+    return obj.toISOString() as unknown as T;
+  }
+
   // Handle objects
   if (typeof obj === "object") {
     const converted: Record<string, unknown> = {};
     for (const [key, value] of Object.entries(obj)) {
+      // Skip functions and constructor
+      if (typeof value === "function") continue;
+      if (key === "constructor") continue;
+      
       converted[key] = convertDecimalsInObject(value);
     }
     return converted as T;
@@ -53,22 +63,11 @@ export function convertDecimalsInObject<T>(obj: T): T {
 /**
  * Type-safe Decimal converter for doctor search results
  * Handles the full structure of doctor objects returned from search
+ * Uses deep conversion to handle nested structures (pricings with clinic relations, etc.)
  */
 export function convertDoctorDecimals<T extends Record<string, unknown>>(
   doctor: T
 ): T {
-  // Convert pricings array if present
-  if (Array.isArray(doctor.pricings)) {
-    const convertedPricings = doctor.pricings.map((pricing: Record<string, unknown>) => ({
-      ...pricing,
-      price: pricing.price ? decimalToNumber(pricing.price) : pricing.price,
-    }));
-    
-    return {
-      ...doctor,
-      pricings: convertedPricings,
-    };
-  }
-  
-  return doctor;
+  // Use deep conversion to handle all nested Decimals
+  return convertDecimalsInObject(doctor);
 }

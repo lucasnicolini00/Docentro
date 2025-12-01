@@ -49,6 +49,12 @@ export const searchService = {
         prisma.doctor.findMany({
           where: { deletedAt: null },
           include: {
+            user: {
+              select: {
+                firstName: true,
+                lastName: true,
+              },
+            },
             specialities: { include: { speciality: true } },
             opinions: true,
             clinics: { include: { clinic: true } },

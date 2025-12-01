@@ -32,10 +32,6 @@ export const settingsService = {
       where: { id: doctorId },
       select: {
         id: true,
-        name: true,
-        surname: true,
-        email: true,
-        phone: true,
         createdAt: true,
         user: {
           select: {
@@ -105,9 +101,13 @@ export const settingsService = {
             type: true,
             patient: {
               select: {
-                name: true,
-                surname: true,
-                email: true,
+                user: {
+                  select: {
+                    firstName: true,
+                    lastName: true,
+                    email: true,
+                  },
+                },
               },
             },
           },

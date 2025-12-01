@@ -94,10 +94,14 @@ export const appointmentsService = {
         patient: {
           select: {
             id: true,
-            name: true,
-            surname: true,
-            email: true,
-            phone: true,
+            user: {
+              select: {
+                firstName: true,
+                lastName: true,
+                email: true,
+                phone: true,
+              },
+            },
           },
         },
         clinic: {
@@ -169,8 +173,12 @@ export const appointmentsService = {
               select: {
                 doctor: {
                   select: {
-                    name: true,
-                    surname: true,
+                    user: {
+                      select: {
+                        firstName: true,
+                        lastName: true,
+                      },
+                    },
                   },
                 },
                 clinic: {
@@ -217,8 +225,12 @@ export const appointmentsService = {
             doctor: {
               select: {
                 id: true,
-                name: true,
-                surname: true,
+                user: {
+                  select: {
+                    firstName: true,
+                    lastName: true,
+                  },
+                },
               },
             },
             clinic: {
@@ -292,6 +304,7 @@ export const appointmentsService = {
     doctorId: string;
     patientId: string;
     clinicId: string;
+    timeSlotId?: string;
     pricingId: string | null;
     datetime: Date;
     durationMinutes: number;
@@ -346,10 +359,6 @@ export const appointmentsService = {
       where: { id: doctorId },
       select: {
         id: true,
-        name: true,
-        surname: true,
-        email: true,
-        phone: true,
         createdAt: true,
         updatedAt: true,
         deletedAt: true,
