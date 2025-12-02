@@ -10,8 +10,8 @@ import { getLocale } from "next-intl/server";
 import { NextIntlClientProvider } from "next-intl";
 import SearchPageClient from "./SearchPageClient";
 
-// This page queries the database; use ISR to cache results for 60 seconds
-export const revalidate = 60;
+// This page uses searchParams and needs to be dynamic
+export const dynamic = "force-dynamic";
 
 export default async function Search({
   searchParams,
