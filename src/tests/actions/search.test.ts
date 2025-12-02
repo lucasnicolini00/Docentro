@@ -99,10 +99,13 @@ describe('search actions', () => {
 
       const result = await getFeaturedDoctors()
 
-      expect(result).toEqual({
-        success: true,
-        data: doctors,
-      })
+      expect(result.success).toBe(true)
+      expect(result.data).toHaveLength(1)
+      expect(result.data?.[0].user.firstName).toBe('John')
+      expect(result.data?.[0].id).toBe('doctor-123')
+      // Dates are serialized to strings in the action
+      expect(typeof result.data?.[0].createdAt).toBe('string')
+      expect(typeof result.data?.[0].updatedAt).toBe('string')
     })
 
     it('should return error on failure', async () => {

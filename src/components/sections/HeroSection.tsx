@@ -81,7 +81,7 @@ export default function HeroSection() {
               className="bg-white rounded-2xl shadow-2xl p-6 md:p-8"
             >
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="relative">
+                <div className="relative z-30">
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     {t("specialtyLabel")}
                   </label>
@@ -94,7 +94,7 @@ export default function HeroSection() {
                     className="w-full"
                   />
                 </div>
-                <div className="relative">
+                <div className="relative z-20">
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     {t("locationLabel")}
                   </label>
@@ -107,7 +107,7 @@ export default function HeroSection() {
                     className="w-full"
                   />
                 </div>
-                <div className="flex items-end">
+                <div className="flex items-end z-10">
                   <button
                     type="submit"
                     className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-8 py-3 rounded-xl font-semibold transition-all transform hover:scale-105 shadow-lg cursor-pointer"

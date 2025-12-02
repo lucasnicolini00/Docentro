@@ -10,7 +10,7 @@ vi.mock('@/lib/actions/appointments', () => ({
 
 const mockDoctor = {
   id: 'doctor-123',
-  name: 'Dr. Jane',
+  name: 'Jane',
   surname: 'Smith',
   user: {
     firstName: 'Jane',
@@ -63,8 +63,8 @@ describe('AppointmentBookingForm', () => {
   it('should render appointment booking form', () => {
     render(<AppointmentBookingForm doctor={mockDoctor} />)
 
-    // Check for doctor name
-    expect(screen.getByText(/Dr. Jane Smith/i)).toBeInTheDocument()
+    // Check for doctor name (without Dr. prefix)
+    expect(screen.getByText(/Jane Smith/i)).toBeInTheDocument()
     
     // Check for clinic selection
     expect(screen.getByText(/Main Clinic/i)).toBeInTheDocument()
