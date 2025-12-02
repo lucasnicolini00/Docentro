@@ -1,10 +1,15 @@
 import { withAuth } from "next-auth/middleware";
 import { NextResponse } from "next/server";
+import createMiddleware from "next-intl/middleware";
+import { routing } from "@/i18n/routing";
 import {
   SUPPORTED_LOCALES,
   SupportedLocale,
   detectPreferredLocaleFromRequest,
 } from "@/lib/detectLocale";
+
+// Create next-intl middleware
+const intlMiddleware = createMiddleware(routing);
 
 export default withAuth(
   function middleware(req) {
@@ -54,6 +59,9 @@ export default withAuth(
         );
       }
     }
+
+    // Apply next-intl middleware for locale handling
+    return intlMiddleware(req);
   },
   {
     callbacks: {

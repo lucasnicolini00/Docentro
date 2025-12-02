@@ -16,7 +16,7 @@ export async function getDashboardStats(): Promise<ActionResult> {
   if (!result || result.length === 0) {
     return { success: false, error: "No se pudieron obtener las estadísticas" };
   }
-  
+
   // Convert Decimal objects to numbers for client component compatibility
   const stats = result[0];
   const serializedStats = {
@@ -24,7 +24,7 @@ export async function getDashboardStats(): Promise<ActionResult> {
     monthly_revenue: Number(stats.monthly_revenue) || 0,
     last_month_revenue: Number(stats.last_month_revenue) || 0,
   };
-  
+
   return { success: true, data: serializedStats };
 }
 
@@ -71,20 +71,27 @@ export async function getScheduleAnalytics(
     }
     effectiveDoctorId = validation.doctor.id;
   }
+
   const result = await analyticsService.getDashboardStats(effectiveDoctorId);
   if (!result || result.length === 0) {
     return { success: false, error: "No schedule analytics available" };
   }
-  
-  // Convert Decimal objects to numbers for client component compatibility
+
   const stats = result[0];
-  const serializedStats = {
-    ...stats,
-    monthly_revenue: Number(stats.monthly_revenue) || 0,
-    last_month_revenue: Number(stats.last_month_revenue) || 0,
+
+  // Format response to match ScheduleAnalytics interface
+  const scheduleAnalytics = {
+    totalSlots: stats.total_slots || 0,
+    bookedSlots: stats.booked_slots || 0,
+    availableSlots: (stats.total_slots || 0) - (stats.booked_slots || 0),
+    blockedSlots: 0, // Not tracked in current schema
+    utilizationRate: stats.utilization_rate || 0,
+    weeklyOverview: [], // Would need separate query
+    peakHours: [], // Would need separate query
+    insights: [],
   };
-  
-  return { success: true, data: serializedStats };
+
+  return { success: true, data: scheduleAnalytics };
 }
 
 /**
@@ -103,7 +110,10 @@ export async function getPatientAnalytics(
     }
     effectiveDoctorId = validation.doctor.id;
   }
-  const result = await analyticsService.getPatientAnalytics(effectiveDoctorId, timeRange);
+  const result = await analyticsService.getPatientAnalytics(
+    effectiveDoctorId,
+    timeRange
+  );
   return { success: true, data: result };
 }
 
@@ -123,6 +133,9 @@ export async function getRevenueAnalytics(
     }
     effectiveDoctorId = validation.doctor.id;
   }
-  const result = await analyticsService.getRevenueAnalytics(effectiveDoctorId, timeRange);
+  const result = await analyticsService.getRevenueAnalytics(
+    effectiveDoctorId,
+    timeRange
+  );
   return { success: true, data: result };
 }

@@ -1,5 +1,5 @@
 {
-  "title": "Doctor Dashboard",
+  "title": "Control Panel",
   "stats": "Statistics",
   "activities": "Recent Activities",
   "appointments": "Upcoming Appointments",
@@ -154,8 +154,8 @@
   "currencyEUR": "Euro",
   "virtualSuffix": "(Online)",
   "inPersonSuffix": "(In-person)",
-  "scheduleHeaderTitle": "Consultation Schedules",
-  "scheduleHeaderSubtitle": "Manage your availability across different clinics",
+  "scheduleHeaderTitle": "Office Hours",
+  "scheduleHeaderSubtitle": "Manage your office hours across different clinics",
   "errorLoadingDataGeneric": "Error loading data",
   "createNewScheduleTitle": "Create New Schedule",
   "configureWeeklyAvailability": "Configure your weekly availability",
