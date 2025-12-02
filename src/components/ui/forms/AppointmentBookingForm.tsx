@@ -19,7 +19,7 @@ interface AppointmentBookingFormProps {
 }
 
 // Use only needed fields from AvailableTimeSlot
-type TimeSlot = Pick<AvailableTimeSlot, 'datetime' | 'time'>;
+type TimeSlot = Pick<AvailableTimeSlot, "datetime" | "time">;
 
 export default function AppointmentBookingForm({
   doctor,

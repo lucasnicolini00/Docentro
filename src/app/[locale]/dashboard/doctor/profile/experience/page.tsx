@@ -20,7 +20,8 @@ export default async function DoctorExperiencePage() {
   const experienceDescription =
     profile.success && profile.data
       ? (profile.data.experiences || []).find(
-          (e: { title: string; description?: string | null }) => e.title === "Perfil profesional"
+          (e: { title: string; description?: string | null }) =>
+            e.title === "Perfil profesional"
         )?.description || ""
       : "";
 

@@ -268,10 +268,16 @@ export async function getDoctorPublicProfile(
     // Convert Decimal fields to numbers for client compatibility
     const serializedDoctor = {
       ...doctor,
-      pricings: doctor.pricings?.map((p: { id: string; clinicId: string; price: number | { toNumber: () => number } }) => ({
-        ...p,
-        price: typeof p.price === 'number' ? p.price : p.price.toNumber(),
-      })),
+      pricings: doctor.pricings?.map(
+        (p: {
+          id: string;
+          clinicId: string;
+          price: number | { toNumber: () => number };
+        }) => ({
+          ...p,
+          price: typeof p.price === "number" ? p.price : p.price.toNumber(),
+        })
+      ),
     };
 
     return {

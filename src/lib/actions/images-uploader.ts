@@ -101,7 +101,10 @@ export async function removeDoctorProfileImage(): Promise<ActionResult> {
     const image = await imagesService.getImage(doctor.profileImageId);
 
     // Remove DB references and delete the Image row using service
-    await imagesService.deleteDoctorProfileImage(doctor.id, doctor.profileImageId);
+    await imagesService.deleteDoctorProfileImage(
+      doctor.id,
+      doctor.profileImageId
+    );
 
     // Try to remove from GCS when possible
     const bucketName = process.env.GCLOUD_BUCKET;
@@ -279,7 +282,8 @@ export async function uploadDoctorImages(
     if (!bucketName)
       return { success: false, error: "GCS bucket no configurado" };
 
-    const created: Array<{ id: string; url: string; filename: string | null }> = [];
+    const created: Array<{ id: string; url: string; filename: string | null }> =
+      [];
 
     // Save files sequentially (could be parallelized)
     for (const file of files) {

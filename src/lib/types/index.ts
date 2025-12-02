@@ -1,7 +1,7 @@
 /**
  * Central type definitions export
  * Import all types from this single file for consistency
- * 
+ *
  * @example
  * import { Doctor, DoctorWithRelations, SearchDoctorData } from '@/lib/types';
  */

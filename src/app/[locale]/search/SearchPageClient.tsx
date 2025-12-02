@@ -88,9 +88,10 @@ export default function SearchPageClient({
               </div>
             </div>
             <div className="space-y-6">
-              {Array.isArray(doctors) && doctors.map((doctor) => (
-                <DoctorCard key={doctor.id} doctor={doctor} />
-              ))}
+              {Array.isArray(doctors) &&
+                doctors.map((doctor) => (
+                  <DoctorCard key={doctor.id} doctor={doctor} />
+                ))}
               {(!Array.isArray(doctors) || doctors.length === 0) && (
                 <div className="text-center py-12">
                   <div className="text-6xl mb-4">👨‍⚕️</div>

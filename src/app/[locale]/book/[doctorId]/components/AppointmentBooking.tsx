@@ -24,8 +24,11 @@ interface DoctorInfo {
 }
 
 // Use only needed fields from centralized types
-type Clinic = Pick<BaseClinic, 'id' | 'name' | 'address'>;
-type Pricing = Pick<BasePricing, 'id' | 'title' | 'price' | 'currency' | 'durationMinutes' | 'description'> & {
+type Clinic = Pick<BaseClinic, "id" | "name" | "address">;
+type Pricing = Pick<
+  BasePricing,
+  "id" | "title" | "price" | "currency" | "durationMinutes" | "description"
+> & {
   clinicId?: string;
 };
 

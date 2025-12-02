@@ -8,11 +8,7 @@ import dayGridPlugin from "@fullcalendar/daygrid";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import interactionPlugin from "@fullcalendar/interaction";
 import listPlugin from "@fullcalendar/list";
-import {
-  EventClickArg,
-  EventDropArg,
-  DateSelectArg,
-} from "@fullcalendar/core";
+import { EventClickArg, EventDropArg, DateSelectArg } from "@fullcalendar/core";
 import { updateAppointmentStatus } from "@/lib/actions/appointments";
 export interface CalendarAppointment {
   id: string;
@@ -135,9 +131,9 @@ export default function DoctorCalendar({
     if (onEventClick) return onEventClick(clickInfo);
     const ev = clickInfo.event;
     setSelectedEventId(ev.id);
-    
+
     if (!ev.start) return;
-    
+
     const details =
       `${t("appointmentPatientLabel")}: ${ev.extendedProps.patientName || ev.title}\n` +
       `${t("appointmentClinicLabel")}: ${ev.extendedProps.clinicName}\n` +

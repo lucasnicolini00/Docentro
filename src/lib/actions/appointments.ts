@@ -69,7 +69,9 @@ export async function getUserAppointments(): Promise<ActionResult> {
         return { success: false, error: "Paciente no encontrado" };
       }
 
-      const appointments = await appointmentsService.getPatientAppointments(patient.id);
+      const appointments = await appointmentsService.getPatientAppointments(
+        patient.id
+      );
 
       return { success: true, data: appointments };
     } else if (session.user.role === "DOCTOR") {
@@ -79,7 +81,9 @@ export async function getUserAppointments(): Promise<ActionResult> {
         return { success: false, error: "Doctor no encontrado" };
       }
 
-      const appointments = await appointmentsService.getDoctorAppointments(doctor.id);
+      const appointments = await appointmentsService.getDoctorAppointments(
+        doctor.id
+      );
 
       return { success: true, data: appointments };
     }
@@ -103,12 +107,13 @@ export async function getDoctorAppointments(
   }
 ) {
   try {
-    const appointments = await appointmentsService.getDoctorAppointmentsForCalendar(
-      doctorId,
-      options?.startDate || new Date(),
-      options?.endDate || new Date(),
-      options?.status
-    );
+    const appointments =
+      await appointmentsService.getDoctorAppointmentsForCalendar(
+        doctorId,
+        options?.startDate || new Date(),
+        options?.endDate || new Date(),
+        options?.status
+      );
 
     return appointments;
   } catch (error) {
@@ -129,12 +134,13 @@ export async function getPatientAppointments(
   }
 ) {
   try {
-    const appointments = await appointmentsService.getPatientAppointmentsForCalendar(
-      patientId,
-      options?.startDate || new Date(),
-      options?.endDate || new Date(),
-      options?.status
-    );
+    const appointments =
+      await appointmentsService.getPatientAppointmentsForCalendar(
+        patientId,
+        options?.startDate || new Date(),
+        options?.endDate || new Date(),
+        options?.status
+      );
 
     return appointments;
   } catch (error) {
@@ -165,7 +171,8 @@ export async function createAppointmentWithTimeSlot(
     const notes = formData.get("notes") as string;
 
     // Get the time slot and verify it's available
-    const timeSlot = await appointmentsService.getTimeSlotWithRelations(timeSlotId);
+    const timeSlot =
+      await appointmentsService.getTimeSlotWithRelations(timeSlotId);
 
     if (!timeSlot) {
       return { success: false, error: "Horario no encontrado" };
@@ -245,10 +252,11 @@ export async function createAppointment(
     }
 
     // Check if the time slot is available
-    const conflictingAppointment = await appointmentsService.checkConflictingAppointment(
-      doctorId,
-      appointmentDate
-    );
+    const conflictingAppointment =
+      await appointmentsService.checkConflictingAppointment(
+        doctorId,
+        appointmentDate
+      );
 
     if (conflictingAppointment) {
       return { success: false, error: "El horario no está disponible" };
@@ -302,11 +310,12 @@ export async function getDoctorAvailability(
     endOfDay.setHours(23, 59, 59, 999);
 
     // Get all appointments for this doctor on this date
-    const appointments = await appointmentsService.getDoctorAppointmentsForAvailability(
-      doctorId,
-      startOfDay,
-      endOfDay
-    );
+    const appointments =
+      await appointmentsService.getDoctorAppointmentsForAvailability(
+        doctorId,
+        startOfDay,
+        endOfDay
+      );
 
     // Generate available slots (9 AM to 6 PM, 30-minute slots)
     const availableSlots: Array<{ datetime: string; time: string }> = [];
@@ -319,11 +328,15 @@ export async function getDoctorAvailability(
     for (const apt of appointments) {
       const aptStart = new Date(apt.datetime);
       const aptEnd = new Date(aptStart.getTime() + apt.durationMinutes * 60000);
-      
+
       // Mark all 30-minute slots that overlap with this appointment
       let current = new Date(aptStart);
-      current.setMinutes(Math.floor(current.getMinutes() / slotDuration) * slotDuration, 0, 0);
-      
+      current.setMinutes(
+        Math.floor(current.getMinutes() / slotDuration) * slotDuration,
+        0,
+        0
+      );
+
       while (current < aptEnd) {
         occupiedSlots.add(current.getTime());
         current = new Date(current.getTime() + slotDuration * 60000);
@@ -448,10 +461,8 @@ export async function updateAppointmentStatus(
     }
 
     // Update the appointment status
-    const updatedAppointment = await appointmentsService.updateAppointmentStatus(
-      appointmentId,
-      status
-    );
+    const updatedAppointment =
+      await appointmentsService.updateAppointmentStatus(appointmentId, status);
 
     // Revalidate related pages
     revalidatePath("/dashboard/doctor");
@@ -482,7 +493,8 @@ export async function cancelAppointment(
     }
 
     // Get the appointment and verify ownership
-    const appointment = await appointmentsService.getAppointmentForCancellation(appointmentId);
+    const appointment =
+      await appointmentsService.getAppointmentForCancellation(appointmentId);
 
     if (!appointment) {
       return { success: false, error: "Cita no encontrada" };
@@ -501,7 +513,8 @@ export async function cancelAppointment(
     }
 
     // Update the appointment status to canceled
-    const updatedAppointment = await appointmentsService.cancelAppointment(appointmentId);
+    const updatedAppointment =
+      await appointmentsService.cancelAppointment(appointmentId);
 
     // Revalidate related pages
     revalidatePath("/dashboard/doctor");

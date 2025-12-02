@@ -22,10 +22,11 @@ src/lib/types/
 Exact representations of Prisma models:
 
 ```typescript
-import { Doctor, Patient, Clinic, Appointment } from '@/lib/types';
+import { Doctor, Patient, Clinic, Appointment } from "@/lib/types";
 ```
 
 **Key Features:**
+
 - Match `schema.prisma` exactly
 - Include all enums (UserRole, AppointmentStatus, etc.)
 - Date fields as `Date` objects (server-side)
@@ -36,14 +37,15 @@ import { Doctor, Patient, Clinic, Appointment } from '@/lib/types';
 Common query patterns with relations:
 
 ```typescript
-import { 
-  DoctorWithRelations,      // Doctor + user + clinics + specialties
-  PatientAppointment,       // Appointment with patient view
-  ClinicWithDoctors,        // Clinic with all doctors
-} from '@/lib/types';
+import {
+  DoctorWithRelations, // Doctor + user + clinics + specialties
+  PatientAppointment, // Appointment with patient view
+  ClinicWithDoctors, // Clinic with all doctors
+} from "@/lib/types";
 ```
 
 **Use Cases:**
+
 - Dashboard queries
 - Detail pages
 - Form data with nested relations
@@ -53,11 +55,11 @@ import {
 Specialized types for search operations:
 
 ```typescript
-import { 
-  RawDoctorData,           // From database query
-  TransformedDoctorData,   // After serialization
-  SearchClinicData,        // Clinic with coordinates
-} from '@/lib/types';
+import {
+  RawDoctorData, // From database query
+  TransformedDoctorData, // After serialization
+  SearchClinicData, // Clinic with coordinates
+} from "@/lib/types";
 ```
 
 ### 4. Type Guards & Utilities
@@ -65,7 +67,7 @@ import {
 Runtime type checking:
 
 ```typescript
-import { isDoctor, isPatient, hasCoordinates } from '@/lib/types';
+import { isDoctor, isPatient, hasCoordinates } from "@/lib/types";
 
 if (isDoctor(user)) {
   // TypeScript knows user.role === 'DOCTOR'
@@ -82,10 +84,10 @@ if (hasCoordinates(clinic)) {
 ### Server Actions
 
 ```typescript
-import type { 
-  RawDoctorData, 
+import type {
+  RawDoctorData,
   TransformedDoctorData,
-  ActionResult 
+  ActionResult
 } from '@/lib/types';
 
 export async function getDoctors(): Promise<ActionResult<TransformedDoctorData[]>> {
@@ -128,19 +130,19 @@ export function DoctorCard({ doctor }: Props) {
 ### Forms
 
 ```typescript
-import type { 
+import type {
   CreateAppointmentInput,
-  UpdateAppointmentInput 
-} from '@/lib/types';
+  UpdateAppointmentInput,
+} from "@/lib/types";
 
 function BookingForm() {
   const [data, setData] = useState<CreateAppointmentInput>({
-    doctorId: '',
-    patientId: '',
-    clinicId: '',
+    doctorId: "",
+    patientId: "",
+    clinicId: "",
     datetime: new Date(),
     durationMinutes: 30,
-    type: 'IN_PERSON',
+    type: "IN_PERSON",
   });
 }
 ```
@@ -163,7 +165,7 @@ Edit `prisma.ts`:
 ```typescript
 export interface Clinic {
   // ... existing fields
-  phoneNumber: string | null;  // ADD HERE
+  phoneNumber: string | null; // ADD HERE
 }
 ```
 
@@ -179,11 +181,11 @@ const DOCTOR_SEARCH_INCLUDE = {
       clinic: {
         select: {
           // ... existing fields
-          phoneNumber: true,  // ADD HERE
-        }
-      }
-    }
-  }
+          phoneNumber: true, // ADD HERE
+        },
+      },
+    },
+  },
 };
 ```
 
@@ -194,6 +196,7 @@ npm run build
 ```
 
 If you missed updating types, TypeScript will error:
+
 ```
 Property 'phoneNumber' does not exist on type 'SearchClinicData'
 ```
@@ -203,12 +206,14 @@ Property 'phoneNumber' does not exist on type 'SearchClinicData'
 ### ✅ Prevents Runtime Errors
 
 **Before:**
+
 ```typescript
 const lat = clinic.latitude; // undefined - forgot to select it!
-map.setCenter(lat, lng);     // Runtime error
+map.setCenter(lat, lng); // Runtime error
 ```
 
 **After:**
+
 ```typescript
 // TypeScript error if latitude not in type
 const lat = clinic.latitude; // number | null
@@ -234,7 +239,7 @@ Types serve as inline documentation of data structures.
 ### Pagination
 
 ```typescript
-import type { PaginatedResult, DoctorWithRelations } from '@/lib/types';
+import type { PaginatedResult, DoctorWithRelations } from "@/lib/types";
 
 type PaginatedDoctors = PaginatedResult<DoctorWithRelations>;
 
@@ -250,24 +255,24 @@ const result: PaginatedDoctors = {
 ### Dashboard Stats
 
 ```typescript
-import type { DoctorDashboardStats } from '@/lib/types';
+import type { DoctorDashboardStats } from "@/lib/types";
 
 const stats: DoctorDashboardStats = {
   totalAppointments: 150,
   pendingAppointments: 10,
   averageRating: 4.8,
-  revenue: { total: 50000, currency: 'USD' },
+  revenue: { total: 50000, currency: "USD" },
 };
 ```
 
 ### Filters
 
 ```typescript
-import type { DoctorSearchFilters } from '@/lib/types';
+import type { DoctorSearchFilters } from "@/lib/types";
 
 const filters: DoctorSearchFilters = {
-  speciality: 'Cardiology',
-  city: 'New York',
+  speciality: "Cardiology",
+  city: "New York",
   minRating: 4.0,
   maxPrice: 200,
 };

@@ -43,7 +43,10 @@ export async function createClinicWrapper(data: ClinicFormData) {
   return createClinic(clinicData);
 }
 
-export async function updateClinicWrapper(clinicId: string, data: ClinicFormData) {
+export async function updateClinicWrapper(
+  clinicId: string,
+  data: ClinicFormData
+) {
   const clinicData = {
     name: data.name as string,
     address: data.address as string,
@@ -61,21 +64,30 @@ export async function createPricingWrapper(data: PricingFormData) {
   const pricingData = {
     clinicId: data.clinicId as string,
     title: data.title as string,
-    price: typeof data.price === 'number' ? data.price : parseFloat(data.price),
+    price: typeof data.price === "number" ? data.price : parseFloat(data.price),
     currency: data.currency || "BOB",
-    durationMinutes: typeof data.durationMinutes === 'number' ? data.durationMinutes : parseInt(data.durationMinutes),
+    durationMinutes:
+      typeof data.durationMinutes === "number"
+        ? data.durationMinutes
+        : parseInt(data.durationMinutes),
     description: data.description || undefined,
     isActive: data.isActive === true || data.isActive === "true",
   };
   return createPricing(pricingData);
 }
 
-export async function updatePricingWrapper(pricingId: string, data: PricingFormData) {
+export async function updatePricingWrapper(
+  pricingId: string,
+  data: PricingFormData
+) {
   const pricingData = {
     title: data.title as string,
-    price: typeof data.price === 'number' ? data.price : parseFloat(data.price),
+    price: typeof data.price === "number" ? data.price : parseFloat(data.price),
     currency: data.currency || "BOB",
-    durationMinutes: typeof data.durationMinutes === 'number' ? data.durationMinutes : parseInt(data.durationMinutes),
+    durationMinutes:
+      typeof data.durationMinutes === "number"
+        ? data.durationMinutes
+        : parseInt(data.durationMinutes),
     description: data.description || undefined,
     isActive: data.isActive === true || data.isActive === "true",
   };

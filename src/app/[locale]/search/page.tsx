@@ -51,7 +51,10 @@ export default async function Search({
 
     // Extract doctors from the nested data structure
     const doctors =
-      doctorsRes.success && doctorsRes.data && typeof doctorsRes.data === 'object' && 'doctors' in doctorsRes.data
+      doctorsRes.success &&
+      doctorsRes.data &&
+      typeof doctorsRes.data === "object" &&
+      "doctors" in doctorsRes.data
         ? (doctorsRes.data.doctors as TransformedDoctorData[]) || []
         : [];
     const specialties = specialtiesRes.success

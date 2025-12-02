@@ -1,13 +1,15 @@
 # Type Refactoring TODO
 
 ## Overview
+
 We've created a comprehensive centralized type system in `src/lib/types/`. The following files still have duplicate type definitions that should be gradually refactored to use the centralized types.
 
 ## Priority: HIGH - Critical Components
 
 ### ✅ COMPLETED - Comprehensive Type System Refactoring!
+
 - [x] `src/lib/services/searchService.ts` - Uses centralized types
-- [x] `src/lib/actions/search.ts` - Uses centralized types  
+- [x] `src/lib/actions/search.ts` - Uses centralized types
 - [x] `src/app/[locale]/search/components/doctor-card/types.ts` - Updated
 - [x] `src/components/ui/Map.tsx` - ✅ Uses TransformedDoctorData, SearchClinicData
 - [x] `src/components/ui/MapModal.tsx` - ✅ Uses TransformedDoctorData, SearchClinicData
@@ -26,6 +28,7 @@ We've created a comprehensive centralized type system in `src/lib/types/`. The f
 ### 📝 Intentionally Kept Local Types
 
 The following components have local type definitions that are **intentionally kept** because they:
+
 1. Represent feature-specific subsets of centralized types
 2. Have different data structures from queries (e.g., junction table fields)
 3. Are used only in a single component/module
@@ -47,27 +50,27 @@ These files use local types which are specific to their use case:
 
 - `src/app/[locale]/dashboard/doctor/components/components/types.ts`
   - Already has local types, but could extend from `@/lib/types/relations`
-  
 - `src/app/[locale]/dashboard/doctor/clinics/components/types.ts`
   - Could use `Clinic` from `@/lib/types/prisma`
-  
 - `src/app/[locale]/dashboard/doctor/schedules/components/types.ts`
   - Could use `Schedule`, `DayOfWeek` from `@/lib/types/prisma`
 
 ## Refactoring Guidelines
 
 ### Step 1: Import Centralized Types
+
 ```typescript
-import type { 
+import type {
   TransformedDoctorData,
   DoctorWithRelations,
   PatientWithUser,
   Clinic,
-  hasCoordinates
-} from '@/lib/types';
+  hasCoordinates,
+} from "@/lib/types";
 ```
 
 ### Step 2: Replace Local Interface
+
 ```typescript
 // Before
 interface Doctor {
@@ -85,6 +88,7 @@ interface ExtendedDoctor extends TransformedDoctorData {
 ```
 
 ### Step 3: Test
+
 ```bash
 npm run build
 ```
@@ -97,7 +101,7 @@ TypeScript will show any field mismatches!
 ✅ **Autocomplete** - Better IDE support  
 ✅ **Type safety** - Catch errors at compile time  
 ✅ **Maintainability** - Update once, affects everywhere  
-✅ **Documentation** - Types are self-documenting  
+✅ **Documentation** - Types are self-documenting
 
 ## Refactoring Checklist Template
 
@@ -121,6 +125,7 @@ When refactoring a file:
 ## TypeScript Build Verification
 
 Always run before committing refactored code:
+
 ```bash
 npm run build
 ```

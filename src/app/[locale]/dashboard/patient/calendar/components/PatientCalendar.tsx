@@ -140,7 +140,7 @@ export default function PatientCalendar({
   const handleEventClick = (clickInfo: EventClickArg) => {
     const event = clickInfo.event;
     if (!event.start) return;
-    
+
     setSelectedAppointment({
       id: event.id,
       start: event.start,

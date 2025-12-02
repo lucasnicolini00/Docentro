@@ -55,9 +55,7 @@ export default async function PatientCalendarPage({
   const completedCount = appts.filter(
     (apt) => apt.status === "COMPLETED"
   ).length;
-  const canceledCount = appts.filter(
-    (apt) => apt.status === "CANCELED"
-  ).length;
+  const canceledCount = appts.filter((apt) => apt.status === "CANCELED").length;
   const thisMonthCount = appts.filter((apt) => {
     const aptDate = new Date(apt.datetime);
     return (

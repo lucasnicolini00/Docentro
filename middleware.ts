@@ -22,13 +22,13 @@ export default withAuth(
     const maybeLocale = segments[0];
     const hasLocale =
       maybeLocale && SUPPORTED_LOCALES.includes(maybeLocale as SupportedLocale);
-    
+
     // If no locale prefix, redirect to default locale
     if (!hasLocale && segments.length > 0) {
       const best = detectPreferredLocaleFromRequest(req);
       return NextResponse.redirect(new URL(`/${best}${pathname}`, req.url));
     }
-    
+
     const rest = hasLocale ? "/" + segments.slice(1).join("/") : pathname;
 
     // Protect doctor routes
@@ -63,7 +63,8 @@ export default withAuth(
         const segments = pathname.split("/").filter(Boolean);
         const maybeLocale = segments[0];
         const hasLocale =
-          maybeLocale && SUPPORTED_LOCALES.includes(maybeLocale as SupportedLocale);
+          maybeLocale &&
+          SUPPORTED_LOCALES.includes(maybeLocale as SupportedLocale);
         const rest = hasLocale ? "/" + segments.slice(1).join("/") : pathname;
 
         // Public routes that don't require authentication

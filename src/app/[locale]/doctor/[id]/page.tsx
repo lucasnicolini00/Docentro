@@ -9,7 +9,13 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import { getMessages as getMessagesIntl } from "@/app/messages";
-import type { Image, DoctorSpeciality, Experience, DoctorClinic, Pricing } from "@/lib/types";
+import type {
+  Image,
+  DoctorSpeciality,
+  Experience,
+  DoctorClinic,
+  Pricing,
+} from "@/lib/types";
 
 interface DoctorProfilePageProps {
   params: Promise<{ id: string }>;
@@ -73,14 +79,19 @@ export default async function DoctorProfilePage({
                 Dr(a). {doctor.user?.firstName} {doctor.user?.lastName}
               </h1>
               <div className="flex flex-wrap gap-2 mb-4">
-                {doctor.specialities?.map((s: DoctorSpeciality & { speciality: { name: string } }, index: number) => (
-                  <span
-                    key={`specialty-${s.specialityId}-${index}`}
-                    className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800"
-                  >
-                    {s.speciality.name}
-                  </span>
-                ))}
+                {doctor.specialities?.map(
+                  (
+                    s: DoctorSpeciality & { speciality: { name: string } },
+                    index: number
+                  ) => (
+                    <span
+                      key={`specialty-${s.specialityId}-${index}`}
+                      className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800"
+                    >
+                      {s.speciality.name}
+                    </span>
+                  )
+                )}
               </div>
               <p className="text-gray-700 leading-relaxed mb-4">
                 {doctor.bio || t("noBio")}
@@ -166,31 +177,46 @@ export default async function DoctorProfilePage({
             </div>
             <div className="space-y-3">
               {doctor.clinics && doctor.clinics.length > 0 ? (
-                doctor.clinics.map((dc: DoctorClinic & { clinic: { id: string; name: string; address: string | null } }, index: number) => (
-                  <div
-                    key={`clinic-${dc.clinicId}-${index}`}
-                    className="flex items-center justify-between"
-                  >
-                    <div>
-                      <p className="font-medium text-gray-900">
-                        {dc.clinic.name}
-                      </p>
-                      <p className="text-xs text-gray-600">
-                        {dc.clinic.address}
-                      </p>
+                doctor.clinics.map(
+                  (
+                    dc: DoctorClinic & {
+                      clinic: {
+                        id: string;
+                        name: string;
+                        address: string | null;
+                      };
+                    },
+                    index: number
+                  ) => (
+                    <div
+                      key={`clinic-${dc.clinicId}-${index}`}
+                      className="flex items-center justify-between"
+                    >
+                      <div>
+                        <p className="font-medium text-gray-900">
+                          {dc.clinic.name}
+                        </p>
+                        <p className="text-xs text-gray-600">
+                          {dc.clinic.address}
+                        </p>
+                      </div>
+                      {serializedDoctor.pricings?.find(
+                        (p: Pricing & { price: number | null }) =>
+                          p.clinicId === dc.clinic.id
+                      )?.price && (
+                        <span className="text-sm font-semibold text-blue-600">
+                          {t("priceFrom")}{" "}
+                          {serializedDoctor.pricings
+                            ?.find(
+                              (p: Pricing & { price: number | null }) =>
+                                p.clinicId === dc.clinic.id
+                            )
+                            ?.price?.toString()}
+                        </span>
+                      )}
                     </div>
-                    {serializedDoctor.pricings?.find(
-                      (p: Pricing & { price: number | null }) => p.clinicId === dc.clinic.id
-                    )?.price && (
-                      <span className="text-sm font-semibold text-blue-600">
-                        {t("priceFrom")}{" "}
-                        {serializedDoctor.pricings
-                          ?.find((p: Pricing & { price: number | null }) => p.clinicId === dc.clinic.id)
-                          ?.price?.toString()}
-                      </span>
-                    )}
-                  </div>
-                ))
+                  )
+                )
               ) : (
                 <p className="text-gray-600 text-sm">{t("noClinics")}</p>
               )}
@@ -204,22 +230,32 @@ export default async function DoctorProfilePage({
           </h2>
           <div className="space-y-4">
             {doctor.opinions && doctor.opinions.length > 0 ? (
-              doctor.opinions.map((op: { id?: string; title?: string; rating: number; description: string }, index: number) => (
-                <div
-                  key={op.id || `opinion-${index}`}
-                  className="border border-gray-100 rounded-lg p-4"
-                >
-                  <div className="flex items-center justify-between mb-1">
-                    <h3 className="font-medium text-gray-900">
-                      {op.title || t("opinionNoTitle")}
-                    </h3>
-                    <span className="text-sm font-semibold text-yellow-600">
-                      ⭐ {op.rating}
-                    </span>
+              doctor.opinions.map(
+                (
+                  op: {
+                    id?: string;
+                    title?: string;
+                    rating: number;
+                    description: string;
+                  },
+                  index: number
+                ) => (
+                  <div
+                    key={op.id || `opinion-${index}`}
+                    className="border border-gray-100 rounded-lg p-4"
+                  >
+                    <div className="flex items-center justify-between mb-1">
+                      <h3 className="font-medium text-gray-900">
+                        {op.title || t("opinionNoTitle")}
+                      </h3>
+                      <span className="text-sm font-semibold text-yellow-600">
+                        ⭐ {op.rating}
+                      </span>
+                    </div>
+                    <p className="text-sm text-gray-600">{op.description}</p>
                   </div>
-                  <p className="text-sm text-gray-600">{op.description}</p>
-                </div>
-              ))
+                )
+              )
             ) : (
               <p className="text-gray-600 text-sm">{t("noOpinions")}</p>
             )}
@@ -229,11 +265,13 @@ export default async function DoctorProfilePage({
         {/* Gallery Section */}
         {doctor.images && doctor.images.length > 0 && (
           <DoctorGallery
-            images={doctor.images.map((img: Pick<Image, "id" | "url" | "filename">) => ({
-              id: img.id,
-              url: imageUrls[img.id] || img.url,
-              filename: img.filename,
-            }))}
+            images={doctor.images.map(
+              (img: Pick<Image, "id" | "url" | "filename">) => ({
+                id: img.id,
+                url: imageUrls[img.id] || img.url,
+                filename: img.filename,
+              })
+            )}
             title={t("gallery")}
           />
         )}

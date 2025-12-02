@@ -23,14 +23,18 @@ export interface PricingFormData {
 }
 
 // Extend base types with dashboard-specific fields
-export interface Clinic extends Omit<BaseClinic, 'createdAt' | 'updatedAt' | 'deletedAt'> {
+export interface Clinic
+  extends Omit<BaseClinic, "createdAt" | "updatedAt" | "deletedAt"> {
   pricings: Pricing[];
   _count?: {
     appointments: number;
   };
 }
 
-export type Pricing = Omit<BasePricing, 'doctorId' | 'clinicId' | 'createdAt' | 'updatedAt' | 'deletedAt'>;
+export type Pricing = Omit<
+  BasePricing,
+  "doctorId" | "clinicId" | "createdAt" | "updatedAt" | "deletedAt"
+>;
 
 export interface ClinicsManagementProps {
   initialClinics: Clinic[];

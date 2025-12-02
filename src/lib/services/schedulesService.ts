@@ -21,7 +21,13 @@ interface ScheduleWithSlotsForDate {
     name: string;
     address: string | null;
   };
-  timeSlots: Array<{ id: string; startTime: string; endTime: string; isBooked: boolean; isBlocked: boolean }>;
+  timeSlots: Array<{
+    id: string;
+    startTime: string;
+    endTime: string;
+    isBooked: boolean;
+    isBlocked: boolean;
+  }>;
   date: string;
 }
 

@@ -8,7 +8,9 @@ import type { DoctorWithRelations } from "@/lib/types";
 export default async function FeaturedDoctorsSection() {
   // Fetch real data from database using Server Action
   const result = await getFeaturedDoctors();
-  const doctors: DoctorWithRelations[] = result.success ? result.data || [] : [];
+  const doctors: DoctorWithRelations[] = result.success
+    ? result.data || []
+    : [];
 
   // Get signed URLs for profile images
   const doctorsWithSignedUrls = await Promise.all(

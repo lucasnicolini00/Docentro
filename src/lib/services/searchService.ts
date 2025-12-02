@@ -125,7 +125,9 @@ export const searchService = {
     location?: string,
     page: number = 1,
     pageSize: number = 20
-  ): Promise<Omit<PaginatedDoctorResults, "doctors"> & { doctors: RawDoctorData[] }> {
+  ): Promise<
+    Omit<PaginatedDoctorResults, "doctors"> & { doctors: RawDoctorData[] }
+  > {
     return withErrorHandling(
       async () => {
         const skip = (page - 1) * pageSize;
@@ -197,7 +199,9 @@ export const searchService = {
   async getAllDoctors(
     page: number = 1,
     pageSize: number = 20
-  ): Promise<Omit<PaginatedDoctorResults, "doctors"> & { doctors: RawDoctorData[] }> {
+  ): Promise<
+    Omit<PaginatedDoctorResults, "doctors"> & { doctors: RawDoctorData[] }
+  > {
     return withErrorHandling(
       async () => {
         const skip = (page - 1) * pageSize;

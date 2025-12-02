@@ -76,10 +76,12 @@ export default function ExperienceEditor({
       const res = await uploadDoctorImages(formData);
       if (res?.success) {
         if (res.data && Array.isArray(res.data)) {
-          const newImages = res.data.map((img: { id: string; url: string; filename?: string }) => ({
-            id: img.id,
-            url: img.url,
-          }));
+          const newImages = res.data.map(
+            (img: { id: string; url: string; filename?: string }) => ({
+              id: img.id,
+              url: img.url,
+            })
+          );
           setGalleryImages((prev) => [...newImages, ...prev]);
         }
         toast.success(t("imagesUploadedSuccess", { count: files.length }));

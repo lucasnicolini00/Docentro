@@ -165,7 +165,9 @@ export function generateTimeSlotsForDateRange(
         // O(1) lookup for appointment
         let appointment: AppointmentRecord | undefined;
         if (includeClinicId && "clinicId" in schedule) {
-          const scheduleWithClinic = schedule as typeof schedule & { clinicId: string };
+          const scheduleWithClinic = schedule as typeof schedule & {
+            clinicId: string;
+          };
           const appointmentKey = `${slotDateTime.getTime()}_${scheduleWithClinic.clinicId}`;
           appointment = appointmentByClinicMap.get(appointmentKey);
         } else {

@@ -18,10 +18,7 @@ interface AvatarSectionProps {
   name: string;
 }
 
-export default function AvatarSection({
-  doctor,
-  name,
-}: AvatarSectionProps) {
+export default function AvatarSection({ doctor, name }: AvatarSectionProps) {
   const t = useTranslations("forms");
   const [previewUrl, setPreviewUrl] = useState<string | null>(
     doctor?.profileImage?.url || null

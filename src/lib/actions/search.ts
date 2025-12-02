@@ -3,19 +3,16 @@
 import type { ActionResult } from "./utils";
 import { searchService } from "@/lib/services/searchService";
 import { convertDoctorDecimals } from "@/lib/utils/serialization";
-import type {
-  RawDoctorData,
-  TransformedDoctorData,
-} from "@/lib/types/search";
+import type { RawDoctorData, TransformedDoctorData } from "@/lib/types/search";
 
 /**
  * Transform raw doctor data from database to frontend format
  * Flattens user.firstName and user.lastName to name and surname
  */
-function transformDoctorData(
-  doctor: RawDoctorData
-): TransformedDoctorData {
-  const converted = convertDoctorDecimals(doctor as unknown as Record<string, unknown>);
+function transformDoctorData(doctor: RawDoctorData): TransformedDoctorData {
+  const converted = convertDoctorDecimals(
+    doctor as unknown as Record<string, unknown>
+  );
   return {
     ...converted,
     name: doctor.user?.firstName || "",

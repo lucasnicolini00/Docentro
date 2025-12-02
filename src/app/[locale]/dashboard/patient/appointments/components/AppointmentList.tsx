@@ -7,7 +7,8 @@ import { useTranslations, useLocale } from "next-intl";
 import type { PatientAppointment as BasePatientAppointment } from "@/lib/types";
 
 // Extend base type with additional fields used in dashboard
-interface Appointment extends Omit<BasePatientAppointment, 'doctor' | 'clinic'> {
+interface Appointment
+  extends Omit<BasePatientAppointment, "doctor" | "clinic"> {
   doctor: {
     id: string;
     name: string;

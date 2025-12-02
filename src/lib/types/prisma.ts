@@ -1,7 +1,7 @@
 /**
  * Standardized TypeScript types for all Prisma models
  * These types represent the database schema and should match prisma/schema.prisma
- * 
+ *
  * IMPORTANT: When updating the Prisma schema, update these types accordingly
  */
 
@@ -275,33 +275,48 @@ export interface Opinion {
  * Use these for data passed to client components
  */
 
-export type SerializedUser = Omit<User, "createdAt" | "updatedAt" | "deletedAt"> & {
+export type SerializedUser = Omit<
+  User,
+  "createdAt" | "updatedAt" | "deletedAt"
+> & {
   createdAt: string;
   updatedAt: string;
   deletedAt: string | null;
 };
 
-export type SerializedDoctor = Omit<Doctor, "createdAt" | "updatedAt" | "deletedAt"> & {
+export type SerializedDoctor = Omit<
+  Doctor,
+  "createdAt" | "updatedAt" | "deletedAt"
+> & {
   createdAt: string;
   updatedAt: string;
   deletedAt: string | null;
 };
 
-export type SerializedPatient = Omit<Patient, "birthdate" | "createdAt" | "updatedAt" | "deletedAt"> & {
+export type SerializedPatient = Omit<
+  Patient,
+  "birthdate" | "createdAt" | "updatedAt" | "deletedAt"
+> & {
   birthdate: string | null;
   createdAt: string;
   updatedAt: string;
   deletedAt: string | null;
 };
 
-export type SerializedAppointment = Omit<Appointment, "datetime" | "createdAt" | "updatedAt" | "deletedAt"> & {
+export type SerializedAppointment = Omit<
+  Appointment,
+  "datetime" | "createdAt" | "updatedAt" | "deletedAt"
+> & {
   datetime: string;
   createdAt: string;
   updatedAt: string;
   deletedAt: string | null;
 };
 
-export type SerializedExperience = Omit<Experience, "startDate" | "endDate" | "createdAt" | "updatedAt" | "deletedAt"> & {
+export type SerializedExperience = Omit<
+  Experience,
+  "startDate" | "endDate" | "createdAt" | "updatedAt" | "deletedAt"
+> & {
   startDate: string | null;
   endDate: string | null;
   createdAt: string;
@@ -329,7 +344,9 @@ export function isActiveUser(user: User): boolean {
   return user.isActive && user.deletedAt === null;
 }
 
-export function isDeletedRecord<T extends { deletedAt: Date | null }>(record: T): boolean {
+export function isDeletedRecord<T extends { deletedAt: Date | null }>(
+  record: T
+): boolean {
   return record.deletedAt !== null;
 }
 
