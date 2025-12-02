@@ -6,6 +6,7 @@ import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import listPlugin from "@fullcalendar/list";
+import { EventClickArg } from "@fullcalendar/core";
 import { AppointmentDetailsModal } from "@/components";
 
 interface PatientAppointment {
@@ -136,12 +137,23 @@ export default function PatientCalendar({
   }
 
   // Handle event click (for viewing appointment details)
-  const handleEventClick = (clickInfo: any) => {
+  const handleEventClick = (clickInfo: EventClickArg) => {
     const event = clickInfo.event;
+    if (!event.start) return;
+    
     setSelectedAppointment({
       id: event.id,
       start: event.start,
-      extendedProps: event.extendedProps,
+      extendedProps: event.extendedProps as {
+        status: string;
+        doctorName: string;
+        specialty: string;
+        clinicName: string;
+        clinicAddress?: string;
+        notes?: string;
+        type: string;
+        meetingLink?: string;
+      },
     });
     setIsModalOpen(true);
   };

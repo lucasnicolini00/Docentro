@@ -103,23 +103,6 @@ export async function getDoctorAppointments(
   }
 ) {
   try {
-    const whereClause: any = {
-      doctorId: doctorId,
-    };
-
-    if (options?.startDate && options?.endDate) {
-      whereClause.datetime = {
-        gte: options.startDate,
-        lte: options.endDate,
-      };
-    }
-
-    if (options?.status) {
-      whereClause.status = {
-        in: options.status,
-      };
-    }
-
     const appointments = await appointmentsService.getDoctorAppointmentsForCalendar(
       doctorId,
       options?.startDate || new Date(),
@@ -146,25 +129,6 @@ export async function getPatientAppointments(
   }
 ) {
   try {
-    const whereClause: any = {
-      patientId: patientId,
-    };
-
-    if (options?.startDate && options?.endDate) {
-      whereClause.timeSlot = {
-        startTime: {
-          gte: options.startDate,
-          lte: options.endDate,
-        },
-      };
-    }
-
-    if (options?.status) {
-      whereClause.status = {
-        in: options.status,
-      };
-    }
-
     const appointments = await appointmentsService.getPatientAppointmentsForCalendar(
       patientId,
       options?.startDate || new Date(),

@@ -15,7 +15,7 @@ export default async function SchedulesPage() {
 
   const clinics =
     clinicsResult.success && clinicsResult.data
-      ? (clinicsResult.data.clinics || []).map((c: any) => ({
+      ? (clinicsResult.data.clinics || []).map((c: { id: string; name: string; address?: string | null }) => ({
           id: c.id,
           name: c.name,
           address: c.address ?? null,

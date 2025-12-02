@@ -7,22 +7,10 @@ import { updatePatientProfile } from "@/lib/actions";
 import toast from "react-hot-toast";
 import { useTranslations } from "next-intl";
 import { useLocalePath } from "@/hooks";
+import type { PatientWithUser } from "@/lib/types";
 
-interface Patient {
-  id: string;
-  name: string;
-  surname: string;
-  email: string;
-  phone: string | null;
-  birthdate: Date | null;
-  gender: string | null;
-  user: {
-    firstName: string;
-    lastName: string;
-    email: string;
-    phone: string | null;
-  };
-}
+// Extended patient type for profile form
+type Patient = PatientWithUser;
 
 interface PatientProfileFormProps {
   patient: Patient;

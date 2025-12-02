@@ -268,9 +268,9 @@ export async function getDoctorPublicProfile(
     // Convert Decimal fields to numbers for client compatibility
     const serializedDoctor = {
       ...doctor,
-      pricings: doctor.pricings?.map((p: any) => ({
+      pricings: doctor.pricings?.map((p: { id: string; clinicId: string; price: number | { toNumber: () => number } }) => ({
         ...p,
-        price: p.price ? Number(p.price) : p.price,
+        price: typeof p.price === 'number' ? p.price : p.price.toNumber(),
       })),
     };
 

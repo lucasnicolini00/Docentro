@@ -8,6 +8,7 @@ import { getPatientProfile } from "@/lib/actions/patients";
 import { createAppointment } from "@/lib/actions/appointments";
 import { useTranslations } from "next-intl";
 
+// Doctor type for booking modal (subset of TransformedDoctorData)
 interface Doctor {
   id: string;
   name: string;

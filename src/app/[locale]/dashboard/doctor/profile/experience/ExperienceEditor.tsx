@@ -76,7 +76,7 @@ export default function ExperienceEditor({
       const res = await uploadDoctorImages(formData);
       if (res?.success) {
         if (res.data && Array.isArray(res.data)) {
-          const newImages = res.data.map((img: any) => ({
+          const newImages = res.data.map((img: { id: string; url: string; filename?: string }) => ({
             id: img.id,
             url: img.url,
           }));

@@ -1,6 +1,15 @@
 import prisma from "@/lib/prisma";
 import { withErrorHandling } from "./errorHandler";
 
+interface ExperienceInput {
+  title: string;
+  description?: string;
+  startDate: Date | string;
+  endDate?: Date | string | null;
+  company?: string;
+  location?: string;
+}
+
 export const doctorsService = {
   async getDoctorIdFromUserId(userId: string): Promise<string> {
     return withErrorHandling(
@@ -33,7 +42,7 @@ export const doctorsService = {
       doctorEmail: string;
       doctorPhone: string;
       specialityIds: string[];
-      experiences: any[];
+      experiences: ExperienceInput[];
     }
   ) {
     return withErrorHandling(
@@ -79,7 +88,7 @@ export const doctorsService = {
             });
 
             await tx.experience.createMany({
-              data: data.experiences.map((exp: any) => ({
+              data: data.experiences.map((exp: ExperienceInput) => ({
                 doctorId: doctorId,
                 title: exp.title,
                 company: exp.company,

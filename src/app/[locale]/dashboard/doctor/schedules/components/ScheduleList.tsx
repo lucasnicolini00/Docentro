@@ -4,7 +4,7 @@ import React, { useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
 import toast from "react-hot-toast";
 import { deleteSchedule, toggleTimeSlotBlock } from "@/lib/actions/schedules";
-import { Schedule, DAY_ORDER } from "./types";
+import { Schedule, DAY_ORDER, Clinic } from "./types";
 import { ConfirmationModal } from "@/components/ui";
 import { ClinicSection } from "./ClinicSection";
 
@@ -174,7 +174,7 @@ export default function ScheduleList({
         acc[clinicId].schedules.push(schedule);
         return acc;
       },
-      {} as Record<string, { clinic: any; schedules: Schedule[] }>
+      {} as Record<string, { clinic: Clinic; schedules: Schedule[] }>
     );
 
   // Sort schedules by day

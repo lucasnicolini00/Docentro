@@ -5,6 +5,7 @@ import { useTranslations, useLocale } from "next-intl";
 import { useRouter } from "next/navigation";
 import { updateAppointmentStatus } from "@/lib/actions/appointments";
 import { AppointmentStatus, AppointmentType } from "@prisma/client";
+import type { DoctorAppointment as BaseDoctorAppointment } from "@/lib/types";
 import {
   Calendar,
   Clock,
@@ -19,12 +20,8 @@ import {
   Loader2,
 } from "lucide-react";
 
-interface Appointment {
-  id: string;
-  datetime: Date;
-  status: AppointmentStatus;
-  type: AppointmentType;
-  notes: string | null;
+// Extend base type with additional dashboard fields
+interface Appointment extends BaseDoctorAppointment {
   patient: {
     id: string;
     user: {
@@ -33,11 +30,6 @@ interface Appointment {
       email: string;
       phone: string | null;
     };
-  };
-  clinic: {
-    id: string;
-    name: string;
-    address: string | null;
   };
 }
 

@@ -1,5 +1,6 @@
 import prisma from "@/lib/prisma";
 import { AppointmentStatus, AppointmentType } from "@prisma/client";
+import type { Prisma } from "@prisma/client";
 
 export const appointmentsService = {
   async getPatient(email: string) {
@@ -74,7 +75,7 @@ export const appointmentsService = {
     endDate: Date,
     status?: AppointmentStatus[]
   ) {
-    const whereClause: any = {
+    const whereClause: Prisma.AppointmentWhereInput = {
       doctorId,
       datetime: {
         gte: startDate,
@@ -145,13 +146,11 @@ export const appointmentsService = {
     endDate: Date,
     status?: AppointmentStatus[]
   ) {
-    const whereClause: any = {
+    const whereClause: Prisma.AppointmentWhereInput = {
       patientId,
-      timeSlot: {
-        startTime: {
-          gte: startDate,
-          lte: endDate,
-        },
+      datetime: {
+        gte: startDate,
+        lte: endDate,
       },
     };
 

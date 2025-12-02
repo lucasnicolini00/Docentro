@@ -1,10 +1,29 @@
 import prisma from "@/lib/prisma";
-import { DayOfWeek } from "@prisma/client";
+import type { DayOfWeek } from "@prisma/client";
+import type { Prisma } from "@prisma/client";
 import {
   generateTimeSlotsForDateRange,
   parseTime,
   formatTime,
 } from "./slotGenerationHelper";
+
+interface ScheduleWithSlotsForDate {
+  id: string;
+  doctorId: string;
+  clinicId: string;
+  dayOfWeek: DayOfWeek;
+  startTime: string;
+  endTime: string;
+  isActive: boolean;
+  createdAt: Date;
+  clinic: {
+    id: string;
+    name: string;
+    address: string | null;
+  };
+  timeSlots: Array<{ id: string; startTime: string; endTime: string; isBooked: boolean; isBlocked: boolean }>;
+  date: string;
+}
 
 export const schedulesService = {
   async getSchedule(doctorId: string, clinicId: string, dayOfWeek: DayOfWeek) {
@@ -447,7 +466,7 @@ export const schedulesService = {
     clinicId?: string
   ) {
     // 1. Get active schedules
-    const whereClause: any = {
+    const whereClause: Prisma.ScheduleWhereInput = {
       doctorId,
       isActive: true,
     };
@@ -513,7 +532,7 @@ export const schedulesService = {
     );
 
     // 4. Group slots by schedule and date
-    const result: any[] = [];
+    const result: ScheduleWithSlotsForDate[] = [];
     const slotsByScheduleAndDate = new Map<string, any[]>();
 
     for (const slot of generatedSlots) {

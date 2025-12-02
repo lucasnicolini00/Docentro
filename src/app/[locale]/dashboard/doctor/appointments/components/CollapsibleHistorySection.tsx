@@ -4,14 +4,10 @@ import { useState } from "react";
 import { ChevronDownIcon, ChevronUpIcon } from "lucide-react";
 import DoctorAppointmentList from "./DoctorAppointmentList";
 import { useTranslations } from "next-intl";
-import { AppointmentStatus, AppointmentType } from "@prisma/client";
+import type { DoctorAppointment as BaseDoctorAppointment } from "@/lib/types";
 
-interface Appointment {
-  id: string;
-  datetime: Date;
-  status: AppointmentStatus;
-  type: AppointmentType;
-  notes: string | null;
+// Extend base type with additional dashboard fields
+interface Appointment extends BaseDoctorAppointment {
   patient: {
     id: string;
     user: {
@@ -20,11 +16,6 @@ interface Appointment {
       email: string;
       phone: string | null;
     };
-  };
-  clinic: {
-    id: string;
-    name: string;
-    address: string | null;
   };
 }
 

@@ -8,6 +8,11 @@ import dayGridPlugin from "@fullcalendar/daygrid";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import interactionPlugin from "@fullcalendar/interaction";
 import listPlugin from "@fullcalendar/list";
+import {
+  EventClickArg,
+  EventDropArg,
+  DateSelectArg,
+} from "@fullcalendar/core";
 import { updateAppointmentStatus } from "@/lib/actions/appointments";
 export interface CalendarAppointment {
   id: string;
@@ -26,9 +31,9 @@ export interface CalendarAppointment {
 
 interface DoctorCalendarProps {
   initialAppointments?: CalendarAppointment[];
-  onDateSelect?: (selectInfo: any) => void;
-  onEventClick?: (clickInfo: any) => void;
-  onEventDrop?: (dropInfo: any) => void;
+  onDateSelect?: (selectInfo: DateSelectArg) => void;
+  onEventClick?: (clickInfo: EventClickArg) => void;
+  onEventDrop?: (dropInfo: EventDropArg) => void;
   editable?: boolean;
 }
 
@@ -98,7 +103,7 @@ export default function DoctorCalendar({
     extendedProps: apt.extendedProps,
   }));
 
-  const handleDateSelect = (info: any) => {
+  const handleDateSelect = (info: DateSelectArg) => {
     if (onDateSelect) return onDateSelect(info);
     setNewAppointmentInfo({ start: info.startStr, end: info.endStr });
     setModalTitle(t("newAppointmentTitle"));
@@ -126,10 +131,13 @@ export default function DoctorCalendar({
     setNewAppointmentInfo(null);
   };
 
-  const handleEventClick = (clickInfo: any) => {
+  const handleEventClick = (clickInfo: EventClickArg) => {
     if (onEventClick) return onEventClick(clickInfo);
     const ev = clickInfo.event;
     setSelectedEventId(ev.id);
+    
+    if (!ev.start) return;
+    
     const details =
       `${t("appointmentPatientLabel")}: ${ev.extendedProps.patientName || ev.title}\n` +
       `${t("appointmentClinicLabel")}: ${ev.extendedProps.clinicName}\n` +
@@ -148,7 +156,7 @@ export default function DoctorCalendar({
     setModalOpen(true);
   };
 
-  const handleEventDrop = (dropInfo: any) => {
+  const handleEventDrop = (dropInfo: EventDropArg) => {
     if (onEventDrop) return onEventDrop(dropInfo);
     setAppointments((prev) =>
       prev.map((apt) =>
@@ -457,7 +465,7 @@ export default function DoctorCalendar({
       </div>
 
       <FullCalendar
-        ref={calendarRef as any}
+        ref={calendarRef as React.RefObject<FullCalendar>}
         plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin, listPlugin]}
         initialView={currentView}
         selectable={editable}

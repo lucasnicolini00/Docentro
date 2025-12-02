@@ -2,11 +2,11 @@
 import React from "react";
 import { MapPin, ChevronUp, ChevronDown } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { Schedule } from "./types";
+import { Schedule, Clinic } from "./types";
 import { ScheduleCard } from "./ScheduleCard";
 
 interface ClinicSectionProps {
-  clinic: any; // TODO: add proper type
+  clinic: Clinic;
   schedules: Schedule[];
   expandedSchedules: Set<string>;
   onToggleAll: (schedules: Schedule[]) => void;

@@ -14,18 +14,18 @@ export default withAuth(
 
     // Root path locale redirect ("/" -> "/{best-locale}")
     if (pathname === "/") {
-      const best = detectPreferredLocaleFromRequest(req as any);
+      const best = detectPreferredLocaleFromRequest(req);
       return NextResponse.redirect(new URL(`/${best}`, req.url));
     }
 
     const segments = pathname.split("/").filter(Boolean);
     const maybeLocale = segments[0];
     const hasLocale =
-      maybeLocale && SUPPORTED_LOCALES.includes(maybeLocale as any);
+      maybeLocale && SUPPORTED_LOCALES.includes(maybeLocale as SupportedLocale);
     
     // If no locale prefix, redirect to default locale
     if (!hasLocale && segments.length > 0) {
-      const best = detectPreferredLocaleFromRequest(req as any);
+      const best = detectPreferredLocaleFromRequest(req);
       return NextResponse.redirect(new URL(`/${best}${pathname}`, req.url));
     }
     
@@ -35,7 +35,7 @@ export default withAuth(
     if (rest.startsWith("/dashboard/doctor")) {
       if (token?.role !== "DOCTOR") {
         const locale = (
-          hasLocale ? maybeLocale : detectPreferredLocaleFromRequest(req as any)
+          hasLocale ? maybeLocale : detectPreferredLocaleFromRequest(req)
         ) as SupportedLocale;
         return NextResponse.redirect(
           new URL(`/${locale}/unauthorized`, req.url)
@@ -47,7 +47,7 @@ export default withAuth(
     if (rest.startsWith("/dashboard/patient")) {
       if (token?.role !== "PATIENT") {
         const locale = (
-          hasLocale ? maybeLocale : detectPreferredLocaleFromRequest(req as any)
+          hasLocale ? maybeLocale : detectPreferredLocaleFromRequest(req)
         ) as SupportedLocale;
         return NextResponse.redirect(
           new URL(`/${locale}/unauthorized`, req.url)
@@ -63,7 +63,7 @@ export default withAuth(
         const segments = pathname.split("/").filter(Boolean);
         const maybeLocale = segments[0];
         const hasLocale =
-          maybeLocale && SUPPORTED_LOCALES.includes(maybeLocale as any);
+          maybeLocale && SUPPORTED_LOCALES.includes(maybeLocale as SupportedLocale);
         const rest = hasLocale ? "/" + segments.slice(1).join("/") : pathname;
 
         // Public routes that don't require authentication

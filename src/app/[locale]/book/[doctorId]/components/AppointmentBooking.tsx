@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { AppointmentType } from "@prisma/client";
+import type { Clinic as BaseClinic, Pricing as BasePricing } from "@/lib/types";
 
 interface TimeSlot {
   id: string;
@@ -22,20 +23,17 @@ interface DoctorInfo {
   }>;
 }
 
-interface Clinic {
-  id: string;
-  name: string;
-  address: string | null;
-}
-
-interface Pricing {
-  id: string;
-  title: string;
-  price: number;
-  currency: string;
-  durationMinutes: number;
-  description: string | null;
+// Use only needed fields from centralized types
+type Clinic = Pick<BaseClinic, 'id' | 'name' | 'address'>;
+type Pricing = Pick<BasePricing, 'id' | 'title' | 'price' | 'currency' | 'durationMinutes' | 'description'> & {
   clinicId?: string;
+};
+
+interface AppointmentBookingProps {
+  doctor: DoctorInfo;
+  clinics: Clinic[];
+  pricings?: Pricing[];
+  onClose?: () => void;
 }
 
 interface AppointmentBookingProps {

@@ -3,6 +3,27 @@
 import type { ActionResult } from "./utils";
 import { searchService } from "@/lib/services/searchService";
 import { convertDoctorDecimals } from "@/lib/utils/serialization";
+import type {
+  RawDoctorData,
+  TransformedDoctorData,
+} from "@/lib/types/search";
+
+/**
+ * Transform raw doctor data from database to frontend format
+ * Flattens user.firstName and user.lastName to name and surname
+ */
+function transformDoctorData(
+  doctor: RawDoctorData
+): TransformedDoctorData {
+  const converted = convertDoctorDecimals(doctor as unknown as Record<string, unknown>);
+  return {
+    ...converted,
+    name: doctor.user?.firstName || "",
+    surname: doctor.user?.lastName || "",
+    email: doctor.user?.email || null,
+    phone: doctor.user?.phone || null,
+  } as TransformedDoctorData;
+}
 
 /**
  * Server action for getting all available specialities for autocomplete
@@ -71,11 +92,10 @@ export async function getFeaturedDoctors(): Promise<ActionResult> {
   try {
     const doctors = await searchService.getFeaturedDoctors();
 
-    // Convert Decimal fields (e.g. price) to plain numbers so Next server
-    // components don't pass Decimal objects to client components.
-    const serialized = Array.isArray(doctors)
-      ? doctors.map((d) => convertDoctorDecimals(d))
-      : doctors;
+    // Convert Decimal fields and flatten user fields for client compatibility
+    const serialized: TransformedDoctorData[] = Array.isArray(doctors)
+      ? doctors.map((doctor) => transformDoctorData(doctor as RawDoctorData))
+      : [];
 
     return {
       success: true,
@@ -104,8 +124,10 @@ export async function searchDoctors(
       pageSize
     );
 
-    // Convert Decimal fields to numbers for client compatibility
-    const serializedDoctors = result.doctors.map(convertDoctorDecimals);
+    // Convert Decimal fields and flatten user fields for client compatibility
+    const serializedDoctors: TransformedDoctorData[] = result.doctors.map(
+      (doctor) => transformDoctorData(doctor as RawDoctorData)
+    );
 
     return {
       success: true,
@@ -133,8 +155,10 @@ export async function getAllDoctors(
   try {
     const result = await searchService.getAllDoctors(page, pageSize);
 
-    // Convert Decimal fields to numbers for client compatibility
-    const serializedDoctors = result.doctors.map(convertDoctorDecimals);
+    // Convert Decimal fields and flatten user fields for client compatibility
+    const serializedDoctors: TransformedDoctorData[] = result.doctors.map(
+      (doctor) => transformDoctorData(doctor as RawDoctorData)
+    );
 
     return {
       success: true,

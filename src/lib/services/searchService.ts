@@ -1,5 +1,70 @@
 import prisma from "@/lib/prisma";
 import { withErrorHandling } from "./errorHandler";
+import type { RawDoctorData, PaginatedDoctorResults } from "@/lib/types/search";
+
+/**
+ * Shared include configuration for doctor queries
+ * IMPORTANT: If you modify these fields, update the types in src/lib/types/search.ts
+ */
+const DOCTOR_SEARCH_INCLUDE = {
+  specialities: {
+    select: {
+      speciality: {
+        select: {
+          id: true,
+          name: true,
+        },
+      },
+    },
+  },
+  opinions: {
+    select: {
+      id: true,
+      rating: true,
+    },
+    take: 5, // Limit opinions for search results
+  },
+  clinics: {
+    select: {
+      clinic: {
+        select: {
+          id: true,
+          name: true,
+          city: true,
+          address: true,
+          latitude: true,
+          longitude: true,
+          isVirtual: true,
+        },
+      },
+    },
+  },
+  pricings: {
+    select: {
+      id: true,
+      price: true,
+      currency: true,
+      title: true,
+      clinic: { select: { id: true, name: true } },
+    },
+    where: { isActive: true },
+    take: 3, // Limit pricing options for search results
+  },
+  user: {
+    select: {
+      firstName: true,
+      lastName: true,
+      email: true,
+      phone: true,
+    },
+  },
+  profileImage: {
+    select: {
+      id: true,
+      url: true,
+    },
+  },
+} as const;
 
 export const searchService = {
   async getAllSpecialities() {
@@ -43,29 +108,14 @@ export const searchService = {
     );
   },
 
-  async getFeaturedDoctors() {
+  async getFeaturedDoctors(): Promise<RawDoctorData[]> {
     return withErrorHandling(
       () =>
         prisma.doctor.findMany({
           where: { deletedAt: null },
-          include: {
-            user: {
-              select: {
-                firstName: true,
-                lastName: true,
-              },
-            },
-            specialities: { include: { speciality: true } },
-            opinions: true,
-            clinics: { include: { clinic: true } },
-            pricings: {
-              include: { clinic: true },
-              where: { isActive: true },
-            },
-            profileImage: { select: { id: true, url: true } },
-          },
+          include: DOCTOR_SEARCH_INCLUDE,
           take: 3,
-        }),
+        }) as Promise<RawDoctorData[]>,
       { service: "searchService", method: "getFeaturedDoctors" }
     );
   },
@@ -75,7 +125,7 @@ export const searchService = {
     location?: string,
     page: number = 1,
     pageSize: number = 20
-  ) {
+  ): Promise<Omit<PaginatedDoctorResults, "doctors"> & { doctors: RawDoctorData[] }> {
     return withErrorHandling(
       async () => {
         const skip = (page - 1) * pageSize;
@@ -118,67 +168,13 @@ export const searchService = {
           }),
         };
 
-        const include = {
-          specialities: {
-            select: {
-              speciality: {
-                select: {
-                  id: true,
-                  name: true,
-                },
-              },
-            },
-          },
-          opinions: {
-            select: {
-              id: true,
-              rating: true,
-            },
-            take: 5, // Limit opinions for search results
-          },
-          clinics: {
-            select: {
-              clinic: {
-                select: {
-                  id: true,
-                  name: true,
-                  city: true,
-                  isVirtual: true,
-                },
-              },
-            },
-          },
-          pricings: {
-            select: {
-              id: true,
-              price: true,
-              currency: true,
-              clinic: { select: { id: true, name: true } },
-            },
-            where: { isActive: true },
-            take: 3, // Limit pricing options for search results
-          },
-          user: {
-            select: {
-              firstName: true,
-              lastName: true,
-            },
-          },
-          profileImage: {
-            select: {
-              id: true,
-              url: true,
-            },
-          },
-        };
-
         const [doctors, total] = await Promise.all([
           prisma.doctor.findMany({
             where,
-            include,
+            include: DOCTOR_SEARCH_INCLUDE,
             skip,
             take: pageSize,
-          }),
+          }) as Promise<RawDoctorData[]>,
           prisma.doctor.count({ where }),
         ]);
 
@@ -198,72 +194,21 @@ export const searchService = {
     );
   },
 
-  async getAllDoctors(page: number = 1, pageSize: number = 20) {
+  async getAllDoctors(
+    page: number = 1,
+    pageSize: number = 20
+  ): Promise<Omit<PaginatedDoctorResults, "doctors"> & { doctors: RawDoctorData[] }> {
     return withErrorHandling(
       async () => {
         const skip = (page - 1) * pageSize;
 
-        const include = {
-          specialities: {
-            select: {
-              speciality: {
-                select: {
-                  id: true,
-                  name: true,
-                },
-              },
-            },
-          },
-          opinions: {
-            select: {
-              id: true,
-              rating: true,
-            },
-            take: 5, // Limit opinions for search results
-          },
-          clinics: {
-            select: {
-              clinic: {
-                select: {
-                  id: true,
-                  name: true,
-                  city: true,
-                  isVirtual: true,
-                },
-              },
-            },
-          },
-          pricings: {
-            select: {
-              id: true,
-              price: true,
-              currency: true,
-              clinic: { select: { id: true, name: true } },
-            },
-            where: { isActive: true },
-            take: 3, // Limit pricing options for search results
-          },
-          user: {
-            select: {
-              firstName: true,
-              lastName: true,
-            },
-          },
-          profileImage: {
-            select: {
-              id: true,
-              url: true,
-            },
-          },
-        };
-
         const [doctors, total] = await Promise.all([
           prisma.doctor.findMany({
             where: { deletedAt: null },
-            include,
+            include: DOCTOR_SEARCH_INCLUDE,
             skip,
             take: pageSize,
-          }),
+          }) as Promise<RawDoctorData[]>,
           prisma.doctor.count({ where: { deletedAt: null } }),
         ]);
 

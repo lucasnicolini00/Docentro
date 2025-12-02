@@ -76,7 +76,13 @@ export default function DoctorSettingsPanel() {
     startTransition(async () => {
       try {
         // Map to the expected server action format
-        const updateData: any = {};
+        const updateData: Partial<{
+          publicAvailability: boolean;
+          onlineConsultations: boolean;
+          autoBooking: boolean;
+          reminders: boolean;
+          [key: string]: boolean | undefined;
+        }> = {};
         switch (key) {
           case "isPublic":
             updateData.publicAvailability = newValue;

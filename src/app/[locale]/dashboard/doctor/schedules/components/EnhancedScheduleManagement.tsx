@@ -10,6 +10,7 @@ import {
   ScheduleList,
   ScheduleManagementProps,
   Schedule,
+  DayOfWeek,
 } from ".";
 
 export default function EnhancedScheduleManagement({
@@ -52,7 +53,7 @@ export default function EnhancedScheduleManagement({
       const tempId = `temp-${Date.now()}-${Math.random()}-${index}`;
       return {
         id: tempId,
-        dayOfWeek: dayOfWeek as any,
+        dayOfWeek: dayOfWeek as DayOfWeek,
         startTime: data.startTime,
         endTime: data.endTime,
         isActive: true,
@@ -84,7 +85,7 @@ export default function EnhancedScheduleManagement({
         const results = await Promise.all(
           selectedDays.map((dayOfWeek) =>
             createSchedule(data.clinicId, {
-              dayOfWeek: dayOfWeek as any,
+              dayOfWeek: dayOfWeek as DayOfWeek,
               startTime: data.startTime,
               endTime: data.endTime,
               slotDuration: data.slotDuration,

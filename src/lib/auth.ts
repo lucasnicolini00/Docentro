@@ -96,7 +96,7 @@ export const authOptions: NextAuthOptions = {
       }
       // Store rememberMe flag from credentials on first login
       if (trigger === "signIn" && account?.provider === "credentials") {
-        const credentials = account as any;
+        const credentials = account as Record<string, unknown>;
         token.rememberMe = credentials.rememberMe === "true";
       }
       return token;

@@ -1,5 +1,9 @@
-import { DayOfWeek } from "@prisma/client";
+import type { DayOfWeek } from "@/lib/types";
 
+// Re-export for convenience
+export type { DayOfWeek };
+
+// Dashboard-specific TimeSlot type (lighter than base TimeSlot)
 export interface TimeSlot {
   id: string;
   startTime: string;
@@ -8,6 +12,7 @@ export interface TimeSlot {
   isBlocked: boolean;
 }
 
+// Dashboard-specific Schedule type with relations
 export interface Schedule {
   id: string;
   dayOfWeek: DayOfWeek;

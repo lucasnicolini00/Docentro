@@ -11,9 +11,10 @@ const MapModal = dynamic(() => import("@/components/ui/MapModal"), {
 import DoctorCard from "./components/DoctorCard";
 import SearchFilters from "./components/SearchFilters";
 import { useTranslations } from "next-intl";
+import type { TransformedDoctorData } from "@/lib/types";
 
 interface SearchPageClientProps {
-  doctors: any[];
+  doctors: TransformedDoctorData[];
   initialSpecialty: string;
   initialLocation: string;
   specialties: string[];
@@ -88,7 +89,7 @@ export default function SearchPageClient({
             </div>
             <div className="space-y-6">
               {Array.isArray(doctors) && doctors.map((doctor) => (
-                <DoctorCard key={doctor.id} doctor={doctor as any} />
+                <DoctorCard key={doctor.id} doctor={doctor} />
               ))}
               {(!Array.isArray(doctors) || doctors.length === 0) && (
                 <div className="text-center py-12">

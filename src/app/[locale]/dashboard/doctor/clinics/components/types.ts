@@ -1,28 +1,36 @@
-export interface Clinic {
-  id: string;
+import type { Clinic as BaseClinic, Pricing as BasePricing } from "@/lib/types";
+
+// Form data interfaces
+export interface ClinicFormData {
   name: string;
-  address: string | null;
-  country: string | null;
-  city: string | null;
-  neighborhood: string | null;
-  latitude: number | null;
-  longitude: number | null;
+  address: string;
   isVirtual: boolean;
+  country?: string;
+  city?: string;
+  neighborhood?: string;
+  latitude?: number | null;
+  longitude?: number | null;
+}
+
+export interface PricingFormData {
+  clinicId?: string;
+  title: string;
+  price: number;
+  currency: string;
+  durationMinutes: number;
+  description: string;
+  isActive: boolean;
+}
+
+// Extend base types with dashboard-specific fields
+export interface Clinic extends Omit<BaseClinic, 'createdAt' | 'updatedAt' | 'deletedAt'> {
   pricings: Pricing[];
   _count?: {
     appointments: number;
   };
 }
 
-export interface Pricing {
-  id: string;
-  title: string;
-  price: number;
-  currency: string;
-  durationMinutes: number;
-  description: string | null;
-  isActive: boolean;
-}
+export type Pricing = Omit<BasePricing, 'doctorId' | 'clinicId' | 'createdAt' | 'updatedAt' | 'deletedAt'>;
 
 export interface ClinicsManagementProps {
   initialClinics: Clinic[];
@@ -64,7 +72,7 @@ export interface ClinicFormProps {
     latitude?: number;
     longitude?: number;
   };
-  onSubmit: (clinicData: any) => Promise<void>;
+  onSubmit: (clinicData: ClinicFormData) => Promise<void>;
   isPending?: boolean;
 }
 
@@ -92,7 +100,7 @@ export interface FormsContainerProps {
   showClinicForm: boolean;
   editingClinic: Clinic | null;
   onCloseClinicForm: () => void;
-  onSubmitClinic: (formData: any) => Promise<void>;
+  onSubmitClinic: (formData: ClinicFormData) => Promise<void>;
 
   // Pricing Form Props
   showPricingForm: boolean;
@@ -100,7 +108,7 @@ export interface FormsContainerProps {
   clinics: Clinic[];
   selectedClinicId?: string;
   onClosePricingForm: () => void;
-  onSubmitPricing: (formData: FormData) => void;
+  onSubmitPricing: (formData: PricingFormData) => Promise<void>;
 }
 
 export interface PricingFormProps {
@@ -121,7 +129,7 @@ export interface PricingFormProps {
     isVirtual: boolean;
   }>;
   selectedClinicId?: string;
-  onSubmit: (pricingData: any) => void;
+  onSubmit: (pricingData: PricingFormData) => void;
 }
 
 export interface PricingListProps {

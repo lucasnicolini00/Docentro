@@ -1,3 +1,5 @@
+import type { DoctorAppointment } from "@/lib/types";
+
 // Local calendar utilities for doctor calendar
 export interface CalendarAppointment {
   id: string;
@@ -18,16 +20,20 @@ export interface CalendarAppointment {
 }
 
 export function transformAppointmentToCalendarEvent(
-  appointment: any
+  appointment: DoctorAppointment
 ): CalendarAppointment {
   const startDate = new Date(appointment.datetime);
   const endDate = new Date(startDate.getTime() + 60 * 60 * 1000); // 1 hour
 
+  const patientName = appointment.patient
+    ? `${appointment.patient.user.firstName || ""} ${
+        appointment.patient.user.lastName || ""
+      }`.trim()
+    : "";
+
   return {
     id: appointment.id,
-    title: `${appointment.patient?.name || ""} ${
-      appointment.patient?.surname || ""
-    }`.trim(),
+    title: patientName,
     start: startDate.toISOString(),
     end: endDate.toISOString(),
     backgroundColor: appointment.status === "CONFIRMED" ? "#10b981" : "#f59e0b",
@@ -35,12 +41,10 @@ export function transformAppointmentToCalendarEvent(
     textColor: "#ffffff",
     extendedProps: {
       status: appointment.status,
-      patientName: `${appointment.patient?.name || ""} ${
-        appointment.patient?.surname || ""
-      }`.trim(),
+      patientName,
       clinicName: appointment.clinic?.name || "Clínica",
       notes: appointment.notes || "",
-      phone: appointment.patient?.phone || "",
+      phone: appointment.patient?.user.phone || "",
       type: appointment.type || "appointment",
     },
   };

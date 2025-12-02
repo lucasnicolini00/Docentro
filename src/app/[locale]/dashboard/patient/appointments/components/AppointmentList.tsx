@@ -4,13 +4,10 @@ import { useState, useTransition } from "react";
 import { cancelAppointment } from "@/lib/actions/appointments";
 import { AppointmentStatus, AppointmentType } from "@prisma/client";
 import { useTranslations, useLocale } from "next-intl";
+import type { PatientAppointment as BasePatientAppointment } from "@/lib/types";
 
-interface Appointment {
-  id: string;
-  datetime: Date;
-  status: AppointmentStatus;
-  type: AppointmentType;
-  notes: string | null;
+// Extend base type with additional fields used in dashboard
+interface Appointment extends Omit<BasePatientAppointment, 'doctor' | 'clinic'> {
   doctor: {
     id: string;
     name: string;

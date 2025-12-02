@@ -9,52 +9,10 @@ import {
   Marker,
   InfoWindow,
 } from "@react-google-maps/api";
+import type { TransformedDoctorData, SearchClinicData } from "@/lib/types";
 
-interface Clinic {
-  id: string;
-  name: string;
-  city: string | null;
-  address: string | null;
-  latitude: number | null;
-  longitude: number | null;
-}
-
-interface Doctor {
-  id: string;
-  name: string;
-  surname: string;
-  picaddress?: string | null;
-  consultationPrice?: number | null;
-  specialities: Array<{
-    speciality: {
-      name: string;
-    };
-  }>;
-  clinics: Array<{
-    clinic: Clinic;
-  }>;
-  opinions: Array<{
-    id: string;
-    rating: number;
-    title?: string | null;
-    description?: string | null;
-  }>;
-  pricings: Array<{
-    id: string;
-    amount: number;
-    clinic: {
-      id: string;
-      name: string;
-    };
-  }>;
-  experiences?: Array<{
-    id: string;
-    title: string;
-    institution?: string | null;
-    startDate?: Date | null;
-    endDate?: Date | null;
-  }>;
-}
+// Use centralized type for consistency
+type Doctor = TransformedDoctorData;
 
 interface MapModalProps {
   isOpen: boolean;
@@ -118,12 +76,12 @@ const calculateYearsOfExperience = (
 // Helper function to get price range for a doctor
 const getPriceRange = (
   doctor: Doctor,
-  t: (key: string, values?: any) => string
+  t: (key: string, values?: Record<string, string | number>) => string
 ): string => {
   if (doctor.pricings && doctor.pricings.length > 0) {
     // Filter out invalid prices and convert to numbers
     const validPrices = doctor.pricings
-      .map((p) => p.amount)
+      .map((p) => p.price)
       .filter((price) => price != null && !isNaN(Number(price)))
       .map((price) => Number(price));
 
@@ -138,17 +96,13 @@ const getPriceRange = (
     }
   }
 
-  if (doctor.consultationPrice && !isNaN(Number(doctor.consultationPrice))) {
-    return `Bs. ${Number(doctor.consultationPrice).toLocaleString()}`;
-  }
-
   return t("priceToConsult");
 };
 
 // Helper function to get all specialities formatted
 const getSpecialitiesText = (
   specialities: Doctor["specialities"],
-  t: (key: string, values?: any) => string
+  t: (key: string, values?: Record<string, string | number>) => string
 ): string => {
   if (!specialities || specialities.length === 0) return t("specialist");
 
@@ -171,7 +125,7 @@ const getSpecialitiesText = (
 
 // Get coordinates from clinic data (latitude/longitude from database)
 const getClinicCoordinates = (
-  clinic: Clinic,
+  clinic: SearchClinicData,
   cityCoordinatesMap?: { [key: string]: { lat: number; lng: number } }
 ) => {
   // If clinic has saved coordinates, use them
@@ -269,7 +223,7 @@ export default function MapModal({
   const [map, setMap] = useState<google.maps.Map | null>(null);
   const [selectedDoctor, setSelectedDoctor] = useState<{
     doctor: Doctor;
-    clinic: Clinic;
+    clinic: SearchClinicData;
   } | null>(null);
   const [visibleDoctors, setVisibleDoctors] = useState<Doctor[]>(doctors);
   const [mapCenter] = useState(
@@ -406,11 +360,11 @@ export default function MapModal({
                 >
                   {/* Doctor Header */}
                   <div className="flex items-start gap-3 mb-3">
-                    {doctor.picaddress ? (
+                    {doctor.profileImage?.url ? (
                       <div className="relative w-12 h-12 rounded-full overflow-hidden border-2 border-blue-100">
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img
-                          src={doctor.picaddress}
+                          src={doctor.profileImage.url}
                           alt={`${doctor.name} ${doctor.surname}`}
                           className="object-cover"
                           sizes="48px"
@@ -574,11 +528,11 @@ export default function MapModal({
               >
                 <div className="p-3 max-w-xs">
                   <div className="flex items-start gap-3 mb-2">
-                    {selectedDoctor.doctor.picaddress ? (
-                      <div className="relative w-10 h-10 rounded-full overflow-hidden border border-gray-200 flex-shrink-0">
+                    {selectedDoctor.doctor.profileImage?.url ? (
+                      <div className="relative w-16 h-16 rounded-full overflow-hidden border-2 border-blue-100">
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img
-                          src={selectedDoctor.doctor.picaddress}
+                          src={selectedDoctor.doctor.profileImage.url}
                           alt={`${selectedDoctor.doctor.name}`}
                           className="object-cover"
                           sizes="40px"

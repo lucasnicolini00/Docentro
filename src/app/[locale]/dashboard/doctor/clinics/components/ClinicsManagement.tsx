@@ -12,6 +12,8 @@ import {
   FormsContainer,
   type Clinic,
   type Pricing,
+  type ClinicFormData,
+  type PricingFormData,
   type ClinicsManagementProps,
   createClinicWrapper,
   updateClinicWrapper,
@@ -58,7 +60,7 @@ export default function ClinicsManagement({
     setExpandedClinics(newExpanded);
   };
 
-  const handleCreateClinic = async (data: any) => {
+  const handleCreateClinic = async (data: ClinicFormData) => {
     return new Promise<void>((resolve, reject) => {
       startTransition(async () => {
         try {
@@ -81,7 +83,7 @@ export default function ClinicsManagement({
     setShowClinicForm(true);
   };
 
-  const handleUpdateClinic = async (data: any) => {
+  const handleUpdateClinic = async (data: ClinicFormData) => {
     if (!editingClinic) return;
 
     return new Promise<void>((resolve, reject) => {
@@ -120,7 +122,7 @@ export default function ClinicsManagement({
   };
 
   // Pricing management handlers
-  const handleCreatePricing = async (data: any) => {
+  const handleCreatePricing = async (data: PricingFormData) => {
     startTransition(async () => {
       const result = await createPricingWrapper(data);
       if (result.success && result.data) {
@@ -145,7 +147,7 @@ export default function ClinicsManagement({
     setShowPricingForm(true);
   };
 
-  const handleUpdatePricing = async (data: any) => {
+  const handleUpdatePricing = async (data: PricingFormData) => {
     if (!editingPricing || !selectedClinic) return;
 
     startTransition(async () => {

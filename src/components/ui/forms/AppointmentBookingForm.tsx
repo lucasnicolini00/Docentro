@@ -10,46 +10,16 @@ import {
 import { AppointmentType } from "@prisma/client";
 import toast from "react-hot-toast";
 import { useTranslations } from "next-intl";
+import type { TransformedDoctorData, AvailableTimeSlot } from "@/lib/types";
 
-interface Doctor {
-  id: string;
-  name: string;
-  surname: string;
-  user: {
-    firstName: string;
-    lastName: string;
-  };
-  specialities: Array<{
-    speciality: {
-      id: string;
-      name: string;
-    };
-  }>;
-  clinics: Array<{
-    clinic: {
-      id: string;
-      name: string;
-      address: string;
-    };
-  }>;
-  pricings: Array<{
-    id: string;
-    consultationFee: number;
-    clinic: {
-      id: string;
-      name: string;
-    };
-  }>;
-}
+type Doctor = TransformedDoctorData;
 
 interface AppointmentBookingFormProps {
   doctor: Doctor;
 }
 
-interface TimeSlot {
-  datetime: string;
-  time: string;
-}
+// Use only needed fields from AvailableTimeSlot
+type TimeSlot = Pick<AvailableTimeSlot, 'datetime' | 'time'>;
 
 export default function AppointmentBookingForm({
   doctor,
@@ -266,7 +236,7 @@ export default function AppointmentBookingForm({
               {selectedClinicPricing.map((pricing) => (
                 <option key={pricing.id} value={pricing.id}>
                   {t("appointmentPricingOptionPrefix")} - $
-                  {pricing.consultationFee.toLocaleString()}
+                  {pricing.price.toLocaleString()}
                 </option>
               ))}
             </select>

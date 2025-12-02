@@ -20,15 +20,21 @@ import {
 import toast from "react-hot-toast";
 import { useTranslations } from "next-intl";
 import { useLocalePath } from "@/hooks";
+import type { Speciality } from "@/lib/types";
 
 // Avatar + image controls moved to AvatarSection component
 
+// Doctor profile form type (matches actual data structure from server)
 interface Doctor {
   id: string;
   name: string;
   surname: string;
   email: string | null;
   phone: string | null;
+  profileImage?: {
+    id?: string;
+    url?: string;
+  } | null;
   user: {
     firstName: string;
     lastName: string;
@@ -37,11 +43,7 @@ interface Doctor {
   };
   specialities: Array<{
     specialityId: string;
-    speciality: {
-      id: string;
-      name: string;
-      description: string | null;
-    };
+    speciality: Speciality;
   }>;
   experiences: Array<{
     id: string;
@@ -51,12 +53,6 @@ interface Doctor {
     endDate: Date | null;
     description: string | null;
   }>;
-}
-
-interface Speciality {
-  id: string;
-  name: string;
-  description: string | null;
 }
 
 interface DoctorProfileFormProps {
@@ -153,7 +149,7 @@ export default function DoctorProfileForm({
       )}
       <div className="mb-6">
         <AvatarSection
-          doctor={doctor as any}
+          doctor={doctor}
           name={`${formData.doctorName} ${formData.doctorSurname}`}
         />
       </div>

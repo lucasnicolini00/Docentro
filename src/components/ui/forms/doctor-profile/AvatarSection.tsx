@@ -8,13 +8,20 @@ import { User } from "lucide-react";
 import { useTranslations } from "next-intl";
 import LoadingSpinner from "@/components/ui/feedback/LoadingSpinner";
 
+interface AvatarSectionProps {
+  doctor: {
+    profileImage?: {
+      id?: string;
+      url?: string;
+    } | null;
+  };
+  name: string;
+}
+
 export default function AvatarSection({
   doctor,
   name,
-}: {
-  doctor: any;
-  name: string;
-}) {
+}: AvatarSectionProps) {
   const t = useTranslations("forms");
   const [previewUrl, setPreviewUrl] = useState<string | null>(
     doctor?.profileImage?.url || null

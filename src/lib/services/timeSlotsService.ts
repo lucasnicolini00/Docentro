@@ -1,5 +1,6 @@
 import prisma from "@/lib/prisma";
 import { DayOfWeek } from "@prisma/client";
+import type { Prisma } from "@prisma/client";
 
 export const timeSlotsService = {
   async getDoctor(doctorId: string) {
@@ -118,7 +119,7 @@ export const timeSlotsService = {
   },
 
   async getAvailabilityOverview(doctorId: string, clinicId?: string) {
-    const whereClause: any = {
+    const whereClause: Prisma.ScheduleWhereInput = {
       doctorId,
       isActive: true,
       ...(clinicId && { clinicId }),

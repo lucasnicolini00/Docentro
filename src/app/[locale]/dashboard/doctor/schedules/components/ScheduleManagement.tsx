@@ -3,39 +3,7 @@
 import { useState, useOptimistic } from "react";
 import { useTranslations } from "next-intl";
 import { DayOfWeek } from "@prisma/client";
-
-interface TimeSlot {
-  id: string;
-  startTime: string;
-  endTime: string;
-  isBooked: boolean;
-  isBlocked: boolean;
-}
-
-interface Schedule {
-  id: string;
-  dayOfWeek: DayOfWeek;
-  startTime: string;
-  endTime: string;
-  isActive: boolean;
-  clinic: {
-    id: string;
-    name: string;
-    address: string | null;
-  };
-  timeSlots: TimeSlot[];
-}
-
-interface Clinic {
-  id: string;
-  name: string;
-  address: string | null;
-}
-
-interface ScheduleManagementProps {
-  initialSchedules: Schedule[];
-  clinics: Clinic[];
-}
+import type { Schedule, Clinic, ScheduleManagementProps } from "./types";
 
 // Server action wrappers
 async function createScheduleWrapper(formData: FormData) {

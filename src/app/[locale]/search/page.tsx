@@ -5,6 +5,7 @@ import {
   getAllSpecialities,
   getAllCities,
 } from "@/lib/actions/search";
+import type { TransformedDoctorData } from "@/lib/types/search";
 import { getMessages } from "@/app/messages";
 import { getLocale } from "next-intl/server";
 import { NextIntlClientProvider } from "next-intl";
@@ -43,14 +44,15 @@ export default async function Search({
           "filtersModal",
           "map",
           "mapModal",
+          "feedback",
         ]),
       ]
     );
 
     // Extract doctors from the nested data structure
     const doctors =
-      doctorsRes.success && doctorsRes.data
-        ? (doctorsRes.data as any).doctors || []
+      doctorsRes.success && doctorsRes.data && typeof doctorsRes.data === 'object' && 'doctors' in doctorsRes.data
+        ? (doctorsRes.data.doctors as TransformedDoctorData[]) || []
         : [];
     const specialties = specialtiesRes.success
       ? (specialtiesRes.data as Array<{ id: string; name: string }>).map(

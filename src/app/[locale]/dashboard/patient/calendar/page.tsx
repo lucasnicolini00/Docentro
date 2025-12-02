@@ -2,6 +2,7 @@ import { requirePatient } from "@/lib/auth-guards";
 import { getPatientDashboard } from "@/lib/actions";
 import { getT } from "@/lib/getT";
 import PatientCalendarClient from "./components/PatientCalendarClient";
+import type { PatientAppointment } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
 
@@ -16,12 +17,12 @@ export default async function PatientCalendarPage({
   const dashboard = await getPatientDashboard();
   const data = dashboard.success && dashboard.data ? dashboard.data : null;
 
-  const appts = [
+  const appts: PatientAppointment[] = [
     ...(data?.upcomingAppointments ?? []),
     ...(data?.pastAppointments ?? []),
   ];
 
-  const initialAppointments = appts.map((apt: any) => {
+  const initialAppointments = appts.map((apt) => {
     const start = new Date(apt.datetime);
     const end = new Date(start.getTime() + 60 * 60 * 1000);
     return {
@@ -34,7 +35,7 @@ export default async function PatientCalendarPage({
         status: apt.status,
         doctorName:
           `${apt.doctor?.user?.firstName || ""} ${apt.doctor?.user?.lastName || ""}`.trim(),
-        specialty: apt.doctor?.speciality?.name || "",
+        specialty: apt.doctor?.specialities?.[0]?.speciality?.name || "",
         clinicName: apt.clinic?.name || "",
         clinicAddress: apt.clinic?.address || "",
         notes: apt.notes || undefined,
@@ -49,15 +50,15 @@ export default async function PatientCalendarPage({
   // Calculate appointment statistics
   const now = new Date();
   const upcomingCount = appts.filter(
-    (apt: any) => new Date(apt.datetime) >= now && apt.status !== "CANCELED"
+    (apt) => new Date(apt.datetime) >= now && apt.status !== "CANCELED"
   ).length;
   const completedCount = appts.filter(
-    (apt: any) => apt.status === "COMPLETED"
+    (apt) => apt.status === "COMPLETED"
   ).length;
   const canceledCount = appts.filter(
-    (apt: any) => apt.status === "CANCELED"
+    (apt) => apt.status === "CANCELED"
   ).length;
-  const thisMonthCount = appts.filter((apt: any) => {
+  const thisMonthCount = appts.filter((apt) => {
     const aptDate = new Date(apt.datetime);
     return (
       aptDate.getMonth() === now.getMonth() &&

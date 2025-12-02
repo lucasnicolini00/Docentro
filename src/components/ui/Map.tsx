@@ -9,6 +9,7 @@ import {
 import { useState, useCallback, useEffect } from "react";
 import { Maximize2 } from "lucide-react";
 import { useLocalePath } from "@/hooks";
+import type { TransformedDoctorData, SearchClinicData } from "@/lib/types";
 
 const containerStyle = {
   width: "100%",
@@ -43,28 +44,7 @@ const mapOptions = {
   ],
 };
 
-interface Clinic {
-  id: string;
-  name: string;
-  city: string | null;
-  address: string | null;
-  latitude: number | null;
-  longitude: number | null;
-}
-
-interface Doctor {
-  id: string;
-  name: string;
-  surname: string;
-  specialities: Array<{
-    speciality: {
-      name: string;
-    };
-  }>;
-  clinics: Array<{
-    clinic: Clinic;
-  }>;
-}
+type Doctor = TransformedDoctorData;
 
 interface MapProps {
   doctors?: Doctor[];
@@ -101,7 +81,7 @@ const buildCityCoordinatesMap = (
 
 // Get coordinates from clinic data (latitude/longitude from database)
 const getClinicCoordinates = (
-  clinic: Clinic,
+  clinic: SearchClinicData,
   cityCoordinatesMap?: { [key: string]: { lat: number; lng: number } }
 ): { lat: number; lng: number } | null => {
   // If clinic has saved coordinates, use them (REAL DATA)
@@ -172,7 +152,7 @@ export default function Map({
     Array<{
       id: string;
       position: { lat: number; lng: number };
-      clinic: Clinic;
+      clinic: SearchClinicData;
       doctor: Doctor;
       type: string;
     }>
@@ -212,7 +192,7 @@ export default function Map({
     const newMarkers: Array<{
       id: string;
       position: { lat: number; lng: number };
-      clinic: Clinic;
+      clinic: SearchClinicData;
       doctor: Doctor;
       type: string;
     }> = [];

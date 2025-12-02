@@ -31,7 +31,7 @@ export async function uploadDoctorProfileImage(
 
     const { doctor } = validation;
 
-    const file = formData.get("file") as any;
+    const file = formData.get("file") as File | null;
     if (!file || !file.name) {
       return { success: false, error: "No se proporcionó archivo" };
     }
@@ -260,7 +260,7 @@ export async function uploadDoctorImages(
     const { doctor } = validation;
 
     // Collect files - browsers may send multiple entries with the same name
-    const files = formData.getAll("files") as any[];
+    const files = formData.getAll("files") as File[];
     if (!files || files.length === 0) {
       return { success: false, error: "No se proporcionaron archivos" };
     }
@@ -279,7 +279,7 @@ export async function uploadDoctorImages(
     if (!bucketName)
       return { success: false, error: "GCS bucket no configurado" };
 
-    const created: any[] = [];
+    const created: Array<{ id: string; url: string; filename: string | null }> = [];
 
     // Save files sequentially (could be parallelized)
     for (const file of files) {
