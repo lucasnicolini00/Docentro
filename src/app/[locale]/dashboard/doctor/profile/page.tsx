@@ -4,12 +4,7 @@ import { DoctorProfileForm } from "@/components";
 
 export const dynamic = "force-dynamic"; // profile uses live data and auth
 
-export default async function DoctorProfilePage({
-  params,
-}: {
-  params: Promise<{ locale: string }>;
-}) {
-  await params; // locale handled by next-intl
+export default async function DoctorProfilePage() {
   await requireDoctor();
 
   const [profileResult, specialitiesResult] = await Promise.all([

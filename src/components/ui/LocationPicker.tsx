@@ -25,10 +25,10 @@ const containerStyle = {
   borderRadius: "8px",
 };
 
-// Default center (generic global location)
+// Default center (Buenos Aires, Argentina - a central location for Latin America)
 const defaultCenter = {
-  lat: 0,
-  lng: 0,
+  lat: -34.6037,
+  lng: -58.3816,
 };
 
 const mapOptions = {
@@ -93,10 +93,15 @@ const extractAddressComponents = (result: google.maps.GeocoderResult) => {
       country = component.long_name;
     }
 
-    // City - can be locality, administrative_area_level_2, or sublocality
+    // City - try multiple types in priority order
     if (types.includes("locality")) {
       city = component.long_name;
     } else if (types.includes("administrative_area_level_2") && !city) {
+      city = component.long_name;
+    } else if (types.includes("administrative_area_level_1") && !city) {
+      // State/Province level - use as fallback if no city found
+      city = component.long_name;
+    } else if (types.includes("postal_town") && !city) {
       city = component.long_name;
     }
 
@@ -139,6 +144,27 @@ export default function LocationPicker({
     lng: number;
   } | null>(initialLocation || null);
   const [isGeocodingAddress, setIsGeocodingAddress] = useState(false);
+  const [userLocation, setUserLocation] = useState<{
+    lat: number;
+    lng: number;
+  } | null>(null);
+
+  // Get user's geolocation on mount
+  useEffect(() => {
+    if (!initialLocation && !selectedLocation && navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          setUserLocation({
+            lat: position.coords.latitude,
+            lng: position.coords.longitude,
+          });
+        },
+        (error) => {
+          console.log("Geolocation not available:", error.message);
+        }
+      );
+    }
+  }, [initialLocation, selectedLocation]);
 
   const onLoad = useCallback((map: google.maps.Map) => {
     setMap(map);
@@ -287,8 +313,8 @@ export default function LocationPicker({
       <div className="border border-gray-300 rounded-lg overflow-hidden">
         <GoogleMap
           mapContainerStyle={containerStyle}
-          center={selectedLocation || defaultCenter}
-          zoom={selectedLocation ? 15 : 11}
+          center={selectedLocation || userLocation || defaultCenter}
+          zoom={selectedLocation ? 15 : userLocation ? 12 : 11}
           onLoad={onLoad}
           onUnmount={onUnmount}
           onClick={handleMapClick}

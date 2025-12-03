@@ -123,7 +123,7 @@ export default function ClinicForm({
         {/* Form */}
         <form
           onSubmit={handleSubmit}
-          className="space-y-6"
+          className="p-6 space-y-6"
           autoComplete="off"
           data-form-type="clinic"
         >

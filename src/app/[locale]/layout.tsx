@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { NextIntlClientProvider } from "next-intl";
 import { getMessages } from "../messages";
 import { AuthProvider } from "@/components/providers";
+import { setRequestLocale } from "next-intl/server";
 
 export const metadata: Metadata = {
   title: "Docentro - Encuentra tu Profesional Ideal",
@@ -28,6 +29,10 @@ export default async function LocaleLayout({
 }) {
   const resolved = await params;
   const locale = resolved.locale || "es";
+
+  // Enable static rendering
+  setRequestLocale(locale);
+
   const messages = await getMessages(locale, [
     "common",
     "navigation",

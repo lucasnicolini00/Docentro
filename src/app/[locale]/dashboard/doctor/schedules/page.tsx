@@ -1,11 +1,18 @@
 import { requireDoctor } from "@/lib/auth-guards";
 import { getDoctorClinics, getDoctorSchedules } from "@/lib/actions";
 import { EnhancedScheduleManagement } from "./components";
-import { getT } from "@/lib/getT";
+import { getTranslations } from "next-intl/server";
+import { setRequestLocale } from "next-intl/server";
 
 export const dynamic = "force-dynamic"; // Dashboard pages require auth & live data
 
-export default async function SchedulesPage() {
+export default async function SchedulesPage({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}) {
+  const { locale } = await params;
+  setRequestLocale(locale);
   await requireDoctor();
 
   const [clinicsResult, schedulesResult] = await Promise.all([
@@ -27,7 +34,7 @@ export default async function SchedulesPage() {
   const schedules =
     schedulesResult.success && schedulesResult.data ? schedulesResult.data : [];
 
-  const t = await getT("dashboard_doctor");
+  const t = await getTranslations("dashboard_doctor");
 
   return (
     <div className="space-y-6">

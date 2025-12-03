@@ -1,9 +1,8 @@
 import { getFeaturedDoctors } from "@/lib/actions/search";
 import { getImageUrl } from "@/lib/actions/images-uploader";
-import Link from "next/link";
 import { getT } from "@/lib/getT";
-import { getLocale } from "next-intl/server";
 import type { DoctorWithRelations } from "@/lib/types";
+import { Link } from "@/i18n/routing";
 
 export default async function FeaturedDoctorsSection() {
   // Fetch real data from database using Server Action
@@ -29,8 +28,7 @@ export default async function FeaturedDoctorsSection() {
     })
   );
 
-  // Get locale and translations
-  const locale = await getLocale();
+  // Get translations
   const t = await getT("featuredDoctors");
 
   return (
@@ -84,7 +82,7 @@ export default async function FeaturedDoctorsSection() {
                     {primarySpeciality}
                   </p>
                   <Link
-                    href={`/${locale}/doctor/${doctor.id}`}
+                    href={`/doctor/${doctor.id}`}
                     className="text-blue-600 hover:text-blue-800 text-sm font-medium hover:underline"
                   >
                     <span>{t("viewProfile")}</span>
