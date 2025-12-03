@@ -27,10 +27,10 @@ import type { Speciality } from "@/lib/types";
 // Doctor profile form type (matches actual data structure from server)
 interface Doctor {
   id: string;
-  name: string;
-  surname: string;
-  email: string | null;
-  phone: string | null;
+  name?: string;
+  surname?: string;
+  email?: string | null;
+  phone?: string | null;
   profileImage?: {
     id?: string;
     url?: string;
@@ -75,10 +75,10 @@ export default function DoctorProfileForm({
     lastName: doctor.user.lastName,
     email: doctor.user.email || "",
     phone: doctor.user.phone || "",
-    doctorName: doctor.name,
-    doctorSurname: doctor.surname,
-    doctorEmail: doctor.email || "",
-    doctorPhone: doctor.phone || "",
+    doctorName: doctor.name || doctor.user.firstName,
+    doctorSurname: doctor.surname || doctor.user.lastName,
+    doctorEmail: doctor.email || doctor.user.email || "",
+    doctorPhone: doctor.phone || doctor.user.phone || "",
   });
 
   // Avatar + upload controls handled by AvatarSection component

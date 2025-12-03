@@ -8,7 +8,7 @@
   "mapLocationLabel": "Location on the Map",
   "searchingLocation": "Searching location...",
   "clickMapToSelectExact": "Click on the map to select the exact location",
-  "clinicLocationMarker": "Clinic Location",
+  "clinicLocationMarker": "Office Location",
   "pendingLocation": "Location pending",
   "clickToConfirmOrAdjust": "Click on the map to confirm the exact location or adjust the address for automatic search"
 }

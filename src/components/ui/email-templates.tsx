@@ -1,4 +1,3 @@
-import { useTranslations } from "next-intl";
 // Email to doctor: notify of new appointment to approve/deny
 interface DoctorNotificationEmailProps {
   doctorName: string;
@@ -8,6 +7,17 @@ interface DoctorNotificationEmailProps {
   time: string;
   notes?: string;
   actionUrl: string; // Link to system for approval/denial
+  translations: {
+    newRequestTitle: string;
+    greeting: string;
+    requestText: string;
+    dateLabel: string;
+    timeLabel: string;
+    notesLabel: string;
+    approvalInstruction: string;
+    systemButton: string;
+    questionsText: string;
+  };
 }
 
 interface AppointmentEmailProps {
@@ -18,6 +28,19 @@ interface AppointmentEmailProps {
   time: string; // formatted time string
   notes?: string;
   status?: "CONFIRMED" | "CANCELED";
+  translations: {
+    greeting: string;
+    confirmedText: string;
+    canceledText: string;
+    clinicLabel: string;
+    dateLabel: string;
+    timeLabel: string;
+    notesLabel: string;
+    apologyText: string;
+    rescheduleText: string;
+    waitingText: string;
+    questionsText: string;
+  };
 }
 
 export function DoctorNewAppointmentEmail({
@@ -28,8 +51,8 @@ export function DoctorNewAppointmentEmail({
   time,
   notes,
   actionUrl,
+  translations: t,
 }: DoctorNotificationEmailProps) {
-  const t = useTranslations("email.doctorNotification");
   return (
     <div
       style={{ fontFamily: "sans-serif", background: "#f9fafb", padding: 24 }}
@@ -52,12 +75,12 @@ export function DoctorNewAppointmentEmail({
             marginBottom: 8,
           }}
         >
-          {t("newRequestTitle")}
+          {t.newRequestTitle}
         </h2>
         <p style={{ color: "#374151", fontSize: 16, marginBottom: 24 }}>
-          {t("greeting", { doctor: doctorName })}
+          {t.greeting}
           <br />
-          {t("requestText", { patient: patientName, clinic: clinicName })}
+          {t.requestText}
         </p>
         <table style={{ width: "100%", marginBottom: 24 }}>
           <tbody>
@@ -65,7 +88,7 @@ export function DoctorNewAppointmentEmail({
               <td
                 style={{ color: "#6b7280", fontWeight: 600, padding: "6px 0" }}
               >
-                {t("dateLabel")}
+                {t.dateLabel}
               </td>
               <td style={{ color: "#111827", fontWeight: 500 }}>{date}</td>
             </tr>
@@ -73,7 +96,7 @@ export function DoctorNewAppointmentEmail({
               <td
                 style={{ color: "#6b7280", fontWeight: 600, padding: "6px 0" }}
               >
-                {t("timeLabel")}
+                {t.timeLabel}
               </td>
               <td style={{ color: "#111827", fontWeight: 500 }}>{time}</td>
             </tr>
@@ -86,7 +109,7 @@ export function DoctorNewAppointmentEmail({
                     padding: "6px 0",
                   }}
                 >
-                  {t("notesLabel")}
+                  {t.notesLabel}
                 </td>
                 <td style={{ color: "#111827", fontWeight: 500 }}>{notes}</td>
               </tr>
@@ -101,7 +124,7 @@ export function DoctorNewAppointmentEmail({
             marginBottom: 16,
           }}
         >
-          {t("approvalInstruction")}
+          {t.approvalInstruction}
         </div>
         <a
           href={actionUrl}
@@ -117,10 +140,10 @@ export function DoctorNewAppointmentEmail({
             marginBottom: 12,
           }}
         >
-          {t("systemButton")}
+          {t.systemButton}
         </a>
         <div style={{ color: "#6b7280", fontSize: 14, marginTop: 16 }}>
-          {t("questionsText")}
+          {t.questionsText}
         </div>
       </div>
     </div>
@@ -136,6 +159,7 @@ export function AppointmentStatusUpdateEmail({
   time,
   notes,
   status = "CONFIRMED",
+  translations: t,
 }: AppointmentEmailProps) {
   const statusColor = {
     CONFIRMED: "#10b981",
@@ -144,7 +168,6 @@ export function AppointmentStatusUpdateEmail({
     PENDING: "#f59e0b",
   }[status];
 
-  const t = useTranslations("email.appointmentStatus");
   return (
     <div
       style={{ fontFamily: "sans-serif", background: "#f9fafb", padding: 24 }}
@@ -170,9 +193,9 @@ export function AppointmentStatusUpdateEmail({
           {status === "CONFIRMED" ? (
             <>
               <p style={{ color: "#374151", fontSize: 16, marginBottom: 24 }}>
-                {t("greeting", { name: patientName })}
+                {t.greeting}
                 <br />
-                {t("confirmedText", { doctor: doctorName })}
+                {t.confirmedText}
               </p>
               <table style={{ width: "100%", marginBottom: 24 }}>
                 <tbody>
@@ -184,7 +207,7 @@ export function AppointmentStatusUpdateEmail({
                         padding: "6px 0",
                       }}
                     >
-                      {t("clinicLabel")}
+                      {t.clinicLabel}
                     </td>
                     <td style={{ color: "#111827", fontWeight: 500 }}>
                       {clinicName}
@@ -198,7 +221,7 @@ export function AppointmentStatusUpdateEmail({
                         padding: "6px 0",
                       }}
                     >
-                      {t("dateLabel")}
+                      {t.dateLabel}
                     </td>
                     <td style={{ color: "#111827", fontWeight: 500 }}>
                       {date}
@@ -212,7 +235,7 @@ export function AppointmentStatusUpdateEmail({
                         padding: "6px 0",
                       }}
                     >
-                      {t("timeLabel")}
+                      {t.timeLabel}
                     </td>
                     <td style={{ color: "#111827", fontWeight: 500 }}>
                       {time}
@@ -227,7 +250,7 @@ export function AppointmentStatusUpdateEmail({
                           padding: "6px 0",
                         }}
                       >
-                        {t("notesLabel")}
+                        {t.notesLabel}
                       </td>
                       <td style={{ color: "#111827", fontWeight: 500 }}>
                         {notes}
@@ -240,10 +263,10 @@ export function AppointmentStatusUpdateEmail({
           ) : status === "CANCELED" ? (
             <>
               <p style={{ color: "#374151", fontSize: 16, marginBottom: 12 }}>
-                {t("greeting", { name: patientName })}
+                {t.greeting}
               </p>
               <p style={{ color: "#374151", fontSize: 16, marginBottom: 18 }}>
-                {t("canceledText", { doctor: doctorName })}
+                {t.canceledText}
               </p>
               <table style={{ width: "100%", marginBottom: 20 }}>
                 <tbody>
@@ -255,7 +278,7 @@ export function AppointmentStatusUpdateEmail({
                         padding: "6px 0",
                       }}
                     >
-                      {t("clinicLabel")}
+                      {t.clinicLabel}
                     </td>
                     <td style={{ color: "#111827", fontWeight: 500 }}>
                       {clinicName}
@@ -269,7 +292,7 @@ export function AppointmentStatusUpdateEmail({
                         padding: "6px 0",
                       }}
                     >
-                      {t("dateLabel")}
+                      {t.dateLabel}
                     </td>
                     <td style={{ color: "#111827", fontWeight: 500 }}>
                       {date}
@@ -283,7 +306,7 @@ export function AppointmentStatusUpdateEmail({
                         padding: "6px 0",
                       }}
                     >
-                      {t("timeLabel")}
+                      {t.timeLabel}
                     </td>
                     <td style={{ color: "#111827", fontWeight: 500 }}>
                       {time}
@@ -298,7 +321,7 @@ export function AppointmentStatusUpdateEmail({
                           padding: "6px 0",
                         }}
                       >
-                        {t("notesLabel")}
+                        {t.notesLabel}
                       </td>
                       <td style={{ color: "#111827", fontWeight: 500 }}>
                         {notes}
@@ -315,10 +338,10 @@ export function AppointmentStatusUpdateEmail({
                   marginBottom: 10,
                 }}
               >
-                {t("apologyText")}
+                {t.apologyText}
               </div>
               <div style={{ color: "#6b7280", fontSize: 14 }}>
-                {t("rescheduleText")}
+                {t.rescheduleText}
               </div>
             </>
           ) : null}
@@ -333,10 +356,10 @@ export function AppointmentStatusUpdateEmail({
                 marginBottom: 12,
               }}
             >
-              {t("waitingText")}
+              {t.waitingText}
             </div>
             <div style={{ color: "#6b7280", fontSize: 14 }}>
-              {t("questionsText")}
+              {t.questionsText}
             </div>
           </>
         )}

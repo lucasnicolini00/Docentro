@@ -14,6 +14,13 @@ export default function ScheduleUtilization({
   blockedSlots = 0,
 }: ScheduleUtilizationProps) {
   const t = useTranslations("dashboard_doctor");
+
+  // Ensure utilizationRate is a valid number
+  const displayRate =
+    typeof utilizationRate === "number" && !isNaN(utilizationRate)
+      ? Math.round(utilizationRate)
+      : 0;
+
   return (
     <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
       <h3 className="text-lg font-semibold text-gray-900 mb-4">
@@ -22,7 +29,7 @@ export default function ScheduleUtilization({
       <div className="space-y-4">
         <div className="text-center">
           <div className="text-4xl font-bold text-blue-600 mb-2">
-            {utilizationRate}%
+            {displayRate}%
           </div>
           <div className="text-gray-600">{t("utilizationRateLabel")}</div>
         </div>

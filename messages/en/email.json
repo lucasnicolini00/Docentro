@@ -2,7 +2,7 @@
   "doctorNotification": {
     "newRequestTitle": "New Appointment Request",
     "greeting": "Hello {doctor},",
-    "requestText": "{patient} has requested an appointment at {clinic}.",
+    "requestText": "{patient} has requested an appointment at {office}.",
     "dateLabel": "Date:",
     "timeLabel": "Time:",
     "notesLabel": "Notes:",
@@ -14,7 +14,7 @@
     "greeting": "Hello {name},",
     "confirmedText": "Your appointment with {doctor} has been confirmed!",
     "canceledText": "Your appointment with {doctor} has been canceled.",
-    "clinicLabel": "Clinic:",
+    "clinicLabel": "Office:",
     "dateLabel": "Date:",
     "timeLabel": "Time:",
     "notesLabel": "Notes:",

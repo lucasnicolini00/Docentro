@@ -23,8 +23,8 @@
   "appointmentTimeLabel": "Horario Disponible *",
   "appointmentTimeLoading": "Cargando horarios...",
   "appointmentTimeNone": "No hay horarios disponibles para esta fecha.",
-  "appointmentClinicLabel": "Clínica *",
-  "appointmentClinicSelect": "Seleccionar clínica",
+  "appointmentClinicLabel": "Oficina *",
+  "appointmentClinicSelect": "Seleccionar oficina",
 
   "autocompleteNoOptions": "No se encontraron opciones",
 

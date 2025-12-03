@@ -5,11 +5,18 @@ import {
   saveDoctorProfileExperience,
   getAllDoctorImages,
 } from "@/lib/actions";
-import { getT } from "@/lib/getT";
+import { getTranslations } from "next-intl/server";
+import { setRequestLocale } from "next-intl/server";
 
 export const dynamic = "force-dynamic";
 
-export default async function DoctorExperiencePage() {
+export default async function DoctorExperiencePage({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}) {
+  const { locale } = await params;
+  setRequestLocale(locale);
   await requireDoctor();
 
   const [profile, images] = await Promise.all([
@@ -27,7 +34,7 @@ export default async function DoctorExperiencePage() {
 
   const existingImages = images.success && images.data ? images.data : [];
 
-  const t = await getT("dashboard_doctor");
+  const t = await getTranslations("dashboard_doctor");
 
   return (
     <>

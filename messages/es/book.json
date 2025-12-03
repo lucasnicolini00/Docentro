@@ -5,8 +5,8 @@
   "specialtiesLabel": "Especialidades",
   "availableTimes": "Horarios Disponibles",
   "summaryTitle": "Resumen de la Cita",
-  "selectClinic": "Seleccionar Clínica",
-  "selectClinicPlaceholder": "Elige una clínica",
+  "selectClinic": "Seleccionar Oficina",
+  "selectClinicPlaceholder": "Elige una oficina",
   "selectDate": "Seleccionar Fecha",
   "loadingTimes": "Cargando horarios disponibles...",
   "noTimes": "No hay horarios disponibles para esta fecha.",
@@ -26,5 +26,5 @@
   "error": "Error al reservar la cita",
   "dateLabel": "Fecha",
   "timeLabel": "Hora",
-  "clinicLabel": "Clínica"
+  "clinicLabel": "Oficina"
 }

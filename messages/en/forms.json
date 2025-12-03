@@ -23,8 +23,8 @@
   "appointmentTimeLabel": "Available Time Slot *",
   "appointmentTimeLoading": "Loading time slots...",
   "appointmentTimeNone": "No available time slots for this date.",
-  "appointmentClinicLabel": "Clinic *",
-  "appointmentClinicSelect": "Select clinic",
+  "appointmentClinicLabel": "Office *",
+  "appointmentClinicSelect": "Select office",
 
   "autocompleteNoOptions": "No options found",
 

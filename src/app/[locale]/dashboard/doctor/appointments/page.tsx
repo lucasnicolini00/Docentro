@@ -2,17 +2,24 @@ import { requireDoctor } from "@/lib/auth-guards";
 import { getDoctorDashboard } from "@/lib/actions";
 import DoctorAppointmentList from "./components/DoctorAppointmentList";
 import CollapsibleHistorySection from "./components/CollapsibleHistorySection";
-import { getT } from "@/lib/getT";
+import { getTranslations } from "next-intl/server";
+import { setRequestLocale } from "next-intl/server";
 
 export const dynamic = "force-dynamic"; // appointments are live and auth-protected
 
-export default async function DoctorAppointmentsPage() {
+export default async function DoctorAppointmentsPage({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}) {
+  const { locale } = await params;
+  setRequestLocale(locale);
   await requireDoctor();
 
   const dashboard = await getDoctorDashboard();
   const data = dashboard.success && dashboard.data ? dashboard.data : null;
 
-  const t = await getT("dashboard_doctor");
+  const t = await getTranslations("dashboard_doctor");
 
   const today = data?.appointments?.today ?? [];
   const pending = data?.appointments?.pending ?? [];

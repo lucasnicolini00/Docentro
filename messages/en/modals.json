@@ -5,7 +5,7 @@
   "appointmentDetailsDoctor": "Doctor",
   "appointmentDetailsDate": "Date",
   "appointmentDetailsTime": "Time",
-  "appointmentDetailsClinic": "Clinic",
+  "appointmentDetailsClinic": "Office",
   "appointmentDetailsStatus": "Status",
   "appointmentDetailsNotes": "Additional Notes",
   "appointmentDetailsCancel": "Cancel Appointment",
@@ -25,8 +25,8 @@
   "appointmentDetailsMeetingJoinText": "You can join the virtual consultation using this link:",
   "appointmentDetailsMeetingJoin": "Join Meeting",
   "appointmentDetailsReminderTitle": "Reminder:",
-  "appointmentDetailsReminderText": "To cancel or reschedule your appointment, contact the clinic at least 24 hours in advance.",
+  "appointmentDetailsReminderText": "To cancel or reschedule your appointment, contact the office at least 24 hours in advance.",
   "appointmentDetailsPendingTitle": "Pending Confirmation:",
-  "appointmentDetailsPendingText": "The clinic will confirm your appointment soon. You will receive a notification.",
+  "appointmentDetailsPendingText": "The office will confirm your appointment soon. You will receive a notification.",
   "appointmentDetailsMeetingJoinNow": "Join Now"
 }

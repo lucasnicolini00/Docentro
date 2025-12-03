@@ -5,8 +5,8 @@
   "specialtiesLabel": "Specialties",
   "availableTimes": "Available Time Slots",
   "summaryTitle": "Appointment Summary",
-  "selectClinic": "Select Clinic",
-  "selectClinicPlaceholder": "Choose a clinic",
+  "selectClinic": "Select Office",
+  "selectClinicPlaceholder": "Choose an office",
   "selectDate": "Select Date",
   "loadingTimes": "Loading available times...",
   "noTimes": "There are no available times for this date.",
@@ -26,5 +26,5 @@
   "error": "Error booking appointment",
   "dateLabel": "Date",
   "timeLabel": "Time",
-  "clinicLabel": "Clinic"
+  "clinicLabel": "Office"
 }

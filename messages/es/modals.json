@@ -5,7 +5,7 @@
   "appointmentDetailsDoctor": "Doctor",
   "appointmentDetailsDate": "Fecha",
   "appointmentDetailsTime": "Hora",
-  "appointmentDetailsClinic": "Clínica",
+  "appointmentDetailsClinic": "Oficina",
   "appointmentDetailsStatus": "Estado",
   "appointmentDetailsNotes": "Notas Adicionales",
   "appointmentDetailsCancel": "Cancelar Cita",
@@ -24,10 +24,9 @@
   "appointmentDetailsMeetingLink": "Link de la Reunión",
   "appointmentDetailsMeetingJoinText": "Podrás unirte a la consulta virtual usando este enlace:",
   "appointmentDetailsMeetingJoin": "Unirse a la reunión",
-  "appointmentDetailsNotes": "Notas Adicionales",
   "appointmentDetailsReminderTitle": "Recordatorio:",
-  "appointmentDetailsReminderText": "Para cancelar o reprogramar tu cita, contacta a la clínica con al menos 24 horas de anticipación.",
+  "appointmentDetailsReminderText": "Para cancelar o reprogramar tu cita, contacta a la oficina con al menos 24 horas de anticipación.",
   "appointmentDetailsPendingTitle": "Pendiente de confirmación:",
-  "appointmentDetailsPendingText": "La clínica confirmará tu cita pronto. Recibirás una notificación.",
+  "appointmentDetailsPendingText": "La oficina confirmará tu cita pronto. Recibirás una notificación.",
   "appointmentDetailsMeetingJoinNow": "Unirse ahora"
 }

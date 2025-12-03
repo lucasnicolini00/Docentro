@@ -2,9 +2,13 @@ import { getFeaturedDoctors } from "@/lib/actions/search";
 import { getImageUrl } from "@/lib/actions/images-uploader";
 import { getT } from "@/lib/getT";
 import type { DoctorWithRelations } from "@/lib/types";
-import { Link } from "@/i18n/routing";
+import FeaturedDoctorCard from "./FeaturedDoctorCard";
 
-export default async function FeaturedDoctorsSection() {
+export default async function FeaturedDoctorsSection({
+  locale,
+}: {
+  locale: string;
+}) {
   // Fetch real data from database using Server Action
   const result = await getFeaturedDoctors();
   const doctors: DoctorWithRelations[] = result.success
@@ -53,42 +57,17 @@ export default async function FeaturedDoctorsSection() {
               t("defaultSpeciality");
 
             return (
-              <div
+              <FeaturedDoctorCard
                 key={doctor.id}
-                className="flex items-center space-x-4 p-4 bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow border border-gray-100"
-              >
-                {/* Circular Profile Picture */}
-                <div className="flex-shrink-0">
-                  {doctor.profileImageUrl ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={doctor.profileImageUrl}
-                      alt={`${doctor.user.firstName} ${doctor.user.lastName}`}
-                      className="w-20 h-20 rounded-full object-cover border-2 border-gray-200"
-                    />
-                  ) : (
-                    <div className="w-20 h-20 rounded-full bg-gray-100 flex items-center justify-center border-2 border-gray-200">
-                      <span className="text-2xl">👨‍⚕️</span>
-                    </div>
-                  )}
-                </div>
-
-                {/* Doctor Info */}
-                <div className="flex-1 min-w-0">
-                  <h3 className="text-lg font-semibold text-gray-900 truncate">
-                    {doctor.user.firstName} {doctor.user.lastName}
-                  </h3>
-                  <p className="text-sm text-gray-600 mb-2">
-                    {primarySpeciality}
-                  </p>
-                  <Link
-                    href={`/doctor/${doctor.id}`}
-                    className="text-blue-600 hover:text-blue-800 text-sm font-medium hover:underline"
-                  >
-                    <span>{t("viewProfile")}</span>
-                  </Link>
-                </div>
-              </div>
+                doctor={{
+                  id: doctor.id,
+                  user: doctor.user,
+                  profileImageUrl: doctor.profileImageUrl,
+                }}
+                primarySpeciality={primarySpeciality}
+                viewProfileText={t("viewProfile")}
+                locale={locale}
+              />
             );
           })}
         </div>

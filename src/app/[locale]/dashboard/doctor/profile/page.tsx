@@ -1,10 +1,17 @@
 import { requireDoctor } from "@/lib/auth-guards";
 import { getDoctorProfile, getAllSpecialities } from "@/lib/actions";
 import { DoctorProfileForm } from "@/components";
+import { setRequestLocale } from "next-intl/server";
 
 export const dynamic = "force-dynamic"; // profile uses live data and auth
 
-export default async function DoctorProfilePage() {
+export default async function DoctorProfilePage({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}) {
+  const { locale } = await params;
+  setRequestLocale(locale);
   await requireDoctor();
 
   const [profileResult, specialitiesResult] = await Promise.all([

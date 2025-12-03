@@ -1,6 +1,6 @@
 {
   "interactiveMap": "Mapa Interactivo",
-  "clinicsShown": "Aquí se mostrará la ubicación de las clínicas y consultorios",
+  "clinicsShown": "Aquí se mostrará la ubicación de las oficinas",
   "apiKey": "Configurar Google Maps API Key",
   "loading": "Cargando Mapa...",
   "viewProfile": "Ver Perfil",

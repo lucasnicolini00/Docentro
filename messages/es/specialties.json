@@ -1,8 +1,8 @@
 {
-  "sectionTitle": "Especialidades Disponibles",
-  "sectionDescription": "Encuentra especialistas en todas las áreas de la salud",
-  "defaultDescription": "Atención especializada",
-  "viewSpecialists": "Ver especialistas →",
+  "sectionTitle": "Categorías Profesionales",
+  "sectionDescription": "Encuentra profesionales en todas las especializaciones",
+  "defaultDescription": "Servicios profesionales",
+  "viewSpecialists": "Ver profesionales →",
   "names": {
     "Cardiología": "Cardiología",
     "Dermatología": "Dermatología",

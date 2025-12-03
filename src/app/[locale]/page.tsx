@@ -24,7 +24,7 @@ export default async function HomeLocalePage({
       <Navbar />
       <HeroSection />
       <SpecialtiesSection />
-      <FeaturedDoctorsSection />
+      <FeaturedDoctorsSection locale={locale} />
       <HowItWorksSection />
       <DisclaimerSection />
       <Footer />

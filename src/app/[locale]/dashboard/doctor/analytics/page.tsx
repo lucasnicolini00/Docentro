@@ -1,6 +1,7 @@
 import { requireDoctor } from "@/lib/auth-guards";
 import AnalyticsDashboard from "./components/AnalyticsDashboard";
-import { getT } from "@/lib/getT";
+import { getTranslations } from "next-intl/server";
+import { setRequestLocale } from "next-intl/server";
 import { BarChart3 } from "lucide-react";
 import {
   getDashboardStats,
@@ -11,10 +12,16 @@ import {
 
 export const dynamic = "force-dynamic"; // analytics depend on live data
 
-export default async function AnalyticsPage() {
+export default async function AnalyticsPage({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}) {
+  const { locale } = await params;
+  setRequestLocale(locale);
   await requireDoctor();
 
-  const t = await getT("dashboard_doctor");
+  const t = await getTranslations("dashboard_doctor");
 
   // Pre-fetch data for the default view (month)
   const [statsResult, scheduleResult, patientResult, revenueResult] =

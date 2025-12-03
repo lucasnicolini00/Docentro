@@ -1,8 +1,8 @@
 {
-  "sectionTitle": "Available Specialties",
-  "sectionDescription": "Find specialists in all areas of health",
-  "defaultDescription": "Specialized medical care",
-  "viewSpecialists": "View specialists →",
+  "sectionTitle": "Professional Categories",
+  "sectionDescription": "Find professionals across all specializations",
+  "defaultDescription": "Professional services",
+  "viewSpecialists": "View professionals →",
   "names": {
     "Cardiología": "Cardiology",
     "Dermatología": "Dermatology",

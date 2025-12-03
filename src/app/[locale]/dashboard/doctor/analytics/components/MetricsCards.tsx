@@ -16,6 +16,13 @@ interface MetricsCardsProps {
 
 export default function MetricsCards({ stats }: MetricsCardsProps) {
   const t = useTranslations("dashboard_doctor");
+
+  // Ensure utilizationRate is a valid number
+  const utilizationRate =
+    typeof stats.utilizationRate === "number" && !isNaN(stats.utilizationRate)
+      ? Math.round(stats.utilizationRate)
+      : 0;
+
   const metrics = [
     {
       label: t("todayAppointmentsLabel"),
@@ -33,7 +40,7 @@ export default function MetricsCards({ stats }: MetricsCardsProps) {
     },
     {
       label: t("utilizationLabel"),
-      value: `${stats.utilizationRate}%`,
+      value: `${utilizationRate}%`,
       icon: Activity,
       bgColor: "bg-purple-100",
       iconColor: "text-purple-600",

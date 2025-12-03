@@ -2,7 +2,7 @@
   "doctorNotification": {
     "newRequestTitle": "Nueva Solicitud de Cita",
     "greeting": "Hola {doctor},",
-    "requestText": "{patient} ha solicitado una cita en {clinic}.",
+    "requestText": "{patient} ha solicitado una cita en {office}.",
     "dateLabel": "Fecha:",
     "timeLabel": "Hora:",
     "notesLabel": "Notas:",
@@ -14,7 +14,7 @@
     "greeting": "Hola {name},",
     "confirmedText": "¡Tu cita con {doctor} ha sido confirmada!",
     "canceledText": "Tu cita con {doctor} ha sido cancelada.",
-    "clinicLabel": "Clínica:",
+    "clinicLabel": "Oficina:",
     "dateLabel": "Fecha:",
     "timeLabel": "Hora:",
     "notesLabel": "Notas:",
