@@ -2,7 +2,7 @@ import { requirePatient } from "@/lib/auth-guards";
 import { getPatientDashboard } from "@/lib/actions";
 import AppointmentList from "./components/AppointmentList";
 import { getT } from "@/lib/getT";
-import { getLocale, setRequestLocale } from "next-intl/server";
+import { setRequestLocale } from "next-intl/server";
 import Link from "next/link";
 
 export const dynamic = "force-dynamic";
