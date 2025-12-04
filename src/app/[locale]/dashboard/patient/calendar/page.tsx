@@ -1,6 +1,8 @@
 import { requirePatient } from "@/lib/auth-guards";
 import { getPatientDashboard } from "@/lib/actions";
 import { getT } from "@/lib/getT";
+import { setRequestLocale } from "next-intl/server";
+import Link from "next/link";
 import PatientCalendarClient from "./components/PatientCalendarClient";
 import type { PatientAppointment } from "@/lib/types";
 
@@ -11,7 +13,8 @@ export default async function PatientCalendarPage({
 }: {
   params: Promise<{ locale: string }>;
 }) {
-  await params; // locale inferred
+  const { locale } = await params;
+  setRequestLocale(locale);
   await requirePatient();
 
   const dashboard = await getPatientDashboard();
@@ -45,7 +48,6 @@ export default async function PatientCalendarPage({
   });
 
   const t = await getT("dashboard_patient");
-  const { locale } = await params;
 
   // Calculate appointment statistics
   const now = new Date();
@@ -79,12 +81,12 @@ export default async function PatientCalendarPage({
                 {t("calendarSubtitle", { fallback: "Todas tus citas" })}
               </p>
             </div>
-            <a
+            <Link
               href={`/${locale}/search`}
               className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-lg font-medium transition-colors"
             >
               + {t("newAppointmentButton", { fallback: "Nueva Cita" })}
-            </a>
+            </Link>
           </div>
 
           <PatientCalendarClient initialAppointments={initialAppointments} />

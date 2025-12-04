@@ -82,13 +82,13 @@ export default function AppointmentList({
   const getStatusText = (status: AppointmentStatus) => {
     switch (status) {
       case AppointmentStatus.PENDING:
-        return "Pendiente";
+        return t("pendingStatus");
       case AppointmentStatus.CONFIRMED:
-        return "Confirmada";
+        return t("confirmedStatus");
       case AppointmentStatus.CANCELED:
-        return "Cancelada";
+        return t("canceledStatus");
       case AppointmentStatus.COMPLETED:
-        return "Completada";
+        return t("completedStatus");
       default:
         return status;
     }

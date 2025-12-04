@@ -102,12 +102,14 @@ const getClinicCoordinates = (
     };
   }
 
-  // Log missing coordinates for debugging
-  console.warn(
-    `Missing coordinates for clinic: ${clinic.name} in ${
-      clinic.city || "unknown city"
-    }`
-  );
+  // Log missing coordinates only in development
+  if (process.env.NODE_ENV === "development") {
+    console.warn(
+      `Missing coordinates for clinic: ${clinic.name} in ${
+        clinic.city || "unknown city"
+      }`
+    );
+  }
 
   // Return null instead of mock coordinates - we'll filter these out
   return null;
@@ -229,15 +231,12 @@ export default function Map({
 
     setMarkers(newMarkers);
 
-    // Adjust map center if we have markers
+    // Set map center to the first marker (first clinic of first doctor)
     if (newMarkers.length > 0) {
-      const avgLat =
-        newMarkers.reduce((sum, marker) => sum + marker.position.lat, 0) /
-        newMarkers.length;
-      const avgLng =
-        newMarkers.reduce((sum, marker) => sum + marker.position.lng, 0) /
-        newMarkers.length;
-      setMapCenter({ lat: avgLat, lng: avgLng });
+      setMapCenter(newMarkers[0].position);
+    } else {
+      // If no markers, keep default center
+      setMapCenter(defaultCenter);
     }
   }, [doctors]);
 
@@ -290,6 +289,7 @@ export default function Map({
       )}
 
       <GoogleMap
+        key={`${mapCenter.lat}-${mapCenter.lng}`}
         mapContainerStyle={containerStyle}
         center={mapCenter}
         zoom={markers.length > 0 ? 12 : 11}

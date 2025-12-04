@@ -5,7 +5,7 @@ export default function ProfileLoading() {
     <>
       {/* Header */}
       <div className="mb-6">
-        <div className="bg-gradient-to-r from-blue-600 to-blue-800 rounded-xl p-6 shadow-lg">
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between">
             <div className="flex items-center space-x-4">
               <Skeleton className="w-14 h-14 rounded-full bg-white/20" />

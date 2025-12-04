@@ -3,13 +3,19 @@ export const dynamic = "force-dynamic";
 import { getPatientDashboard } from "@/lib/actions/patients";
 import AppointmentList from "./components/AppointmentList";
 import { getT } from "@/lib/getT";
-import { getLocale } from "next-intl/server";
+import { setRequestLocale } from "next-intl/server";
+import Link from "next/link";
 
-export default async function PatientDashboardLocale() {
+export default async function PatientDashboardLocale({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}) {
+  const { locale } = await params;
+  setRequestLocale(locale);
   await requirePatient();
 
   const result = await getPatientDashboard();
-  const locale = await getLocale();
   const t = await getT("dashboard_patient");
 
   if (!result.success || !result.data) {
@@ -74,12 +80,12 @@ export default async function PatientDashboardLocale() {
               <p className="text-sm font-medium text-gray-600">
                 {t("profileLabel")}
               </p>
-              <a
+              <Link
                 href={`/${locale}/dashboard/patient/profile`}
                 className="text-sm font-medium text-blue-600 hover:text-blue-700"
               >
                 {t("editProfileLink")}
-              </a>
+              </Link>
             </div>
           </div>
         </div>
@@ -151,12 +157,12 @@ export default async function PatientDashboardLocale() {
                   </div>
                 </div>
                 <div className="mt-6 pt-4 border-t border-gray-100">
-                  <a
+                  <Link
                     href={`/${locale}/dashboard/patient/profile`}
                     className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg transition-colors text-center block"
                   >
                     {t("editProfileAction")}
-                  </a>
+                  </Link>
                 </div>
               </div>
             </div>

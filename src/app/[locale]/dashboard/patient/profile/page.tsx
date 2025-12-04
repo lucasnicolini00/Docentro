@@ -1,6 +1,7 @@
 import { requirePatient } from "@/lib/auth-guards";
 import { getPatientProfile } from "@/lib/actions";
 import { getT } from "@/lib/getT";
+import { setRequestLocale } from "next-intl/server";
 import { PatientProfileForm } from "@/components";
 
 export const dynamic = "force-dynamic";
@@ -10,7 +11,8 @@ export default async function PatientProfilePage({
 }: {
   params: Promise<{ locale: string }>;
 }) {
-  await params;
+  const { locale } = await params;
+  setRequestLocale(locale);
   await requirePatient();
 
   const profile = await getPatientProfile();
