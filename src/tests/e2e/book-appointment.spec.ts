@@ -51,8 +51,8 @@ test.describe('Appointment Booking Flow', () => {
         // Verify we're on doctor profile
         await expect(page).toHaveURL(/\/doctor\//)
         
-        // Look for booking button
-        const bookButton = page.locator('button:has-text("Agendar"), a:has-text("Agendar")')
+        // Look for booking button (support both Spanish and English)
+        const bookButton = page.locator('button:has-text("Agendar"), a:has-text("Agendar"), button:has-text("Book"), a:has-text("Book")')
         await expect(bookButton.first()).toBeVisible()
       }
     })
@@ -106,8 +106,8 @@ test.describe('Appointment Booking Flow', () => {
       if (await doctorLinks.count() > 0) {
         await doctorLinks.first().click()
         
-        // Click book button
-        const bookButton = page.locator('button:has-text("Agendar"), a:has-text("Agendar")')
+        // Click book button (support both Spanish and English)
+        const bookButton = page.locator('button:has-text("Agendar"), a:has-text("Agendar"), button:has-text("Book"), a:has-text("Book")')
         if (await bookButton.count() > 0) {
           await bookButton.first().click()
           
