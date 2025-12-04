@@ -44,9 +44,6 @@ interface AppointmentEmailProps {
 }
 
 export function DoctorNewAppointmentEmail({
-  doctorName,
-  patientName,
-  clinicName,
   date,
   time,
   notes,
@@ -152,8 +149,6 @@ export function DoctorNewAppointmentEmail({
 
 // Email to patient: appointment status update (confirmed, canceled, completed, pending)
 export function AppointmentStatusUpdateEmail({
-  patientName,
-  doctorName,
   clinicName,
   date,
   time,
