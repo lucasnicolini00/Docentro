@@ -182,7 +182,16 @@ describe("analytics actions", () => {
       const result = await getScheduleAnalytics("week");
 
       expect(result.success).toBe(true);
-      expect(result.data).toEqual(mockStats);
+      expect(result.data).toEqual({
+        totalSlots: mockStats.total_slots,
+        bookedSlots: mockStats.booked_slots,
+        availableSlots: mockStats.total_slots - mockStats.booked_slots,
+        blockedSlots: 0,
+        utilizationRate: mockStats.utilization_rate,
+        weeklyOverview: [],
+        peakHours: [],
+        insights: [],
+      });
     });
 
     it("should get schedule analytics for specific doctor", async () => {
